@@ -24,59 +24,73 @@ import {
 const NANO_BANANA_PRO_VERSION =
   '99256cc418d9ac41854575e2f1c8846ce2defd0c0fb6ff2d5cbc3c826be75bc8'
 
-// Only the 7 presets that have local reference photos in /public
-const STYLE_PRESETS = [
-  'Urban Industrial',
-  'Scandinavian Minimalist',
-  'Boho-Chic',
-  'Coastal Mediterranean',
-  'Eclectic Airbnb',
-  'Modern Luxury',
-  'Transitional',
-] as const
-
-const PRESET_ICONS: LucideIcon[] = [
-  Building2,      // Urban Industrial
-  Snowflake,      // Scandinavian Minimalist
-  Leaf,           // Boho-Chic
-  Waves,          // Coastal Mediterranean
-  Palette,        // Eclectic Airbnb
-  Crown,          // Modern Luxury
-  ArrowLeftRight, // Transitional
+// ─── Style Presets ───────────────────────────────────────────────────────────
+// Single source of truth: id, display name, local preview image, icon, and the
+// cinematic prompt sent directly to nano-banana-pro.
+const STYLES: Array<{
+  id: string
+  name: string
+  image: string
+  icon: LucideIcon
+  prompt: string
+}> = [
+  {
+    id: 'coastal-mediterranean',
+    name: 'Coastal Mediterranean',
+    image: '/Coastal-Mediterranean.jpg',
+    icon: Waves,
+    prompt: 'Virtual staging, living room. Limewash walls, terracotta accents, low-level curved furniture, natural sunlight. Movie Look: Call Me By Your Name. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Preserve original architecture, photorealistic.',
+  },
+  {
+    id: 'modern-farmhouse',
+    name: 'Modern Farmhouse',
+    image: '/modern-farmhouse-temp.jpg',
+    icon: Leaf,
+    prompt: 'Virtual staging, interior design. White shiplap walls, reclaimed natural wood accents, cozy oversized linen sofas. Movie Look: Little Women. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Warm inviting lighting, preserve structural integrity.',
+  },
+  {
+    id: 'mid-century',
+    name: 'Mid-Century Modern',
+    image: '/mid-century-temp.jpg',
+    icon: Palette,
+    prompt: 'Virtual staging. Mid-Century Modern furniture, dark walnut wood, retro leather lounge chair, geometric rug. Movie Look: Mad Men. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Cinematic shadows, preserve room layout perfectly.',
+  },
+  {
+    id: 'quiet-luxury',
+    name: 'Quiet Luxury Hotel',
+    image: '/Quiet-Luxury.jpg',
+    icon: Crown,
+    prompt: 'Virtual staging, boutique hotel suite. Warm minimalism, dark wood paneling, matte velvet sofa, ambient cove lighting. Movie Look: Succession. Camera: ARRI Alexa 65. Lens: Prime 85mm. Film: Cinestill 800T. Elements: Sophisticated, premium materials, untouched architecture.',
+  },
+  {
+    id: 'wabi-sabi',
+    name: 'Wabi-Sabi Japandi',
+    image: '/Wabi-Sabi.jpg',
+    icon: Snowflake,
+    prompt: 'Virtual staging, minimalist zen retreat. Low wooden furniture, neutral beige palette, soft diffused lighting, perfectly imperfect textures. Movie Look: Dune (Interiors). Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Peaceful atmosphere, preserve original room.',
+  },
+  {
+    id: 'boho-chic',
+    name: 'Boho-Chic',
+    image: '/Boho-Chic.jpg',
+    icon: Leaf,
+    prompt: 'Virtual staging. Macrame wall hangings, rattan furniture, lush indoor plants, colorful layered rugs. Movie Look: Euphoria. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Bright natural light, highly photogenic, preserve original walls.',
+  },
+  {
+    id: 'urban-industrial',
+    name: 'Urban Industrial',
+    image: '/Urban-Industrial.jpg',
+    icon: Building2,
+    prompt: 'Virtual staging, loft style. Dark metallic furniture, distressed leather couch, sleek glass tables, subtle warm Edison bulb lighting. Movie Look: The Batman. Camera: Sony Venice. Lens: Anamorphic. Film: Cinestill 800T. Elements: Moody cinematic depth, preserve architecture.',
+  },
+  {
+    id: 'rustic-cabin',
+    name: 'Biophilic Rustic',
+    image: '/Rustic-Cabin.jpg',
+    icon: Leaf,
+    prompt: 'Virtual staging, luxury rustic cabin. Raw natural wood edge coffee table, deep green velvet sofa, cozy woven throw blankets, earthy tones. Movie Look: The Revenant. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Deep depth of field, natural vibe, preserve layout.',
+  },
 ]
-
-// Local high-quality reference photos served from /public
-const PRESET_IMAGES: Record<string, string> = {
-  'Urban Industrial':        '/Urban-Industrial.jpg',
-  'Scandinavian Minimalist': '/Scandinavian-Minimalist.jpg',
-  'Boho-Chic':               '/Boho-Chic.jpg',
-  'Coastal Mediterranean':   '/Coastal-Mediterranean.jpg',
-  'Eclectic Airbnb':         '/Eclectic-Airbnb.jpg',
-  'Modern Luxury':           '/Modern-Luxury.jpg',
-  'Transitional':            '/Transitional.jpg',
-}
-
-// Cinematic prompt formulas — injected verbatim into the Replicate prompt per preset
-const PRESET_FORMULAS: Record<string, string> = {
-  'Urban Industrial':
-    'Exposed red brick walls, polished concrete floor, distressed brown leather sofa, matte black metal fixtures. Warm Edison bulb lighting mixed with natural overcast light, volumetric shadows. Shot on Sony Venice, 35mm lens, f/1.8 aperture, realistic textures, cinematic lighting.',
-  'Scandinavian Minimalist':
-    'Matte white walls, light oak wood flooring, cozy neutral boucle furniture. Natural morning sunlight streaming through large windows, soft diffused lighting. Shot on ARRI Alexa 65, 24mm prime lens, architectural digest style, 8k resolution, highly detailed.',
-  'Boho-Chic':
-    'Warm earthy tones, rattan and macrame decor, lots of lush green indoor plants, vintage Moroccan rugs. Sun-drenched room, Kodak Portra film aesthetic, warm golden light. Shot on full-frame mirrorless, 35mm lens, cozy and inviting atmosphere.',
-  'Modern Farmhouse':
-    'White shiplap walls, reclaimed barn wood beams, matte black hardware, cozy linen slipcovered furniture. Bright natural daylight, soft shadows. Shot on Sony a7III, 24mm lens, crisp focus, magazine cover quality, photorealistic.',
-  'Coastal Mediterranean':
-    'White stucco walls, terracotta tile accents, breezy linen curtains, light weathered wood, shades of ocean blue. Bright midday Mediterranean sunlight, airy and fresh. 35mm prime lens, ultra-realistic, highly detailed architecture.',
-  'Eclectic Airbnb':
-    'Vibrant curated mix of vintage and modern furniture, bold colorful art pieces, unique statement lighting, patterned textiles. Dynamic studio lighting, rich colors. Shot on 24mm lens, f/2.8, deep depth of field, vibrant and welcoming.',
-  'Modern Luxury':
-    'Floor-to-ceiling windows, Calacatta gold marble finishes, sleek contemporary Italian furniture, dark wood accents. Golden hour lighting casting long beautiful shadows, ambient LED cove lighting. Shot on ARRI Alexa 65, 35mm, extreme photorealism, HDR.',
-  'Mid-Century Modern':
-    'Warm walnut wood paneling, iconic retro furniture with tapered legs, mustard yellow and teal accents, geometric patterns. Soft directional lighting, moody cinematic atmosphere. Shot with 85mm lens, f/1.8 aperture, cinematic color grading.',
-  'Transitional':
-    'Elegant balance of traditional lines and modern comfort, neutral color palette with sophisticated metallic accents, plush fabrics. Soft diffused natural light, balanced exposure. 35mm lens, incredibly realistic, architectural photography.',
-}
 
 
 const ROOM_TYPES = [
@@ -264,23 +278,16 @@ function App() {
     setIsGenerating(true)
 
     try {
-      const presetName = selectedPreset ?? 'Modern Luxury'
-      const roomType = selectedRoomType ?? 'room'
-      const customNote = customInstructions.trim()
-      const formula = PRESET_FORMULAS[presetName] ?? `furnished in a ${presetName} style interior, photorealistic.`
+      const presetName  = selectedPreset ?? STYLES[0].name
+      const customNote  = customInstructions.trim()
+      const activeStyle = STYLES.find(s => s.name === presetName) ?? STYLES[0]
       const prompt = [
-        `A high-resolution photograph of a virtually staged ${roomType}.`,
-        formula,
-        // Surface preservation — absolute constraint
-        'CRITICAL: Preserve the exact original color, material, and texture of all walls and floors without any alteration.',
-        'Do NOT repaint walls, change wall color, re-tile floors, replace flooring, or resurface any architectural element.',
-        // Allowed decorative additions
-        'You MAY hang wall art, mirrors, framed prints, or clocks on the walls.',
-        'You MAY add curtains, drapes, or blinds over windows.',
-        'You MAY place area rugs on top of the existing floor.',
-        // Furniture logic
-        'Add or replace furniture, lighting, cushions, throws, plants, and decorative accessories that match the selected style.',
-        'Respect the room\'s original architecture, ceiling height, and window placement.',
+        // Each style carries its own cinematic formula as the primary instruction
+        activeStyle.prompt,
+        // Room type refines the scene when the user has made a selection
+        selectedRoomType ? `Room type: ${selectedRoomType}.` : null,
+        // Hard preservation constraint — ensure architecture is never touched
+        'CRITICAL: Preserve the exact original walls, floors, windows, ceiling, and room geometry. Do not alter any structural element.',
         // Custom user note (optional)
         customNote || null,
       ].filter(Boolean).join(' ')
@@ -338,8 +345,8 @@ function App() {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
-  // Always show a background — fall back to the first preset on initial load
-  const activeBgImage = PRESET_IMAGES[selectedPreset ?? STYLE_PRESETS[0]]
+  // Always show a background — fall back to the first style on initial load
+  const activeBgImage = (STYLES.find(s => s.name === selectedPreset) ?? STYLES[0]).image
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -527,7 +534,7 @@ function App() {
                     <div className="text-center">
                       <p className="text-sm font-semibold text-white">AI is staging your room</p>
                       <p className="mt-1 text-xs text-gray-500">
-                        {selectedPreset ?? 'Modern Luxury'} style · typically 30–60 sec
+                        {selectedPreset ?? STYLES[0].name} style · typically 30–60 sec
                       </p>
                     </div>
                     <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
@@ -666,15 +673,15 @@ function App() {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-                {STYLE_PRESETS.map((style, i) => {
-                  const PresetIcon = PRESET_ICONS[i]
-                  const isSelected = selectedPreset === style
-                  const imgUrl = PRESET_IMAGES[style]
+                {STYLES.map((style) => {
+                  const PresetIcon = style.icon
+                  const isSelected = selectedPreset === style.name
+                  const imgUrl = style.image
                   return (
                     <button
-                      key={style}
+                      key={style.id}
                       type="button"
-                      onClick={() => setSelectedPreset(style)}
+                      onClick={() => setSelectedPreset(style.name)}
                       className={`group relative flex min-h-[130px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                         isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                       }`}
@@ -685,7 +692,7 @@ function App() {
                       }}
                     >
                       {/* Full-bleed photo or broken fallback */}
-                      {brokenImgs.has(`preset-${style}`) ? (
+                      {brokenImgs.has(`preset-${style.id}`) ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
                           <ImageIcon className="h-6 w-6 text-gray-600" />
                           <span className="text-[10px] text-gray-600">No preview</span>
@@ -693,9 +700,9 @@ function App() {
                       ) : (
                         <img
                           src={imgUrl}
-                          alt={style}
+                          alt={style.name}
                           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          onError={() => markBroken(`preset-${style}`)}
+                          onError={() => markBroken(`preset-${style.id}`)}
                         />
                       )}
 
@@ -710,7 +717,7 @@ function App() {
                       {/* Content pinned to bottom */}
                       <div className="relative z-10 mt-auto flex items-end justify-between p-3">
                         <span className="max-w-[80%] text-xs font-bold leading-tight text-white drop-shadow">
-                          {style}
+                          {style.name}
                         </span>
                         <div
                           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
