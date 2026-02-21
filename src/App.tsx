@@ -37,17 +37,6 @@ const STYLE_PRESETS = [
   'Transitional',
 ] as const
 
-const PRESET_GRADIENTS = [
-  'linear-gradient(145deg, #1f1412 0%, #3b2418 60%, #141414 100%)', // Urban Industrial – rust/iron
-  'linear-gradient(145deg, #131620 0%, #1e2540 60%, #141414 100%)', // Scandinavian – icy blue
-  'linear-gradient(145deg, #1f1a0e 0%, #3a2e12 60%, #141414 100%)', // Boho-Chic – warm ochre
-  'linear-gradient(145deg, #1c1a14 0%, #342e20 60%, #141414 100%)', // Modern Farmhouse – linen
-  'linear-gradient(145deg, #0c1a22 0%, #123040 60%, #141414 100%)', // Coastal – deep teal
-  'linear-gradient(145deg, #1a0f22 0%, #32183e 60%, #141414 100%)', // Eclectic – violet
-  'linear-gradient(145deg, #161510 0%, #2c2810 60%, #141414 100%)', // Modern Luxury – dark gold
-  'linear-gradient(145deg, #1e1710 0%, #362c18 60%, #141414 100%)', // Mid-Century – amber
-  'linear-gradient(145deg, #161618 0%, #282830 60%, #141414 100%)', // Transitional – neutral
-]
 
 const PRESET_ICONS: LucideIcon[] = [
   Building2,      // Urban Industrial
