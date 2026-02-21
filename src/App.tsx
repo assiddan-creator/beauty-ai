@@ -50,6 +50,19 @@ const PRESET_ICONS: LucideIcon[] = [
   ArrowLeftRight, // Transitional
 ]
 
+// Unsplash thumbnail images — null falls back to icon-only card
+const PRESET_IMAGES: Record<string, string | null> = {
+  'Urban Industrial':       'https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=300&q=80',
+  'Scandinavian Minimalist':'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=300&q=80',
+  'Boho-Chic':               null,
+  'Modern Farmhouse':       'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80',
+  'Coastal Mediterranean':  'https://images.unsplash.com/photo-1533779283484-8ad4940aa3a8?auto=format&fit=crop&w=300&q=80',
+  'Eclectic Airbnb':         null,
+  'Modern Luxury':           null,
+  'Mid-Century Modern':      null,
+  'Transitional':            null,
+}
+
 // Cinematic prompt formulas — injected verbatim into the Replicate prompt per preset
 const PRESET_FORMULAS: Record<string, string> = {
   'Urban Industrial':
@@ -329,24 +342,27 @@ function App() {
 
       {/* ── Atmospheric background blobs ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="animate-blob-a absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-coral/10 blur-[80px]" />
-        <div className="animate-blob-b absolute -left-40 top-1/3 h-[420px] w-[420px] rounded-full bg-purple-600/8 blur-[90px]" />
-        <div className="animate-blob-c absolute bottom-24 right-1/4 h-[360px] w-[360px] rounded-full bg-orange-500/7 blur-[70px]" />
+        <div className="animate-blob-a absolute -right-32 -top-32 h-[560px] w-[560px] rounded-full bg-coral/20 blur-[100px]" />
+        <div className="animate-blob-b absolute -left-40 top-1/3 h-[480px] w-[480px] rounded-full bg-purple-600/20 blur-[110px]" />
+        <div className="animate-blob-c absolute bottom-24 right-1/4 h-[420px] w-[420px] rounded-full bg-orange-400/20 blur-[90px]" />
       </div>
 
       {/* ── Header ── */}
-      <header className="glass-dark sticky top-0 z-40 border-b border-white/5">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-white/5 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-coral text-white shadow-coral-glow">
-              <Sparkles className="h-5 w-5" />
+          <div className="flex items-center gap-3.5">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-white"
+              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.5)' }}
+            >
+              <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-bold leading-none tracking-tight text-white">
+              <p className="text-base font-extrabold leading-none tracking-tight text-white">
                 Magic Snap Booth
               </p>
-              <p className="mt-0.5 text-[11px] leading-none text-gray-500">
+              <p className="mt-1 text-[11px] leading-none text-gray-500">
                 Real Estate AI
               </p>
             </div>
@@ -357,7 +373,10 @@ function App() {
               <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
               <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
             </div>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-coral to-orange-400 text-sm font-bold text-white shadow-coral-sm">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-sm font-extrabold text-white"
+              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
+            >
               A
             </div>
           </div>
@@ -404,7 +423,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Card background */}
-              <div className="glass rounded-3xl px-8 py-14 transition-all duration-300 group-hover:bg-white/10">
+              <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-14 backdrop-blur-xl transition-all duration-300 group-hover:bg-white/10">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/15 blur-3xl" />
@@ -426,7 +445,10 @@ function App() {
                   </div>
 
                   {/* CTA chip */}
-                  <div className="flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-coral-glow transition-all duration-200 group-hover:scale-105">
+                  <div
+                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 group-hover:scale-105"
+                    style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
+                  >
                     <Sparkles className="h-4 w-4" />
                     Stage My Room
                   </div>
@@ -441,7 +463,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="glass flex items-center justify-between rounded-t-2xl px-5 py-3.5">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-xl">
               <button
                 type="button"
                 onClick={handleClear}
@@ -454,7 +476,8 @@ function App() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-2 rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white shadow-coral-sm transition-all hover:bg-coral/90 active:scale-95 focus:outline-none"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
+                  style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
                 >
                   <Download className="h-4 w-4" />
                   Download Result
@@ -463,7 +486,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="glass flex flex-col rounded-b-2xl border-t-0">
+            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-xl">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -575,7 +598,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="glass flex w-full items-center justify-center gap-3 rounded-2xl py-4 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-4 text-sm font-semibold text-coral backdrop-blur-xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -599,14 +622,14 @@ function App() {
                       key={room}
                       type="button"
                       onClick={() => setSelectedRoomType(isActive ? null : room)}
-                      className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none ${
+                      className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none ${
                         isActive
-                          ? 'bg-coral text-white'
-                          : 'bg-card text-gray-400 hover:bg-white/10 hover:text-gray-200'
+                          ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
+                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-xl hover:bg-white/10 hover:text-gray-200'
                       }`}
                       style={
                         isActive
-                          ? { boxShadow: '0 0 14px rgba(255,107,71,0.35)' }
+                          ? { boxShadow: '0 0 20px rgba(255,107,71,0.4)' }
                           : undefined
                       }
                     >
@@ -629,44 +652,59 @@ function App() {
                 {STYLE_PRESETS.map((style, i) => {
                   const PresetIcon = PRESET_ICONS[i]
                   const isSelected = selectedPreset === style
+                  const imgUrl = PRESET_IMAGES[style]
                   return (
                     <button
                       key={style}
                       type="button"
                       onClick={() => setSelectedPreset(style)}
-                      className={`group relative flex min-h-[88px] flex-col gap-2 overflow-hidden rounded-2xl p-3.5 text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
-                        isSelected
-                          ? 'border border-coral/50'
-                          : 'border border-white/8 hover:border-white/15'
+                      className={`group relative flex min-h-[110px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                        isSelected ? 'border-2 border-coral/70' : 'border border-white/10'
                       }`}
                       style={{
-                        background: isSelected
-                          ? 'rgba(255,107,71,0.12)'
-                          : 'rgba(44,44,46,0.6)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
                         boxShadow: isSelected
-                          ? '0 0 0 1px rgba(255,107,71,0.25), 0 8px 24px rgba(255,107,71,0.12)'
-                          : '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
+                          ? '0 0 20px rgba(255,107,71,0.4)'
+                          : '0 4px 16px rgba(0,0,0,0.35)',
                       }}
                     >
-                      {/* Icon chip */}
-                      <div className={`flex h-7 w-7 items-center justify-center rounded-xl transition-colors duration-200 ${
-                        isSelected ? 'bg-coral/20' : 'bg-white/8 group-hover:bg-white/12'
-                      }`}>
-                        <PresetIcon
-                          className={`h-3.5 w-3.5 transition-colors duration-200 ${
-                            isSelected ? 'text-coral' : 'text-gray-400 group-hover:text-gray-200'
-                          }`}
+                      {/* Background: photo or glass */}
+                      {imgUrl ? (
+                        <img
+                          src={imgUrl}
+                          alt={style}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: 'rgba(44,44,46,0.85)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)',
+                          }}
+                        />
+                      )}
+
+                      {/* Gradient overlay — always present */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                      {/* Selected coral tint */}
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-coral/15" />
+                      )}
+
+                      {/* Content pinned to bottom */}
+                      <div className="relative z-10 mt-auto flex items-end justify-between p-3">
+                        <span className="text-xs font-bold leading-tight text-white drop-shadow-sm">
+                          {style}
+                        </span>
+                        {/* Icon badge */}
+                        <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 ${
+                          isSelected ? 'bg-coral' : 'bg-white/20 backdrop-blur-sm group-hover:bg-white/30'
+                        }`}>
+                          <PresetIcon className="h-3 w-3 text-white" />
+                        </div>
                       </div>
-                      <span
-                        className={`text-xs font-semibold leading-tight transition-colors duration-200 ${
-                          isSelected ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                        }`}
-                      >
-                        {style}
-                      </span>
                     </button>
                   )
                 })}
@@ -684,12 +722,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/8 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
-                style={{
-                  background: 'rgba(44,44,46,0.6)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                }}
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-xl transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
               />
             </section>
 
@@ -714,17 +747,14 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id
-                          ? 'border-coral/50'
-                          : 'border-white/8 hover:border-white/15'
+                          ? 'border-coral/60'
+                          : 'border-white/10 hover:border-white/20'
                       }`}
                       style={{
-                        background: 'rgba(44,44,46,0.7)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
                         boxShadow: activeHistoryId === entry.id
-                          ? '0 0 18px rgba(255,107,71,0.2)'
+                          ? '0 0 20px rgba(255,107,71,0.4)'
                           : '0 4px 16px rgba(0,0,0,0.3)',
                       }}
                     >
@@ -814,7 +844,7 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="glass-dark fixed bottom-0 left-0 right-0 z-50 border-t border-white/5">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-white/5 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
@@ -837,8 +867,8 @@ function App() {
               type="button"
               onClick={handleApplyEdit}
               disabled={isGenerating || !originalImage}
-              className="group flex min-w-[220px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-coral to-orange-400 px-8 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ boxShadow: '0 4px 24px rgba(255,107,71,0.45)' }}
+              className="group flex min-w-[220px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-8 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
             >
               {isGenerating ? (
                 <>
