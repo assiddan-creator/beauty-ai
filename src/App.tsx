@@ -343,15 +343,19 @@ function App() {
       const activeStyle = STYLES.find(s => s.name === presetName) ?? STYLES[0]
       const roomLabel   = selectedRoomType ?? 'room'
 
-      // nano-banana-pro (Gemini 3 Pro) responds to explicit EDIT instructions,
-      // not to scene descriptions. Frame it as an image-editing command first,
-      // then layer in the cinematic style formula and constraints.
+      // If a room type is selected, splice it cleanly into the style prompt so
+      // "Virtual staging, living room. ..." becomes "Virtual staging, Bedroom. ..."
+      const styledPrompt = selectedRoomType
+        ? activeStyle.prompt.replace(/^(Virtual staging)[^.]*\./, `$1, ${selectedRoomType}.`)
+        : activeStyle.prompt
+
+      // nano-banana-pro (Gemini 3 Pro) responds to explicit EDIT instructions.
       const prompt = [
-        // ① Clear edit command — tells the model this is a transformation task
+        // ① Clear edit command
         `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
-        // ② Cinematic style formula from the preset
-        activeStyle.prompt,
-        // ③ What the model IS and IS NOT allowed to change
+        // ② Cinematic style formula with room type already spliced in
+        styledPrompt,
+        // ③ Structural preservation constraint
         'Keep all walls, floors, ceiling, windows, and doors exactly as they appear in the input photo — do NOT repaint, retile, or alter any structural surface.',
         'Only ADD: furniture, rugs, curtains, wall art, lighting fixtures, plants, and decorative accessories.',
         // ④ User note (optional)
@@ -380,6 +384,54 @@ function App() {
       setActiveHistoryId(entry.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Virtual staging failed.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  // ── Pro Touch-Up ────────────────────────────────────────────────────────────
+  const handleProTouchUp = async () => {
+    if (!originalImage) return
+
+    const token = import.meta.env.VITE_REPLICATE_API_TOKEN
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+      setError('Replicate API token not found. Add VITE_REPLICATE_API_TOKEN to your .env file.')
+      return
+    }
+
+    setError(null)
+    setIsGenerating(true)
+
+    try {
+      const prompt =
+        'Edit this photo: enhance the visual quality for professional real estate photography. ' +
+        'Perfect lighting, clean up space, improve contrast and colors. ' +
+        'Movie Look: Architectural Digest. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. ' +
+        'Elements: Preserve structural integrity and existing furniture completely, highly detailed, photorealistic, just enhance visual quality.'
+
+      console.log('[handleProTouchUp] Enhancement prompt:', prompt)
+
+      const imageDataUrl = await blobUrlToDataUrl(originalImage)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
+
+      setGeneratedImage(outputUrl)
+      setSliderPosition(50)
+
+      const entry: HistoryEntry = {
+        id: crypto.randomUUID(),
+        originalUrl: originalImage,
+        generatedUrl: outputUrl,
+        styleName: 'Pro Touch-Up',
+        timestamp: Date.now(),
+      }
+      setHistory((prev) => {
+        const updated = [entry, ...prev].slice(0, MAX_HISTORY)
+        saveHistoryToStorage(updated)
+        return updated
+      })
+      setActiveHistoryId(entry.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Enhancement failed.')
     } finally {
       setIsGenerating(false)
     }
@@ -686,54 +738,8 @@ function App() {
               </p>
             </div>
 
-            {/* Pro Touch-Up */}
+            {/* ── Style Presets carousel (now first, enlarged) ── */}
             <section className="mt-5">
-              <button
-                type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-5 text-sm font-semibold text-coral backdrop-blur-3xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
-              >
-                <Sparkles className="h-4 w-4" />
-                Pro Touch-Up (Enhance Only)
-              </button>
-            </section>
-
-            {/* Room Type */}
-            <section className="mt-7">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-white">Room Type</h2>
-                <span className="text-xs font-medium text-coral">Select One</span>
-              </div>
-              <div
-                className="flex gap-2 overflow-x-auto pb-1"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {ROOM_TYPES.map((room) => {
-                  const isActive = selectedRoomType === room
-                  return (
-                    <button
-                      key={room}
-                      type="button"
-                      onClick={() => setSelectedRoomType(isActive ? null : room)}
-                      className={`shrink-0 min-h-[44px] rounded-full border px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none ${
-                        isActive
-                          ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
-                      }`}
-                      style={
-                        isActive
-                          ? { boxShadow: '0 0 20px rgba(255,107,71,0.4)' }
-                          : undefined
-                      }
-                    >
-                      {room}
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* Style Presets */}
-            <section className="mt-7">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-bold text-white">Popular Styles</h2>
                 <span className="text-xs font-medium text-gray-500">
@@ -750,7 +756,7 @@ function App() {
                       key={style.id}
                       type="button"
                       onClick={() => setSelectedPreset(style.name)}
-                      className={`group relative flex shrink-0 w-40 md:w-48 min-h-[130px] snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                      className={`group relative flex shrink-0 w-56 md:w-64 h-36 md:h-44 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                         isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                       }`}
                       style={{
@@ -774,7 +780,7 @@ function App() {
                         />
                       )}
 
-                      {/* Gradient scrim so text is always readable */}
+                      {/* Gradient scrim */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
                       {/* Selected coral wash */}
@@ -802,6 +808,66 @@ function App() {
                   )
                 })}
               </div>
+            </section>
+
+            {/* ── Room Type ── */}
+            <section className="mt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-white">Room Type</h2>
+                <span className="text-xs font-medium text-coral">Optional</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {ROOM_TYPES.map((room) => {
+                  const isActive = selectedRoomType === room
+                  return (
+                    <button
+                      key={room}
+                      type="button"
+                      onClick={() => setSelectedRoomType(isActive ? null : room)}
+                      className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
+                        isActive
+                          ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
+                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
+                      }`}
+                      style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
+                    >
+                      {room}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* ── Pro Touch-Up (premium redesign) ── */}
+            <section className="mt-5">
+              <button
+                type="button"
+                onClick={handleProTouchUp}
+                disabled={isGenerating}
+                className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
+              >
+                {/* Radial glow that appears on hover */}
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
+                />
+                {/* Icon */}
+                <div
+                  className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40"
+                  style={{ boxShadow: '0 0 0 0 rgba(255,107,71,0)' }}
+                >
+                  <Sparkles className="h-4 w-4 text-coral" />
+                </div>
+                {/* Text */}
+                <div className="relative">
+                  <p className="text-sm font-semibold text-white">Pro Touch-Up</p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">Enhance lighting & colors — no furniture changes</p>
+                </div>
+                {/* Arrow hint */}
+                <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
+                  <Send className="h-4 w-4" />
+                </div>
+              </button>
             </section>
 
             {/* Custom Instructions */}
