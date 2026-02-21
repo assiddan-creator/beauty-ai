@@ -740,7 +740,7 @@ function App() {
                   {selectedPreset ?? 'None selected'}
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {STYLES.map((style) => {
                   const PresetIcon = style.icon
                   const isSelected = selectedPreset === style.name
@@ -750,7 +750,7 @@ function App() {
                       key={style.id}
                       type="button"
                       onClick={() => setSelectedPreset(style.name)}
-                      className={`group relative flex min-h-[130px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                      className={`group relative flex shrink-0 w-40 md:w-48 min-h-[130px] snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                         isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                       }`}
                       style={{
