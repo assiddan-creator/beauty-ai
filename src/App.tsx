@@ -131,54 +131,114 @@ async function blobUrlToDataUrl(blobUrl: string): Promise<string> {
   return `data:${mimeType};base64,${data}`
 }
 
+// Shape returned by every Replicate prediction endpoint call
+type ReplicatePrediction = {
+  id: string
+  status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled' | string
+  output?: string | string[]
+  error?: string
+  urls?: { get?: string }
+}
+
 async function runReplicatePrediction(
   prompt: string,
   imageDataUrl: string,
 ): Promise<string> {
-  const res = await fetch('/api/replicate/v1/predictions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Token ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
-      'Content-Type': 'application/json',
-      // Ask the API to wait up to 60 s and return the result synchronously
-      Prefer: 'wait=60',
+  const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string
+
+  const payload = {
+    version: NANO_BANANA_PRO_VERSION,
+    input: {
+      prompt,
+      image_input: [imageDataUrl],
+      aspect_ratio: 'match_input_image',
+      resolution: '2K',
+      output_format: 'jpg',
+      allow_fallback_model: true,
     },
-    body: JSON.stringify({
-      version: NANO_BANANA_PRO_VERSION,
-      input: {
-        prompt,
-        // Pass the uploaded room photo as the base image for editing
-        image_input: [imageDataUrl],
-        // Preserve the original room's proportions exactly
-        aspect_ratio: 'match_input_image',
-        // Premium 2 K output for sharp architectural detail
-        resolution: '2K',
-        output_format: 'jpg',
-        // Allow fallback to seedream-4.5 if the model is at capacity
-        allow_fallback_model: true,
-      },
-    }),
+  }
+
+  // ── 1. Submit prediction ─────────────────────────────────────────────────
+  console.log('[Replicate] Submitting prediction', {
+    version: NANO_BANANA_PRO_VERSION,
+    promptLength: prompt.length,
+    prompt,
+    imagePrefixOk: imageDataUrl.startsWith('data:image/'),
+    imageSizeKB: Math.round(imageDataUrl.length * 0.75 / 1024),
   })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { detail?: string })?.detail ?? `Request failed: ${res.status}`)
-  }
+  const submitRes = await fetch('/api/replicate/v1/predictions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Token ${token}`,
+      'Content-Type': 'application/json',
+      // Ask the API to block and return the result if it finishes within 60 s
+      Prefer: 'wait=60',
+    },
+    body: JSON.stringify(payload),
+  })
 
-  const prediction = (await res.json()) as {
-    status: string
-    output?: string
-    urls?: { get?: string }
-  }
-
-  if (prediction.status !== 'succeeded') {
+  if (!submitRes.ok) {
+    const errBody = await submitRes.json().catch(() => ({}))
     throw new Error(
-      prediction.status === 'failed' ? 'Generation failed' : `Unexpected status: ${prediction.status}`
+      (errBody as { detail?: string })?.detail ?? `Submit failed: ${submitRes.status}`
     )
   }
 
-  const url = prediction.output ?? prediction.urls?.get
-  if (!url || typeof url !== 'string') throw new Error('No output URL in response')
+  let prediction: ReplicatePrediction = await submitRes.json()
+
+  console.log('[Replicate] Initial response', {
+    id: prediction.id,
+    status: prediction.status,
+    output: prediction.output,
+    error: prediction.error,
+  })
+
+  // ── 2. Poll until done if the wait window expired ────────────────────────
+  // The Prefer: wait=60 header makes Replicate block for up to 60 s, but
+  // nano-banana-pro at 2 K can take longer. If it's still running we poll.
+  while (prediction.status === 'starting' || prediction.status === 'processing') {
+    console.log(`[Replicate] Polling — current status: ${prediction.status}`)
+
+    await new Promise<void>(r => setTimeout(r, 3000))
+
+    // Route poll through the same /api/replicate proxy to avoid CORS
+    const pollPath = prediction.urls?.get?.replace('https://api.replicate.com', '/api/replicate')
+    if (!pollPath) throw new Error('No polling URL returned by Replicate')
+
+    const pollRes = await fetch(pollPath, {
+      headers: { Authorization: `Token ${token}` },
+    })
+    if (!pollRes.ok) throw new Error(`Poll failed: ${pollRes.status}`)
+
+    prediction = await pollRes.json()
+    console.log('[Replicate] Poll result', {
+      status: prediction.status,
+      output: prediction.output,
+      error: prediction.error,
+    })
+  }
+
+  // ── 3. Handle terminal states ────────────────────────────────────────────
+  if (prediction.status === 'failed' || prediction.status === 'canceled') {
+    throw new Error(prediction.error ?? `Prediction ${prediction.status}`)
+  }
+  if (prediction.status !== 'succeeded') {
+    throw new Error(`Unexpected status: ${prediction.status}`)
+  }
+
+  // ── 4. Extract output URL ────────────────────────────────────────────────
+  // nano-banana-pro returns a plain string, but guard against array output
+  // from fallback models (seedream-4.5 returns string[] in some versions).
+  const rawOutput = prediction.output
+  const url = Array.isArray(rawOutput) ? rawOutput[0] : rawOutput
+
+  console.log('[Replicate] ✅ Final output URL:', url)
+
+  if (typeof url !== 'string' || url.trim() === '') {
+    throw new Error(`No valid output URL received. Raw output: ${JSON.stringify(rawOutput)}`)
+  }
+
   return url
 }
 
@@ -281,16 +341,24 @@ function App() {
       const presetName  = selectedPreset ?? STYLES[0].name
       const customNote  = customInstructions.trim()
       const activeStyle = STYLES.find(s => s.name === presetName) ?? STYLES[0]
+      const roomLabel   = selectedRoomType ?? 'room'
+
+      // nano-banana-pro (Gemini 3 Pro) responds to explicit EDIT instructions,
+      // not to scene descriptions. Frame it as an image-editing command first,
+      // then layer in the cinematic style formula and constraints.
       const prompt = [
-        // Each style carries its own cinematic formula as the primary instruction
+        // ① Clear edit command — tells the model this is a transformation task
+        `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
+        // ② Cinematic style formula from the preset
         activeStyle.prompt,
-        // Room type refines the scene when the user has made a selection
-        selectedRoomType ? `Room type: ${selectedRoomType}.` : null,
-        // Hard preservation constraint — ensure architecture is never touched
-        'CRITICAL: Preserve the exact original walls, floors, windows, ceiling, and room geometry. Do not alter any structural element.',
-        // Custom user note (optional)
-        customNote || null,
+        // ③ What the model IS and IS NOT allowed to change
+        'Keep all walls, floors, ceiling, windows, and doors exactly as they appear in the input photo — do NOT repaint, retile, or alter any structural surface.',
+        'Only ADD: furniture, rugs, curtains, wall art, lighting fixtures, plants, and decorative accessories.',
+        // ④ User note (optional)
+        customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
+
+      console.log('[handleApplyEdit] Final prompt:', prompt)
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
