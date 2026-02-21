@@ -50,17 +50,17 @@ const PRESET_ICONS: LucideIcon[] = [
   ArrowLeftRight, // Transitional
 ]
 
-// Unsplash thumbnail images — null falls back to icon-only card
-const PRESET_IMAGES: Record<string, string | null> = {
-  'Urban Industrial':       'https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=300&q=80',
-  'Scandinavian Minimalist':'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=300&q=80',
-  'Boho-Chic':               null,
-  'Modern Farmhouse':       'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80',
-  'Coastal Mediterranean':  'https://images.unsplash.com/photo-1533779283484-8ad4940aa3a8?auto=format&fit=crop&w=300&q=80',
-  'Eclectic Airbnb':         null,
-  'Modern Luxury':           null,
-  'Mid-Century Modern':      null,
-  'Transitional':            null,
+// Unsplash thumbnail images — every preset has a photo
+const PRESET_IMAGES: Record<string, string> = {
+  'Urban Industrial':        'https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=400&q=80',
+  'Scandinavian Minimalist': 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=400&q=80',
+  'Boho-Chic':               'https://images.unsplash.com/photo-1522444195799-478538b28a23?auto=format&fit=crop&w=400&q=80',
+  'Modern Farmhouse':        'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+  'Coastal Mediterranean':   'https://images.unsplash.com/photo-1533779283484-8ad4940aa3a8?auto=format&fit=crop&w=400&q=80',
+  'Eclectic Airbnb':         'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=400&q=80',
+  'Modern Luxury':           'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=400&q=80',
+  'Mid-Century Modern':      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=400&q=80',
+  'Transitional':            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=400&q=80',
 }
 
 // Cinematic prompt formulas — injected verbatim into the Replicate prompt per preset
@@ -342,40 +342,40 @@ function App() {
 
       {/* ── Atmospheric background blobs ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="animate-blob-a absolute -right-32 -top-32 h-[560px] w-[560px] rounded-full bg-coral/20 blur-[100px]" />
-        <div className="animate-blob-b absolute -left-40 top-1/3 h-[480px] w-[480px] rounded-full bg-purple-600/20 blur-[110px]" />
-        <div className="animate-blob-c absolute bottom-24 right-1/4 h-[420px] w-[420px] rounded-full bg-orange-400/20 blur-[90px]" />
+        <div className="animate-blob-a absolute -right-24 -top-24 h-[640px] w-[640px] rounded-full bg-coral/25 blur-[120px]" />
+        <div className="animate-blob-b absolute -left-32 top-1/4 h-[560px] w-[560px] rounded-full bg-purple-700/25 blur-[130px]" />
+        <div className="animate-blob-c absolute bottom-16 left-1/3 h-[500px] w-[500px] rounded-full bg-orange-500/20 blur-[110px]" />
       </div>
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-white/5 backdrop-blur-2xl">
+        <div className="mx-auto flex h-18 max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           {/* Logo */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-4">
             <div
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-white"
-              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.5)' }}
+              className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] p-3 text-white"
+              style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
             >
               <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-base font-extrabold leading-none tracking-tight text-white">
+              <p className="text-lg font-extrabold leading-none tracking-tight text-white">
                 Magic Snap Booth
               </p>
-              <p className="mt-1 text-[11px] leading-none text-gray-500">
-                Real Estate AI
+              <p className="mt-1 text-xs leading-none text-gray-500">
+                Real Estate AI · Virtual Staging
               </p>
             </div>
           </div>
           {/* User section */}
           <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
+            <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
               <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
             </div>
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-sm font-extrabold text-white"
-              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-base font-extrabold text-white"
+              style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
             >
               A
             </div>
@@ -423,7 +423,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Card background */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-14 backdrop-blur-xl transition-all duration-300 group-hover:bg-white/10">
+              <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-14 backdrop-blur-2xl transition-all duration-300 group-hover:bg-white/[0.08]">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/15 blur-3xl" />
@@ -463,7 +463,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-xl">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-2xl">
               <button
                 type="button"
                 onClick={handleClear}
@@ -486,7 +486,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-xl">
+            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-2xl">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -598,7 +598,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-4 text-sm font-semibold text-coral backdrop-blur-xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-4 text-sm font-semibold text-coral backdrop-blur-2xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -658,50 +658,43 @@ function App() {
                       key={style}
                       type="button"
                       onClick={() => setSelectedPreset(style)}
-                      className={`group relative flex min-h-[110px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
-                        isSelected ? 'border-2 border-coral/70' : 'border border-white/10'
+                      className={`group relative flex min-h-[120px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                        isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                       }`}
                       style={{
                         boxShadow: isSelected
-                          ? '0 0 20px rgba(255,107,71,0.4)'
-                          : '0 4px 16px rgba(0,0,0,0.35)',
+                          ? '0 0 25px rgba(255,107,71,0.5)'
+                          : '0 4px 20px rgba(0,0,0,0.4)',
                       }}
                     >
-                      {/* Background: photo or glass */}
-                      {imgUrl ? (
-                        <img
-                          src={imgUrl}
-                          alt={style}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      ) : (
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            background: 'rgba(44,44,46,0.85)',
-                            backdropFilter: 'blur(12px)',
-                            WebkitBackdropFilter: 'blur(12px)',
-                          }}
-                        />
-                      )}
+                      {/* Full-bleed photo */}
+                      <img
+                        src={imgUrl}
+                        alt={style}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
 
-                      {/* Gradient overlay — always present */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      {/* Gradient scrim so text is always readable */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-                      {/* Selected coral tint */}
+                      {/* Selected coral wash */}
                       {isSelected && (
-                        <div className="absolute inset-0 bg-coral/15" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-coral/30 via-transparent to-transparent" />
                       )}
 
                       {/* Content pinned to bottom */}
                       <div className="relative z-10 mt-auto flex items-end justify-between p-3">
-                        <span className="text-xs font-bold leading-tight text-white drop-shadow-sm">
+                        <span className="max-w-[80%] text-xs font-bold leading-tight text-white drop-shadow">
                           {style}
                         </span>
-                        {/* Icon badge */}
-                        <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 ${
-                          isSelected ? 'bg-coral' : 'bg-white/20 backdrop-blur-sm group-hover:bg-white/30'
-                        }`}>
+                        <div
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E]'
+                              : 'bg-white/20 group-hover:bg-white/35'
+                          }`}
+                          style={isSelected ? { boxShadow: '0 0 10px rgba(255,107,71,0.6)' } : undefined}
+                        >
                           <PresetIcon className="h-3 w-3 text-white" />
                         </div>
                       </div>
@@ -722,7 +715,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-xl transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-2xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -747,15 +740,15 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-2xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id
-                          ? 'border-coral/60'
-                          : 'border-white/10 hover:border-white/20'
+                          ? 'border-coral/70'
+                          : 'border-white/10 hover:border-white/25'
                       }`}
                       style={{
                         boxShadow: activeHistoryId === entry.id
-                          ? '0 0 20px rgba(255,107,71,0.4)'
-                          : '0 4px 16px rgba(0,0,0,0.3)',
+                          ? '0 0 25px rgba(255,107,71,0.5)'
+                          : '0 4px 20px rgba(0,0,0,0.35)',
                       }}
                     >
                       <div className="relative h-28 overflow-hidden">
@@ -844,7 +837,7 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-white/5 backdrop-blur-xl">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-white/5 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
