@@ -73,7 +73,9 @@ const PRESET_FORMULAS: Record<string, string> = {
 }
 
 const NEGATIVE_PROMPT =
-  'text, watermark, blurry, distorted geometry, unrealistic, cartoon, bad proportions, cluttered, messy, melting furniture, missing walls'
+  'text, watermark, blurry, distorted geometry, unrealistic, cartoon, bad proportions, cluttered, messy, melting furniture, missing walls, ' +
+  'repainted walls, recolored walls, different wall color, painted floor, replaced flooring, new flooring, tile change, carpet replacement, ' +
+  'changed wall texture, resurfaced walls, altered architecture'
 
 const ROOM_TYPES = [
   'Living Room',
@@ -252,8 +254,19 @@ function App() {
       const customNote = customInstructions.trim()
       const formula = PRESET_FORMULAS[presetName] ?? `furnished in a ${presetName} style interior, photorealistic.`
       const prompt = [
-        `A high-resolution photograph of a ${roomType}.`,
+        `A high-resolution photograph of a virtually staged ${roomType}.`,
         formula,
+        // Surface preservation — absolute constraint
+        'CRITICAL: Preserve the exact original color, material, and texture of all walls and floors without any alteration.',
+        'Do NOT repaint walls, change wall color, re-tile floors, replace flooring, or resurface any architectural element.',
+        // Allowed decorative additions
+        'You MAY hang wall art, mirrors, framed prints, or clocks on the walls.',
+        'You MAY add curtains, drapes, or blinds over windows.',
+        'You MAY place area rugs on top of the existing floor.',
+        // Furniture logic
+        'Add or replace furniture, lighting, cushions, throws, plants, and decorative accessories that match the selected style.',
+        'Respect the room\'s original architecture, ceiling height, and window placement.',
+        // Custom user note (optional)
         customNote || null,
       ].filter(Boolean).join(' ')
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
