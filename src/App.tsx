@@ -393,12 +393,12 @@ function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-2xl px-4 pb-36 pt-6 sm:px-6">
+      <main className="relative z-10 mx-auto max-w-5xl px-4 pb-36 pt-6 sm:px-6">
 
         {/* ── Ultra-transparent Glass Content Panel ── */}
         <div
-          className="rounded-3xl border border-white/10 shadow-2xl backdrop-blur-3xl"
-          style={{ background: 'rgba(0,0,0,0.20)' }}
+          className="rounded-3xl border border-white/20 shadow-2xl backdrop-blur-3xl"
+          style={{ background: 'rgba(0,0,0,0.08)' }}
         >
           <div className="p-5 sm:p-6">
 
@@ -440,7 +440,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Upload card */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-12 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/[0.07]">
+              <div className="rounded-2xl border border-white/20 bg-white/[0.03] px-8 py-12 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/[0.07]">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
@@ -480,7 +480,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/[0.04] px-5 py-3.5 backdrop-blur-sm">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/20 bg-white/[0.03] px-5 py-3.5 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={handleClear}
@@ -502,15 +502,15 @@ function App() {
               )}
             </div>
 
-            {/* Image Viewer */}
-            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/[0.04] backdrop-blur-sm">
-              <div
-                className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
-                style={{ maxHeight: '55vh', minHeight: '260px' }}
-              >
+            {/* ── Hero Image Viewer ── */}
+            <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/20 bg-white/[0.03] backdrop-blur-sm">
+
+              {/* Canvas: always full-width, 60 vh tall — dominates the screen */}
+              <div className="relative w-full overflow-hidden" style={{ minHeight: '60vh' }}>
+
                 {/* Generating Overlay */}
                 {isGenerating && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 rounded-b-2xl bg-card/90 backdrop-blur-sm">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-md">
                     <div className="relative flex h-16 w-16 items-center justify-center">
                       <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
                       <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-coral/15">
@@ -518,9 +518,7 @@ function App() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold text-white">
-                        AI is staging your room
-                      </p>
+                      <p className="text-sm font-semibold text-white">AI is staging your room</p>
                       <p className="mt-1 text-xs text-gray-500">
                         {selectedPreset ?? 'Modern Luxury'} style · typically 30–60 sec
                       </p>
@@ -531,46 +529,46 @@ function App() {
                   </div>
                 )}
 
-                {/* Before/After Slider */}
+                {/* ── Before / After Slider ── */}
                 {generatedImage && originalImage && !isGenerating ? (
-                  <div className="relative inline-block overflow-hidden rounded-2xl">
+                  <div className="relative h-full w-full" style={{ minHeight: '60vh' }}>
+                    {/* Before layer — fills the full canvas */}
                     <img
                       src={originalImage}
                       alt="Before"
-                      className="block max-h-[55vh] w-auto object-contain"
-                      style={{ maxHeight: '55vh', objectFit: 'contain' }}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ minHeight: '60vh' }}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <img
-                        src={generatedImage}
-                        alt="After"
-                        className="max-h-[55vh] w-auto object-contain"
-                        style={{
-                          maxHeight: '55vh',
-                          objectFit: 'contain',
-                          clipPath: `inset(0 0 0 ${sliderPosition}%)`,
-                        }}
-                      />
-                    </div>
-                    {/* Divider */}
+                    {/* After layer — same size, clipped from the left */}
+                    <img
+                      src={generatedImage}
+                      alt="After"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{
+                        minHeight: '60vh',
+                        clipPath: `inset(0 0 0 ${sliderPosition}%)`,
+                      }}
+                    />
+                    {/* Divider line */}
                     <div
-                      className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-coral"
-                      style={{ left: `${sliderPosition}%`, boxShadow: '0 0 10px rgba(255,107,71,0.8)' }}
+                      className="pointer-events-none absolute inset-y-0 w-0.5 bg-coral"
+                      style={{ left: `${sliderPosition}%`, boxShadow: '0 0 12px rgba(255,107,71,0.9)' }}
                     />
                     {/* Handle */}
                     <div
-                      className="pointer-events-none absolute top-1/2 z-10 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-surface shadow-xl"
+                      className="pointer-events-none absolute top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-black/70 shadow-xl backdrop-blur-sm"
                       style={{ left: `${sliderPosition}%` }}
                     >
-                      <span className="select-none text-[9px] font-bold tracking-wider text-coral">⟷</span>
+                      <ArrowLeftRight className="h-4 w-4 text-coral" />
                     </div>
                     {/* Labels */}
-                    <span className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
+                    <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
                       Before
                     </span>
-                    <span className="pointer-events-none absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
+                    <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
                       After
                     </span>
+                    {/* Invisible range input — captures drag across the full canvas */}
                     <input
                       type="range"
                       min={0}
@@ -581,30 +579,31 @@ function App() {
                       aria-label="Compare before and after"
                     />
                   </div>
+
                 ) : generatedImage && !originalImage && !isGenerating ? (
-                  <div className="flex w-full items-center justify-center overflow-hidden rounded-2xl" style={{ maxHeight: '55vh' }}>
-                    <img
-                      src={generatedImage}
-                      alt="Generated result"
-                      className="max-h-[55vh] w-auto object-contain"
-                      style={{ maxHeight: '55vh', objectFit: 'contain' }}
-                    />
-                  </div>
+                  /* Generated result only (no original) */
+                  <img
+                    src={generatedImage}
+                    alt="Generated result"
+                    className="h-full w-full object-cover"
+                    style={{ minHeight: '60vh' }}
+                  />
+
                 ) : (
-                  <div className="flex w-full items-center justify-center overflow-hidden rounded-2xl" style={{ maxHeight: '55vh' }}>
-                    <img
-                      src={originalImage!}
-                      alt="Original room"
-                      className={`max-h-[55vh] w-auto object-contain transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
-                      style={{ maxHeight: '55vh', objectFit: 'contain' }}
-                    />
-                  </div>
+                  /* Original room (pre-generation) */
+                  <img
+                    src={originalImage!}
+                    alt="Original room"
+                    className={`h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
+                    style={{ minHeight: '60vh' }}
+                  />
                 )}
               </div>
 
-              <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-600">
+              {/* Caption bar below canvas */}
+              <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
                 {isGenerating
-                  ? 'Processing...'
+                  ? 'Processing…'
                   : generatedImage
                   ? 'Before ← Drag → After'
                   : 'Original Room'}
@@ -615,7 +614,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-5 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/[0.03] py-5 text-sm font-semibold text-coral backdrop-blur-sm transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -642,7 +641,7 @@ function App() {
                       className={`shrink-0 min-h-[44px] rounded-full border px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none ${
                         isActive
                           ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-xl hover:bg-white/10 hover:text-gray-200'
+                          : 'border-white/20 bg-white/[0.03] text-gray-400 backdrop-blur-sm hover:bg-white/[0.08] hover:text-gray-200'
                       }`}
                       style={
                         isActive
@@ -740,7 +739,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-sm transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                className="w-full resize-none rounded-2xl border border-white/20 bg-white/[0.03] px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-sm transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -765,7 +764,7 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/[0.04] backdrop-blur-sm transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/[0.03] backdrop-blur-sm transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
                       }`}
                       style={{
