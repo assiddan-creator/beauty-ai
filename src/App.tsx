@@ -359,7 +359,7 @@ function App() {
 
       {/* ── Header ── */}
       <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div
@@ -393,7 +393,7 @@ function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-5xl px-4 pb-36 pt-6 sm:px-6">
+      <main className="relative z-10 mx-auto max-w-3xl px-4 pb-36 pt-6 sm:px-8 md:px-12 md:pt-10">
 
         {/* ── Glass Content Panel ── */}
         <div className="rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl">
@@ -507,7 +507,7 @@ function App() {
                 width; max-h-[70vh] prevents it from ever overwhelming the controls
                 on tall viewports. Children use absolute inset-0 to fill exactly this box.
               */}
-              <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
+              <div className="relative w-full overflow-hidden aspect-video max-h-[52vh]">
 
                 {/* Generating Overlay */}
                 {isGenerating && (
@@ -874,7 +874,7 @@ function App() {
 
       {/* ── Fixed Bottom Bar ── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-        <div className="mx-auto flex max-w-2xl flex-col gap-2 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-3xl flex-col gap-2 px-4 py-4 sm:px-8">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
