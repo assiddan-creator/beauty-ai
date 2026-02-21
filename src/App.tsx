@@ -58,7 +58,7 @@ const STYLES: Array<{
   {
     id: 'quiet-luxury',
     name: 'Quiet Luxury Hotel',
-    image: '/Quiet-Luxury.jpg',
+    image: '/Quiet-Luxury-Hotel.jpg',
     icon: Crown,
     prompt: 'Virtual staging, boutique hotel suite. Warm minimalism, dark wood paneling, matte velvet sofa, ambient cove lighting. Movie Look: Succession. Camera: ARRI Alexa 65. Lens: Prime 85mm. Film: Cinestill 800T. Elements: Sophisticated, premium materials, untouched architecture.',
   },
