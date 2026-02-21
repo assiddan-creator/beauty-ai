@@ -25,42 +25,36 @@ import {
 const NANO_BANANA_VERSION =
   'f0a9d34b12ad1c1cd76269a844b218ff4e64e128ddaba93e15891f47368958a0'
 
+// Only the 7 presets that have local reference photos in /public
 const STYLE_PRESETS = [
   'Urban Industrial',
   'Scandinavian Minimalist',
   'Boho-Chic',
-  'Modern Farmhouse',
   'Coastal Mediterranean',
   'Eclectic Airbnb',
   'Modern Luxury',
-  'Mid-Century Modern',
   'Transitional',
 ] as const
-
 
 const PRESET_ICONS: LucideIcon[] = [
   Building2,      // Urban Industrial
   Snowflake,      // Scandinavian Minimalist
   Leaf,           // Boho-Chic
-  Home,           // Modern Farmhouse
   Waves,          // Coastal Mediterranean
   Palette,        // Eclectic Airbnb
   Crown,          // Modern Luxury
-  Layers,         // Mid-Century Modern
   ArrowLeftRight, // Transitional
 ]
 
-// Unsplash thumbnail images — every preset has a photo
+// Local high-quality reference photos served from /public
 const PRESET_IMAGES: Record<string, string> = {
-  'Urban Industrial':        'https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=400&q=80',
-  'Scandinavian Minimalist': 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=400&q=80',
-  'Boho-Chic':               'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=400&q=80',
-  'Modern Farmhouse':        'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
-  'Coastal Mediterranean':   'https://images.unsplash.com/photo-1533779283484-8ad4940aa3a8?auto=format&fit=crop&w=400&q=80',
-  'Eclectic Airbnb':         'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=400&q=80',
-  'Modern Luxury':           'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=400&q=80',
-  'Mid-Century Modern':      'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=400&q=80',
-  'Transitional':            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=400&q=80',
+  'Urban Industrial':        '/Urban-Industrial.jpg',
+  'Scandinavian Minimalist': '/Scandinavian-Minimalist.jpg',
+  'Boho-Chic':               '/Boho-Chic.jpg',
+  'Coastal Mediterranean':   '/Coastal-Mediterranean.jpg',
+  'Eclectic Airbnb':         '/Eclectic-Airbnb.jpg',
+  'Modern Luxury':           '/Modern-Luxury.jpg',
+  'Transitional':            '/Transitional.jpg',
 }
 
 // Cinematic prompt formulas — injected verbatim into the Replicate prompt per preset
@@ -340,20 +334,30 @@ function App() {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
+  // Derive active background image for the cinematic bg
+  const activeBgImage = selectedPreset ? PRESET_IMAGES[selectedPreset] : null
+
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-surface font-sans text-gray-100">
+    <div className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
 
-      {/* ── Atmospheric background blobs ── */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="animate-blob-a absolute -right-24 -top-24 h-[640px] w-[640px] rounded-full bg-coral/25 blur-[120px]" />
-        <div className="animate-blob-b absolute -left-32 top-1/4 h-[560px] w-[560px] rounded-full bg-purple-700/25 blur-[130px]" />
-        <div className="animate-blob-c absolute bottom-16 left-1/3 h-[500px] w-[500px] rounded-full bg-orange-500/20 blur-[110px]" />
-      </div>
+      {/* ── Cinematic dynamic background — key triggers CSS fadeIn on change ── */}
+      <div
+        key={selectedPreset ?? 'default'}
+        className="animate-bg-fade fixed inset-0 z-0 bg-cover bg-center"
+        style={{
+          backgroundImage: activeBgImage
+            ? `url(${activeBgImage})`
+            : 'linear-gradient(135deg, #1a1a1e 0%, #2a1e2e 50%, #1a1a1e 100%)',
+        }}
+        aria-hidden="true"
+      />
+      {/* Permanent dark scrim — keeps UI readable regardless of photo brightness */}
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" aria-hidden="true" />
 
       {/* ── Header ── */}
-      <header className="glass-panel sticky top-0 z-40 border-b border-white/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+      <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)' }}>
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div
@@ -387,7 +391,14 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-32 sm:px-6">
+      <main className="relative z-10 mx-auto max-w-2xl px-4 pb-36 pt-6 sm:px-6">
+
+        {/* ── Dark Glass Content Panel ── */}
+        <div
+          className="rounded-3xl border border-white/10 shadow-2xl backdrop-blur-2xl"
+          style={{ background: 'rgba(0,0,0,0.65)' }}
+        >
+          <div className="p-5 sm:p-6">
 
         {/* ── Upload Dropzone ── */}
         {!isUploaded && (
@@ -426,11 +437,11 @@ function App() {
               }}
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
-              {/* Card background */}
-              <div className="glass-panel rounded-3xl px-8 py-14 transition-all duration-300 hover:brightness-110">
+              {/* Upload card */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-12 transition-all duration-300 group-hover:bg-white/[0.08]">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
-                <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/15 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
 
                 <div className="relative flex flex-col items-center gap-5">
                   {/* Icon container */}
@@ -467,7 +478,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="glass-panel flex items-center justify-between rounded-t-2xl px-5 py-3.5">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5">
               <button
                 type="button"
                 onClick={handleClear}
@@ -490,7 +501,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="glass-panel flex flex-col rounded-b-2xl border-t-0" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(255,255,255,0.06)' }}>
+            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -602,7 +613,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="glass-panel-sm flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-5 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -727,7 +738,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="glass-panel-sm w-full resize-none rounded-2xl px-5 py-4 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -752,7 +763,7 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`glass-panel-sm group relative shrink-0 w-52 overflow-hidden rounded-2xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/5 transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
                       }`}
                       style={{
@@ -803,9 +814,9 @@ function App() {
           </div>
         )}
 
-        {/* History gallery on the upload screen */}
+        {/* History gallery on the upload screen (inside glass panel) */}
         {!isUploaded && history.length > 0 && (
-          <section className="mt-10">
+          <section className="mt-8">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-gray-500" />
@@ -822,7 +833,7 @@ function App() {
                   key={entry.id}
                   type="button"
                   onClick={() => handleLoadHistory(entry)}
-                  className="glass-panel-sm group relative shrink-0 w-52 overflow-hidden rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:border-coral/30 focus:outline-none"
+                  className="group relative shrink-0 w-52 overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all duration-200 hover:scale-[1.02] hover:border-coral/30 focus:outline-none"
                 >
                   <div className="relative h-36 overflow-hidden">
                     {brokenImgs.has(entry.id) ? (
@@ -860,11 +871,14 @@ function App() {
             </div>
           </section>
         )}
+
+          </div>{/* end .p-5 inner padding */}
+        </div>{/* end dark glass panel */}
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="glass-panel fixed bottom-0 left-0 right-0 z-50 border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+        <div className="mx-auto flex max-w-2xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />

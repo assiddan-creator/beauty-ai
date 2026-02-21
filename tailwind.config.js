@@ -29,12 +29,17 @@ export default {
         'blob-a': 'blob 9s ease-in-out infinite',
         'blob-b': 'blob 12s ease-in-out infinite 3s',
         'blob-c': 'blob 15s ease-in-out infinite 6s',
+        'bg-fade': 'bgFade 1.2s ease-in-out forwards',
       },
       keyframes: {
         blob: {
           '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
           '33%':       { transform: 'translate(20px, -20px) scale(1.05)' },
           '66%':       { transform: 'translate(-15px, 15px) scale(0.97)' },
+        },
+        bgFade: {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
     },
