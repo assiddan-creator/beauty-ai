@@ -332,24 +332,28 @@ function App() {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
-  // Derive active background image for the cinematic bg
-  const activeBgImage = selectedPreset ? PRESET_IMAGES[selectedPreset] : null
+  // Always show a background — fall back to the first preset on initial load
+  const activeBgImage = PRESET_IMAGES[selectedPreset ?? STYLE_PRESETS[0]]
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
 
-      {/* ── Cinematic dynamic background — key triggers CSS fadeIn on change ── */}
-      <div
-        key={selectedPreset ?? 'default'}
-        className="animate-bg-fade fixed inset-0 z-0 bg-cover bg-center"
-        style={{
-          backgroundImage: activeBgImage
-            ? `url(${activeBgImage})`
-            : 'linear-gradient(135deg, #1a1a1e 0%, #2a1e2e 50%, #1a1a1e 100%)',
-        }}
-        aria-hidden="true"
-      />
+      {/* ── Cinematic dynamic background ── */}
+      {/* Outer wrapper clips the Ken Burns overflow so edges never show */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {/* key forces remount → CSS fade-in fires on each preset change.
+            The div is 16% larger than the viewport on every side so the
+            Ken Burns scale/pan never reveals a white/black edge. */}
+        <div
+          key={selectedPreset ?? 'default'}
+          className="bg-cinematic absolute bg-cover bg-center"
+          style={{
+            inset: '-8%',
+            backgroundImage: `url(${activeBgImage})`,
+          }}
+        />
+      </div>
       {/* Permanent dark scrim — keeps UI readable regardless of photo brightness */}
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" aria-hidden="true" />
 

@@ -41,6 +41,13 @@ export default {
           '0%':   { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        kenBurns: {
+          '0%':   { transform: 'scale(1.0)  translate(0%,    0%)' },
+          '25%':  { transform: 'scale(1.06) translate(-1.2%, -0.8%)' },
+          '50%':  { transform: 'scale(1.1)  translate(1%,    0.6%)' },
+          '75%':  { transform: 'scale(1.05) translate(0.8%,  -1%)' },
+          '100%': { transform: 'scale(1.0)  translate(0%,    0%)' },
+        },
       },
     },
   },
