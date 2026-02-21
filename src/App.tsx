@@ -355,10 +355,10 @@ function App() {
         />
       </div>
       {/* Permanent dark scrim — keeps UI readable regardless of photo brightness */}
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" aria-hidden="true" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black/35" aria-hidden="true" />
 
       {/* ── Header ── */}
-      <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)' }}>
+      <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4 sm:px-6">
           {/* Logo */}
           <div className="flex items-center gap-4">
@@ -395,10 +395,10 @@ function App() {
 
       <main className="relative z-10 mx-auto max-w-2xl px-4 pb-36 pt-6 sm:px-6">
 
-        {/* ── Dark Glass Content Panel ── */}
+        {/* ── Ultra-transparent Glass Content Panel ── */}
         <div
-          className="rounded-3xl border border-white/10 shadow-2xl backdrop-blur-2xl"
-          style={{ background: 'rgba(0,0,0,0.65)' }}
+          className="rounded-3xl border border-white/10 shadow-2xl backdrop-blur-3xl"
+          style={{ background: 'rgba(0,0,0,0.20)' }}
         >
           <div className="p-5 sm:p-6">
 
@@ -440,7 +440,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Upload card */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-12 transition-all duration-300 group-hover:bg-white/[0.08]">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-12 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/[0.07]">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
@@ -480,7 +480,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/[0.04] px-5 py-3.5 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={handleClear}
@@ -503,7 +503,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5">
+            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/[0.04] backdrop-blur-sm">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -740,7 +740,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-sm transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -765,7 +765,7 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/5 transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/[0.04] backdrop-blur-sm transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
                       }`}
                       style={{
@@ -879,7 +879,7 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
         <div className="mx-auto flex max-w-2xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
