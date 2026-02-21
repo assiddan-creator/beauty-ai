@@ -395,11 +395,8 @@ function App() {
 
       <main className="relative z-10 mx-auto max-w-5xl px-4 pb-36 pt-6 sm:px-6">
 
-        {/* ── Ultra-transparent Glass Content Panel ── */}
-        <div
-          className="rounded-3xl border border-white/20 shadow-2xl backdrop-blur-3xl"
-          style={{ background: 'rgba(0,0,0,0.08)' }}
-        >
+        {/* ── Glass Content Panel ── */}
+        <div className="rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl">
           <div className="p-5 sm:p-6">
 
         {/* ── Upload Dropzone ── */}
@@ -440,7 +437,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Upload card */}
-              <div className="rounded-2xl border border-white/20 bg-white/[0.03] px-8 py-12 backdrop-blur-sm transition-all duration-300 group-hover:bg-white/[0.07]">
+              <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-3xl transition-all duration-300 group-hover:bg-white/[0.09]">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
@@ -480,7 +477,7 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/20 bg-white/[0.03] px-5 py-3.5 backdrop-blur-sm">
+            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-3xl">
               <button
                 type="button"
                 onClick={handleClear}
@@ -502,11 +499,15 @@ function App() {
               )}
             </div>
 
-            {/* ── Hero Image Viewer ── */}
-            <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/20 bg-white/[0.03] backdrop-blur-sm">
+            {/* ── Image Viewer ── */}
+            <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-3xl">
 
-              {/* Canvas: always full-width, 60 vh tall — dominates the screen */}
-              <div className="relative w-full overflow-hidden" style={{ minHeight: '60vh' }}>
+              {/*
+                Canvas: aspect-video (16:9) gives a natural cinematic shape at any
+                width; max-h-[70vh] prevents it from ever overwhelming the controls
+                on tall viewports. Children use absolute inset-0 to fill exactly this box.
+              */}
+              <div className="relative w-full overflow-hidden aspect-video max-h-[70vh]">
 
                 {/* Generating Overlay */}
                 {isGenerating && (
@@ -531,23 +532,19 @@ function App() {
 
                 {/* ── Before / After Slider ── */}
                 {generatedImage && originalImage && !isGenerating ? (
-                  <div className="relative h-full w-full" style={{ minHeight: '60vh' }}>
-                    {/* Before layer — fills the full canvas */}
+                  <>
+                    {/* Before layer */}
                     <img
                       src={originalImage}
                       alt="Before"
                       className="absolute inset-0 h-full w-full object-cover"
-                      style={{ minHeight: '60vh' }}
                     />
-                    {/* After layer — same size, clipped from the left */}
+                    {/* After layer — clipped from the left by the slider */}
                     <img
                       src={generatedImage}
                       alt="After"
                       className="absolute inset-0 h-full w-full object-cover"
-                      style={{
-                        minHeight: '60vh',
-                        clipPath: `inset(0 0 0 ${sliderPosition}%)`,
-                      }}
+                      style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                     />
                     {/* Divider line */}
                     <div
@@ -578,29 +575,27 @@ function App() {
                       className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
                       aria-label="Compare before and after"
                     />
-                  </div>
+                  </>
 
                 ) : generatedImage && !originalImage && !isGenerating ? (
                   /* Generated result only (no original) */
                   <img
                     src={generatedImage}
                     alt="Generated result"
-                    className="h-full w-full object-cover"
-                    style={{ minHeight: '60vh' }}
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
 
                 ) : (
-                  /* Original room (pre-generation) */
+                  /* Original room (pre-generation or while generating) */
                   <img
                     src={originalImage!}
                     alt="Original room"
-                    className={`h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
-                    style={{ minHeight: '60vh' }}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
                   />
                 )}
               </div>
 
-              {/* Caption bar below canvas */}
+              {/* Caption bar */}
               <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
                 {isGenerating
                   ? 'Processing…'
@@ -614,7 +609,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/20 bg-white/[0.03] py-5 text-sm font-semibold text-coral backdrop-blur-sm transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-5 text-sm font-semibold text-coral backdrop-blur-3xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -641,7 +636,7 @@ function App() {
                       className={`shrink-0 min-h-[44px] rounded-full border px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none ${
                         isActive
                           ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                          : 'border-white/20 bg-white/[0.03] text-gray-400 backdrop-blur-sm hover:bg-white/[0.08] hover:text-gray-200'
+                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
                       }`}
                       style={
                         isActive
@@ -739,7 +734,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/20 bg-white/[0.03] px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-sm transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-3xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -764,7 +759,7 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/[0.03] backdrop-blur-sm transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-3xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
                       }`}
                       style={{
