@@ -11,11 +11,9 @@ import {
   Building2,
   Snowflake,
   Leaf,
-  Home,
   Waves,
   Palette,
   Crown,
-  Layers,
   ArrowLeftRight,
   type LucideIcon,
 } from 'lucide-react'
