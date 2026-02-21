@@ -19,9 +19,10 @@ import {
 } from 'lucide-react'
 
 // ─── Replicate ──────────────────────────────────────────────────────────────
-// google/nano-banana – pinned version hash
-const NANO_BANANA_VERSION =
-  'f0a9d34b12ad1c1cd76269a844b218ff4e64e128ddaba93e15891f47368958a0'
+// google/nano-banana-pro — Google DeepMind / Gemini 3 Pro image editing model
+// Pinned to this version so deployments are deterministic.
+const NANO_BANANA_PRO_VERSION =
+  '99256cc418d9ac41854575e2f1c8846ce2defd0c0fb6ff2d5cbc3c826be75bc8'
 
 // Only the 7 presets that have local reference photos in /public
 const STYLE_PRESETS = [
@@ -77,10 +78,6 @@ const PRESET_FORMULAS: Record<string, string> = {
     'Elegant balance of traditional lines and modern comfort, neutral color palette with sophisticated metallic accents, plush fabrics. Soft diffused natural light, balanced exposure. 35mm lens, incredibly realistic, architectural photography.',
 }
 
-const NEGATIVE_PROMPT =
-  'text, watermark, blurry, distorted geometry, unrealistic, cartoon, bad proportions, cluttered, messy, melting furniture, missing walls, ' +
-  'repainted walls, recolored walls, different wall color, painted floor, replaced flooring, new flooring, tile change, carpet replacement, ' +
-  'changed wall texture, resurfaced walls, altered architecture'
 
 const ROOM_TYPES = [
   'Living Room',
@@ -123,20 +120,29 @@ async function blobUrlToDataUrl(blobUrl: string): Promise<string> {
 async function runReplicatePrediction(
   prompt: string,
   imageDataUrl: string,
-  negativePrompt: string = NEGATIVE_PROMPT
 ): Promise<string> {
-  console.log('Sending request with token length:', import.meta.env.VITE_REPLICATE_API_TOKEN?.length)
-
   const res = await fetch('/api/replicate/v1/predictions', {
     method: 'POST',
     headers: {
       Authorization: `Token ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
       'Content-Type': 'application/json',
+      // Ask the API to wait up to 60 s and return the result synchronously
       Prefer: 'wait=60',
     },
     body: JSON.stringify({
-      version: NANO_BANANA_VERSION,
-      input: { prompt, negative_prompt: negativePrompt, image_input: [imageDataUrl] },
+      version: NANO_BANANA_PRO_VERSION,
+      input: {
+        prompt,
+        // Pass the uploaded room photo as the base image for editing
+        image_input: [imageDataUrl],
+        // Preserve the original room's proportions exactly
+        aspect_ratio: 'match_input_image',
+        // Premium 2 K output for sharp architectural detail
+        resolution: '2K',
+        output_format: 'jpg',
+        // Allow fallback to seedream-4.5 if the model is at capacity
+        allow_fallback_model: true,
+      },
     }),
   })
 
