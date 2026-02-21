@@ -44,14 +44,14 @@ const STYLES: Array<{
   {
     id: 'modern-farmhouse',
     name: 'Modern Farmhouse',
-    image: '/modern-farmhouse-temp.jpg',
+    image: '/Modern-Farmhouse.jpg',
     icon: Leaf,
     prompt: 'Virtual staging, interior design. White shiplap walls, reclaimed natural wood accents, cozy oversized linen sofas. Movie Look: Little Women. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Warm inviting lighting, preserve structural integrity.',
   },
   {
     id: 'mid-century',
     name: 'Mid-Century Modern',
-    image: '/mid-century-temp.jpg',
+    image: '/Century-Modern.jpg',
     icon: Palette,
     prompt: 'Virtual staging. Mid-Century Modern furniture, dark walnut wood, retro leather lounge chair, geometric rug. Movie Look: Mad Men. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Cinematic shadows, preserve room layout perfectly.',
   },
@@ -65,7 +65,7 @@ const STYLES: Array<{
   {
     id: 'wabi-sabi',
     name: 'Wabi-Sabi Japandi',
-    image: '/Wabi-Sabi.jpg',
+    image: '/Wabi-Sabi-Japandi.jpg',
     icon: Snowflake,
     prompt: 'Virtual staging, minimalist zen retreat. Low wooden furniture, neutral beige palette, soft diffused lighting, perfectly imperfect textures. Movie Look: Dune (Interiors). Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Peaceful atmosphere, preserve original room.',
   },
@@ -86,7 +86,7 @@ const STYLES: Array<{
   {
     id: 'rustic-cabin',
     name: 'Biophilic Rustic',
-    image: '/Rustic-Cabin.jpg',
+    image: '/Biophilic-Rustic.jpg',
     icon: Leaf,
     prompt: 'Virtual staging, luxury rustic cabin. Raw natural wood edge coffee table, deep green velvet sofa, cozy woven throw blankets, earthy tones. Movie Look: The Revenant. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Deep depth of field, natural vibe, preserve layout.',
   },
