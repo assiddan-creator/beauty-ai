@@ -323,26 +323,34 @@ function App() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-matte text-gray-100 font-sans antialiased">
+    <div className="min-h-screen bg-surface font-sans text-gray-100">
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-matte/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-steel/20 text-steel">
-              <Sparkles className="h-4 w-4" />
+      <header className="sticky top-0 z-40 border-b border-white/5 bg-surface/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-coral text-white shadow-[0_0_16px_rgba(255,107,71,0.4)]">
+              <Sparkles className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold tracking-tight text-white">
-              Virtual Staging
-            </span>
+            <div>
+              <p className="text-sm font-bold leading-none tracking-tight text-white">
+                Magic Snap Booth
+              </p>
+              <p className="mt-0.5 text-[11px] leading-none text-gray-500">
+                Real Estate AI
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-medium uppercase tracking-widest text-gray-500">
-            Real Estate AI
-          </span>
+          {/* Welcome */}
+          <div className="text-right">
+            <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
+            <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 sm:px-6">
+      <main className="mx-auto max-w-6xl px-4 pb-32 sm:px-6">
 
         {/* ── Upload Dropzone ── */}
         {!isUploaded && (
@@ -378,15 +386,15 @@ function App() {
                   fileInputRef.current?.click()
                 }
               }}
-              className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/10 bg-charcoal/50 py-20 transition-all hover:border-steel/50 hover:bg-charcoal focus:outline-none focus:ring-2 focus:ring-steel/50 focus:ring-offset-2 focus:ring-offset-matte"
+              className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-white/10 bg-card py-24 transition-all hover:border-coral/50 hover:bg-card/80 focus:outline-none focus:ring-2 focus:ring-coral/40 focus:ring-offset-2 focus:ring-offset-surface"
             >
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-charcoal text-gray-500 transition-colors group-hover:bg-steel/20 group-hover:text-steel">
-                <ImageIcon className="h-8 w-8" />
+              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-surface text-gray-500 transition-all group-hover:bg-coral/15 group-hover:text-coral">
+                <ImageIcon className="h-9 w-9" />
               </div>
-              <p className="text-base font-medium text-gray-300">
+              <p className="text-base font-semibold text-gray-200">
                 Drop your room photo or click to upload
               </p>
-              <p className="mt-1.5 text-sm text-gray-500">PNG, JPG up to 10 MB</p>
+              <p className="mt-2 text-sm text-gray-500">PNG, JPG up to 10 MB</p>
             </div>
           </section>
         )}
@@ -396,11 +404,11 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-xl border border-white/5 bg-charcoal px-4 py-3">
+            <div className="flex items-center justify-between rounded-t-2xl bg-card px-5 py-3.5">
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-steel/50"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white focus:outline-none"
               >
                 <Trash2 className="h-4 w-4" />
                 Clear / Start Over
@@ -409,7 +417,7 @@ function App() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-2 rounded-lg bg-steel px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-steel/90 focus:outline-none focus:ring-2 focus:ring-steel focus:ring-offset-2 focus:ring-offset-charcoal"
+                  className="flex items-center gap-2 rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-coral/90 active:scale-95 focus:outline-none"
                 >
                   <Download className="h-4 w-4" />
                   Download Result
@@ -418,18 +426,18 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex flex-col border-x border-b border-white/5 bg-charcoal">
+            <div className="flex flex-col rounded-b-2xl bg-card">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
               >
-                {/* ── Generating Skeleton Overlay ── */}
+                {/* Generating Overlay */}
                 {isGenerating && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-charcoal/90 backdrop-blur-sm">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 rounded-b-2xl bg-card/90 backdrop-blur-sm">
                     <div className="relative flex h-16 w-16 items-center justify-center">
-                      <div className="absolute inset-0 animate-ping rounded-full bg-steel/20" />
-                      <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-steel/10">
-                        <Loader2 className="h-6 w-6 animate-spin text-steel" />
+                      <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
+                      <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-coral/15">
+                        <Loader2 className="h-6 w-6 animate-spin text-coral" />
                       </div>
                     </div>
                     <div className="text-center">
@@ -440,15 +448,15 @@ function App() {
                         {selectedPreset ?? 'Modern Luxury'} style · typically 30–60 sec
                       </p>
                     </div>
-                    <div className="h-px w-48 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full animate-pulse rounded-full bg-steel" style={{ width: '65%' }} />
+                    <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
+                      <div className="h-full animate-pulse rounded-full bg-coral" style={{ width: '65%' }} />
                     </div>
                   </div>
                 )}
 
-                {/* ── Before/After Slider ── */}
+                {/* Before/After Slider */}
                 {generatedImage && originalImage && !isGenerating ? (
-                  <div className="relative inline-block overflow-hidden rounded-xl">
+                  <div className="relative inline-block overflow-hidden rounded-2xl">
                     <img
                       src={originalImage}
                       alt="Before"
@@ -467,23 +475,23 @@ function App() {
                         }}
                       />
                     </div>
-                    {/* Divider line */}
+                    {/* Divider */}
                     <div
-                      className="pointer-events-none absolute top-0 bottom-0 w-0.5 bg-steel shadow-[0_0_8px_#4A90E2]"
-                      style={{ left: `${sliderPosition}%` }}
+                      className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-coral"
+                      style={{ left: `${sliderPosition}%`, boxShadow: '0 0 10px rgba(255,107,71,0.8)' }}
                     />
-                    {/* Drag handle */}
+                    {/* Handle */}
                     <div
-                      className="pointer-events-none absolute top-1/2 z-10 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-steel bg-charcoal shadow-xl"
+                      className="pointer-events-none absolute top-1/2 z-10 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-surface shadow-xl"
                       style={{ left: `${sliderPosition}%` }}
                     >
-                      <span className="text-[9px] font-bold tracking-wider text-steel select-none">⟷</span>
+                      <span className="select-none text-[9px] font-bold tracking-wider text-coral">⟷</span>
                     </div>
                     {/* Labels */}
-                    <span className="pointer-events-none absolute bottom-3 left-3 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-black/40">
+                    <span className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
                       Before
                     </span>
-                    <span className="pointer-events-none absolute bottom-3 right-3 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-black/40">
+                    <span className="pointer-events-none absolute bottom-3 right-3 rounded-lg bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-sm">
                       After
                     </span>
                     <input
@@ -497,8 +505,7 @@ function App() {
                     />
                   </div>
                 ) : generatedImage && !originalImage && !isGenerating ? (
-                  /* History entry loaded without original */
-                  <div className="flex w-full items-center justify-center overflow-hidden rounded-xl" style={{ maxHeight: '55vh' }}>
+                  <div className="flex w-full items-center justify-center overflow-hidden rounded-2xl" style={{ maxHeight: '55vh' }}>
                     <img
                       src={generatedImage}
                       alt="Generated result"
@@ -507,8 +514,7 @@ function App() {
                     />
                   </div>
                 ) : (
-                  /* Static original (no result yet) */
-                  <div className="flex w-full items-center justify-center overflow-hidden rounded-xl" style={{ maxHeight: '55vh' }}>
+                  <div className="flex w-full items-center justify-center overflow-hidden rounded-2xl" style={{ maxHeight: '55vh' }}>
                     <img
                       src={originalImage!}
                       alt="Original room"
@@ -519,7 +525,7 @@ function App() {
                 )}
               </div>
 
-              <p className="border-t border-white/5 px-4 py-2 text-center text-xs font-medium uppercase tracking-widest text-gray-600">
+              <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-600">
                 {isGenerating
                   ? 'Processing...'
                   : generatedImage
@@ -529,19 +535,19 @@ function App() {
             </div>
 
             {/* Pro Touch-Up */}
-            <section className="mt-8">
+            <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-steel/50 bg-steel/10 py-4 text-base font-semibold text-steel transition-all hover:border-steel hover:bg-steel/20 focus:outline-none focus:ring-2 focus:ring-steel focus:ring-offset-2 focus:ring-offset-matte"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-coral/30 bg-coral/10 py-4 text-sm font-semibold text-coral transition-all hover:border-coral/60 hover:bg-coral/20 active:scale-[0.99] focus:outline-none"
               >
-                <Sparkles className="h-5 w-5" />
+                <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
               </button>
             </section>
 
             {/* Room Type */}
-            <section className="mt-6">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500">
+            <section className="mt-7">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
                 Room Type
               </h2>
               <div
@@ -555,14 +561,14 @@ function App() {
                       key={room}
                       type="button"
                       onClick={() => setSelectedRoomType(isActive ? null : room)}
-                      className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-steel/40 ${
+                      className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none ${
                         isActive
-                          ? 'border-steel/60 bg-steel/20 text-steel'
-                          : 'border-white/10 bg-white/5 text-gray-400 hover:border-white/25 hover:bg-white/10 hover:text-gray-200'
+                          ? 'bg-coral text-white'
+                          : 'bg-card text-gray-400 hover:bg-white/10 hover:text-gray-200'
                       }`}
                       style={
                         isActive
-                          ? { boxShadow: '0 0 12px rgba(74,144,226,0.22)' }
+                          ? { boxShadow: '0 0 14px rgba(255,107,71,0.35)' }
                           : undefined
                       }
                     >
@@ -574,11 +580,11 @@ function App() {
             </section>
 
             {/* Style Presets */}
-            <section className="mt-6">
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-widest text-gray-500">
+            <section className="mt-7">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
                 Style Presets
               </h2>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                 {STYLE_PRESETS.map((style, i) => {
                   const PresetIcon = PRESET_ICONS[i]
                   const isSelected = selectedPreset === style
@@ -587,40 +593,34 @@ function App() {
                       key={style}
                       type="button"
                       onClick={() => setSelectedPreset(style)}
-                      className={`group relative flex min-h-[84px] overflow-hidden rounded-xl border text-left transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-steel/50 ${
+                      className={`group relative flex min-h-[88px] flex-col gap-2 overflow-hidden rounded-2xl border p-3.5 text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none ${
                         isSelected
-                          ? 'border-steel/70'
-                          : 'border-white/5 hover:border-white/20'
+                          ? 'border-coral/60 bg-card'
+                          : 'border-white/5 bg-card hover:border-white/15'
                       }`}
                       style={{
-                        background: PRESET_GRADIENTS[i],
                         boxShadow: isSelected
-                          ? '0 0 0 1px rgba(74,144,226,0.4), 0 0 18px rgba(74,144,226,0.25)'
-                          : undefined,
+                          ? '0 0 0 1px rgba(255,107,71,0.3), 0 0 20px rgba(255,107,71,0.15)'
+                          : '0 2px 8px rgba(0,0,0,0.35)',
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                       {isSelected && (
-                        <div className="absolute inset-0 bg-steel/10" />
+                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-coral/[0.07]" />
                       )}
-                      <div className="relative z-10 flex flex-col gap-1.5 p-3">
-                        <PresetIcon
-                          className={`h-4 w-4 transition-colors duration-200 ${
-                            isSelected
-                              ? 'text-steel'
-                              : 'text-gray-500 group-hover:text-gray-300'
-                          }`}
-                        />
-                        <span
-                          className={`text-xs font-medium leading-tight transition-colors duration-200 ${
-                            isSelected
-                              ? 'text-white'
-                              : 'text-gray-400 group-hover:text-white'
-                          }`}
-                        >
-                          {style}
-                        </span>
-                      </div>
+                      <PresetIcon
+                        className={`relative z-10 h-4 w-4 transition-colors duration-200 ${
+                          isSelected
+                            ? 'text-coral'
+                            : 'text-gray-500 group-hover:text-gray-300'
+                        }`}
+                      />
+                      <span
+                        className={`relative z-10 text-xs font-semibold leading-tight transition-colors duration-200 ${
+                          isSelected ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                        }`}
+                      >
+                        {style}
+                      </span>
                     </button>
                   )
                 })}
@@ -628,8 +628,8 @@ function App() {
             </section>
 
             {/* Custom Instructions */}
-            <section className="mt-6">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500">
+            <section className="mt-7">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
                 Custom Instructions
               </h2>
               <textarea
@@ -637,7 +637,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-steel/50 focus:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-steel/20"
+                className="w-full resize-none rounded-2xl border border-white/8 bg-card px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
               />
             </section>
 
@@ -646,47 +646,48 @@ function App() {
               <section className="mt-10">
                 <div className="mb-4 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
-                  <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-500">
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">
                     Session History
                   </h2>
                   <span className="ml-auto text-xs text-gray-600">
                     {history.length} render{history.length !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div
+                  className="flex gap-3 overflow-x-auto pb-3"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
                   {history.map((entry) => (
                     <button
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-40 overflow-hidden rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-steel/50 ${
+                      className={`group relative shrink-0 w-40 overflow-hidden rounded-2xl border transition-all focus:outline-none ${
                         activeHistoryId === entry.id
-                          ? 'border-steel shadow-lg shadow-steel/10'
-                          : 'border-white/5 hover:border-steel/40'
+                          ? 'border-coral/60'
+                          : 'border-white/5 hover:border-coral/30'
                       }`}
+                      style={
+                        activeHistoryId === entry.id
+                          ? { boxShadow: '0 0 14px rgba(255,107,71,0.2)' }
+                          : undefined
+                      }
                     >
-                      {/* Thumbnail */}
-                      <div className="relative h-28 overflow-hidden bg-charcoal">
+                      <div className="relative h-28 overflow-hidden bg-card">
                         <img
                           src={entry.generatedUrl}
                           alt={entry.styleName}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        {activeHistoryId === entry.id && (
-                          <div className="absolute inset-0 border-2 border-steel rounded-t-xl pointer-events-none" />
-                        )}
                       </div>
-                      {/* Label */}
-                      <div className="bg-charcoal px-2.5 py-2">
-                        <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">
+                      <div className="bg-card px-3 py-2">
+                        <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
                           {entry.styleName}
                         </p>
                         <p className="mt-0.5 text-[10px] text-gray-600">
                           {formatTime(entry.timestamp)}
                         </p>
                       </div>
-                      {/* Delete button */}
                       <button
                         type="button"
                         onClick={(e) => handleDeleteHistory(entry.id, e)}
@@ -703,12 +704,12 @@ function App() {
           </div>
         )}
 
-        {/* History gallery on the upload screen too */}
+        {/* History gallery on the upload screen */}
         {!isUploaded && history.length > 0 && (
           <section className="mt-10">
             <div className="mb-4 flex items-center gap-2">
               <Clock className="h-4 w-4 text-gray-500" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-500">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">
                 Previous Renders
               </h2>
             </div>
@@ -721,17 +722,17 @@ function App() {
                   key={entry.id}
                   type="button"
                   onClick={() => handleLoadHistory(entry)}
-                  className="group relative shrink-0 w-40 overflow-hidden rounded-xl border border-white/5 transition-all hover:border-steel/40 focus:outline-none focus:ring-2 focus:ring-steel/50"
+                  className="group relative shrink-0 w-40 overflow-hidden rounded-2xl border border-white/5 transition-all hover:border-coral/30 focus:outline-none"
                 >
-                  <div className="h-28 overflow-hidden bg-charcoal">
+                  <div className="h-28 overflow-hidden bg-card">
                     <img
                       src={entry.generatedUrl}
                       alt={entry.styleName}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <div className="bg-charcoal px-2.5 py-2">
-                    <p className="truncate text-xs font-medium text-gray-300 group-hover:text-white">
+                  <div className="bg-card px-3 py-2">
+                    <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
                       {entry.styleName}
                     </p>
                     <p className="mt-0.5 text-[10px] text-gray-600">
@@ -754,8 +755,8 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-charcoal/98 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2.5 px-4 py-4 sm:px-6">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-card/98 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
@@ -777,7 +778,8 @@ function App() {
               type="button"
               onClick={handleApplyEdit}
               disabled={isGenerating || !originalImage}
-              className="flex min-w-[160px] items-center justify-center gap-2 rounded-xl bg-steel px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-steel/90 focus:outline-none focus:ring-2 focus:ring-steel focus:ring-offset-2 focus:ring-offset-charcoal disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-w-[200px] items-center justify-center gap-2.5 rounded-2xl bg-coral px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-coral/90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 focus:ring-offset-card disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ boxShadow: '0 4px 20px rgba(255,107,71,0.35)' }}
             >
               {isGenerating ? (
                 <>
