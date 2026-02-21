@@ -10,7 +10,6 @@ export default {
         surface:  '#1c1c1e',
         card:     '#2c2c2e',
         coral:    '#FF6B47',
-        // kept for the slider glow / legacy references
         matte:    '#1c1c1e',
         charcoal: '#2c2c2e',
         steel:    '#4A90E2',
@@ -20,6 +19,23 @@ export default {
       },
       borderRadius: {
         '4xl': '2rem',
+      },
+      boxShadow: {
+        'glass':      '0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+        'coral-glow': '0 4px 24px rgba(255,107,71,0.35)',
+        'coral-sm':   '0 0 14px rgba(255,107,71,0.25)',
+      },
+      animation: {
+        'blob-a': 'blob 9s ease-in-out infinite',
+        'blob-b': 'blob 12s ease-in-out infinite 3s',
+        'blob-c': 'blob 15s ease-in-out infinite 6s',
+      },
+      keyframes: {
+        blob: {
+          '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%':       { transform: 'translate(20px, -20px) scale(1.05)' },
+          '66%':       { transform: 'translate(-15px, 15px) scale(0.97)' },
+        },
       },
     },
   },

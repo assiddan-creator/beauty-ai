@@ -323,14 +323,21 @@ function App() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-surface font-sans text-gray-100">
+    <div className="relative min-h-screen overflow-x-hidden bg-surface font-sans text-gray-100">
+
+      {/* ── Atmospheric background blobs ── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+        <div className="animate-blob-a absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-coral/10 blur-[80px]" />
+        <div className="animate-blob-b absolute -left-40 top-1/3 h-[420px] w-[420px] rounded-full bg-purple-600/8 blur-[90px]" />
+        <div className="animate-blob-c absolute bottom-24 right-1/4 h-[360px] w-[360px] rounded-full bg-orange-500/7 blur-[70px]" />
+      </div>
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-surface/95 backdrop-blur-sm">
+      <header className="glass-dark sticky top-0 z-40 border-b border-white/5">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-coral text-white shadow-[0_0_16px_rgba(255,107,71,0.4)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-coral text-white shadow-coral-glow">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
@@ -342,10 +349,15 @@ function App() {
               </p>
             </div>
           </div>
-          {/* Welcome */}
-          <div className="text-right">
-            <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
-            <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
+          {/* User section */}
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
+              <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
+            </div>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-coral to-orange-400 text-sm font-bold text-white shadow-coral-sm">
+              A
+            </div>
           </div>
         </div>
       </header>
@@ -367,6 +379,7 @@ function App() {
               className="sr-only"
               aria-label="Upload room photo"
             />
+            {/* Feature card — styled like the reference "AI Space Designer Pro" card */}
             <div
               role="button"
               tabIndex={0}
@@ -386,15 +399,37 @@ function App() {
                   fileInputRef.current?.click()
                 }
               }}
-              className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-white/10 bg-card py-24 transition-all hover:border-coral/50 hover:bg-card/80 focus:outline-none focus:ring-2 focus:ring-coral/40 focus:ring-offset-2 focus:ring-offset-surface"
+              className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
-              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-surface text-gray-500 transition-all group-hover:bg-coral/15 group-hover:text-coral">
-                <ImageIcon className="h-9 w-9" />
+              {/* Card background */}
+              <div className="glass rounded-3xl px-8 py-14 transition-all duration-300 group-hover:bg-white/10">
+                {/* Decorative corner glow */}
+                <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
+                <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/15 blur-3xl" />
+
+                <div className="relative flex flex-col items-center gap-5">
+                  {/* Icon container */}
+                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-coral/15 text-coral ring-1 ring-coral/20 transition-all duration-300 group-hover:bg-coral/25 group-hover:ring-coral/40">
+                    <ImageIcon className="h-9 w-9" />
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-white">
+                      AI Space Designer Pro
+                    </p>
+                    <p className="mt-1.5 text-sm text-gray-400">
+                      Drop your room photo or click to upload
+                    </p>
+                    <p className="mt-1 text-xs text-gray-600">PNG, JPG up to 10 MB</p>
+                  </div>
+
+                  {/* CTA chip */}
+                  <div className="flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-coral-glow transition-all duration-200 group-hover:scale-105">
+                    <Sparkles className="h-4 w-4" />
+                    Stage My Room
+                  </div>
+                </div>
               </div>
-              <p className="text-base font-semibold text-gray-200">
-                Drop your room photo or click to upload
-              </p>
-              <p className="mt-2 text-sm text-gray-500">PNG, JPG up to 10 MB</p>
             </div>
           </section>
         )}
@@ -404,11 +439,11 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl bg-card px-5 py-3.5">
+            <div className="glass flex items-center justify-between rounded-t-2xl px-5 py-3.5">
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white focus:outline-none"
+                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
               >
                 <Trash2 className="h-4 w-4" />
                 Clear / Start Over
@@ -417,7 +452,7 @@ function App() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-2 rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-coral/90 active:scale-95 focus:outline-none"
+                  className="flex items-center gap-2 rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white shadow-coral-sm transition-all hover:bg-coral/90 active:scale-95 focus:outline-none"
                 >
                   <Download className="h-4 w-4" />
                   Download Result
@@ -426,7 +461,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex flex-col rounded-b-2xl bg-card">
+            <div className="glass flex flex-col rounded-b-2xl border-t-0">
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -538,7 +573,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-coral/30 bg-coral/10 py-4 text-sm font-semibold text-coral transition-all hover:border-coral/60 hover:bg-coral/20 active:scale-[0.99] focus:outline-none"
+                className="glass flex w-full items-center justify-center gap-3 rounded-2xl py-4 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -547,9 +582,10 @@ function App() {
 
             {/* Room Type */}
             <section className="mt-7">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
-                Room Type
-              </h2>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-white">Room Type</h2>
+                <span className="text-xs font-medium text-coral">Select One</span>
+              </div>
               <div
                 className="flex gap-2 overflow-x-auto pb-1"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -581,9 +617,12 @@ function App() {
 
             {/* Style Presets */}
             <section className="mt-7">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
-                Style Presets
-              </h2>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-white">Popular Styles</h2>
+                <span className="text-xs font-medium text-gray-500">
+                  {selectedPreset ?? 'None selected'}
+                </span>
+              </div>
               <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                 {STYLE_PRESETS.map((style, i) => {
                   const PresetIcon = PRESET_ICONS[i]
@@ -593,29 +632,34 @@ function App() {
                       key={style}
                       type="button"
                       onClick={() => setSelectedPreset(style)}
-                      className={`group relative flex min-h-[88px] flex-col gap-2 overflow-hidden rounded-2xl border p-3.5 text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none ${
+                      className={`group relative flex min-h-[88px] flex-col gap-2 overflow-hidden rounded-2xl p-3.5 text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                         isSelected
-                          ? 'border-coral/60 bg-card'
-                          : 'border-white/5 bg-card hover:border-white/15'
+                          ? 'border border-coral/50'
+                          : 'border border-white/8 hover:border-white/15'
                       }`}
                       style={{
+                        background: isSelected
+                          ? 'rgba(255,107,71,0.12)'
+                          : 'rgba(44,44,46,0.6)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
                         boxShadow: isSelected
-                          ? '0 0 0 1px rgba(255,107,71,0.3), 0 0 20px rgba(255,107,71,0.15)'
-                          : '0 2px 8px rgba(0,0,0,0.35)',
+                          ? '0 0 0 1px rgba(255,107,71,0.25), 0 8px 24px rgba(255,107,71,0.12)'
+                          : '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
                       }}
                     >
-                      {isSelected && (
-                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-coral/[0.07]" />
-                      )}
-                      <PresetIcon
-                        className={`relative z-10 h-4 w-4 transition-colors duration-200 ${
-                          isSelected
-                            ? 'text-coral'
-                            : 'text-gray-500 group-hover:text-gray-300'
-                        }`}
-                      />
+                      {/* Icon chip */}
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-xl transition-colors duration-200 ${
+                        isSelected ? 'bg-coral/20' : 'bg-white/8 group-hover:bg-white/12'
+                      }`}>
+                        <PresetIcon
+                          className={`h-3.5 w-3.5 transition-colors duration-200 ${
+                            isSelected ? 'text-coral' : 'text-gray-400 group-hover:text-gray-200'
+                          }`}
+                        />
+                      </div>
                       <span
-                        className={`relative z-10 text-xs font-semibold leading-tight transition-colors duration-200 ${
+                        className={`text-xs font-semibold leading-tight transition-colors duration-200 ${
                           isSelected ? 'text-white' : 'text-gray-400 group-hover:text-white'
                         }`}
                       >
@@ -629,27 +673,33 @@ function App() {
 
             {/* Custom Instructions */}
             <section className="mt-7">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
-                Custom Instructions
-              </h2>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-white">Custom Instructions</h2>
+                <span className="text-xs text-gray-600">Optional</span>
+              </div>
               <textarea
                 value={customInstructions}
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/8 bg-card px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
+                className="w-full resize-none rounded-2xl border border-white/8 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
+                style={{
+                  background: 'rgba(44,44,46,0.6)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                }}
               />
             </section>
 
             {/* History Gallery */}
             {history.length > 0 && (
               <section className="mt-10">
-                <div className="mb-4 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                    Session History
-                  </h2>
-                  <span className="ml-auto text-xs text-gray-600">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm font-bold text-white">Recent Renders</h2>
+                  </div>
+                  <span className="text-xs font-medium text-coral">
                     {history.length} render{history.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -662,25 +712,31 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-40 overflow-hidden rounded-2xl border transition-all focus:outline-none ${
+                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
                         activeHistoryId === entry.id
-                          ? 'border-coral/60'
-                          : 'border-white/5 hover:border-coral/30'
+                          ? 'border-coral/50'
+                          : 'border-white/8 hover:border-white/15'
                       }`}
-                      style={
-                        activeHistoryId === entry.id
-                          ? { boxShadow: '0 0 14px rgba(255,107,71,0.2)' }
-                          : undefined
-                      }
+                      style={{
+                        background: 'rgba(44,44,46,0.7)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        boxShadow: activeHistoryId === entry.id
+                          ? '0 0 18px rgba(255,107,71,0.2)'
+                          : '0 4px 16px rgba(0,0,0,0.3)',
+                      }}
                     >
-                      <div className="relative h-28 overflow-hidden bg-card">
+                      <div className="relative h-28 overflow-hidden">
                         <img
                           src={entry.generatedUrl}
                           alt={entry.styleName}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
+                        {activeHistoryId === entry.id && (
+                          <div className="absolute inset-0 bg-coral/10" />
+                        )}
                       </div>
-                      <div className="bg-card px-3 py-2">
+                      <div className="px-3 py-2.5">
                         <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
                           {entry.styleName}
                         </p>
@@ -707,11 +763,12 @@ function App() {
         {/* History gallery on the upload screen */}
         {!isUploaded && history.length > 0 && (
           <section className="mt-10">
-            <div className="mb-4 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                Previous Renders
-              </h2>
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <h2 className="text-sm font-bold text-white">Previous Renders</h2>
+              </div>
+              <span className="text-xs font-medium text-coral">{history.length} saved</span>
             </div>
             <div
               className="flex gap-3 overflow-x-auto pb-3"
@@ -755,7 +812,7 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-card/98 backdrop-blur-md">
+      <div className="glass-dark fixed bottom-0 left-0 right-0 z-50 border-t border-white/5">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
@@ -778,8 +835,8 @@ function App() {
               type="button"
               onClick={handleApplyEdit}
               disabled={isGenerating || !originalImage}
-              className="flex min-w-[200px] items-center justify-center gap-2.5 rounded-2xl bg-coral px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-coral/90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 focus:ring-offset-card disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ boxShadow: '0 4px 20px rgba(255,107,71,0.35)' }}
+              className="group flex min-w-[220px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-coral to-orange-400 px-8 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ boxShadow: '0 4px 24px rgba(255,107,71,0.45)' }}
             >
               {isGenerating ? (
                 <>
@@ -788,7 +845,7 @@ function App() {
                 </>
               ) : (
                 <>
-                  <Send className="h-4 w-4" />
+                  <Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   Generate Staging
                 </>
               )}
