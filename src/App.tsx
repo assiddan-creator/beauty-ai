@@ -54,7 +54,7 @@ const PRESET_ICONS: LucideIcon[] = [
 const PRESET_IMAGES: Record<string, string> = {
   'Urban Industrial':        'https://images.unsplash.com/photo-1505873242700-f289a29e1e0f?auto=format&fit=crop&w=400&q=80',
   'Scandinavian Minimalist': 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=400&q=80',
-  'Boho-Chic':               'https://images.unsplash.com/photo-1522444195799-478538b28a23?auto=format&fit=crop&w=400&q=80',
+  'Boho-Chic':               'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=400&q=80',
   'Modern Farmhouse':        'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
   'Coastal Mediterranean':   'https://images.unsplash.com/photo-1533779283484-8ad4940aa3a8?auto=format&fit=crop&w=400&q=80',
   'Eclectic Airbnb':         'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=400&q=80',
@@ -200,6 +200,10 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistoryFromStorage)
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null)
+  // Tracks history entry IDs and preset names whose remote images have expired / failed
+  const [brokenImgs, setBrokenImgs] = useState<Set<string>>(new Set())
+  const markBroken = (key: string) =>
+    setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
 
   // ── File upload ─────────────────────────────────────────────────────────────
   const handleFileSelect = (file: File) => {
@@ -348,8 +352,8 @@ function App() {
       </div>
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-white/5 backdrop-blur-2xl">
-        <div className="mx-auto flex h-18 max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+      <header className="glass-panel sticky top-0 z-40 border-b border-white/10">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div
@@ -423,7 +427,7 @@ function App() {
               className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
             >
               {/* Card background */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-14 backdrop-blur-2xl transition-all duration-300 group-hover:bg-white/[0.08]">
+              <div className="glass-panel rounded-3xl px-8 py-14 transition-all duration-300 hover:brightness-110">
                 {/* Decorative corner glow */}
                 <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
                 <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/15 blur-3xl" />
@@ -463,11 +467,11 @@ function App() {
           <div className="mt-8">
 
             {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-2xl">
+            <div className="glass-panel flex items-center justify-between rounded-t-2xl px-5 py-3.5">
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
+                className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
               >
                 <Trash2 className="h-4 w-4" />
                 Clear / Start Over
@@ -476,8 +480,8 @@ function App() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
-                  style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
+                  className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
+                  style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
                 >
                   <Download className="h-4 w-4" />
                   Download Result
@@ -486,7 +490,7 @@ function App() {
             </div>
 
             {/* Image Viewer */}
-            <div className="flex flex-col rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-2xl">
+            <div className="glass-panel flex flex-col rounded-b-2xl border-t-0" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(255,255,255,0.06)' }}>
               <div
                 className="relative flex w-full items-center justify-center overflow-hidden px-4 py-6"
                 style={{ maxHeight: '55vh', minHeight: '260px' }}
@@ -598,7 +602,7 @@ function App() {
             <section className="mt-5">
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-4 text-sm font-semibold text-coral backdrop-blur-2xl transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
+                className="glass-panel-sm flex w-full items-center justify-center gap-3 rounded-2xl py-5 text-sm font-semibold text-coral transition-all hover:bg-coral/10 active:scale-[0.99] focus:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Pro Touch-Up (Enhance Only)
@@ -622,7 +626,7 @@ function App() {
                       key={room}
                       type="button"
                       onClick={() => setSelectedRoomType(isActive ? null : room)}
-                      className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none ${
+                      className={`shrink-0 min-h-[44px] rounded-full border px-5 py-3 text-sm font-semibold transition-all duration-200 focus:outline-none ${
                         isActive
                           ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
                           : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-xl hover:bg-white/10 hover:text-gray-200'
@@ -658,21 +662,29 @@ function App() {
                       key={style}
                       type="button"
                       onClick={() => setSelectedPreset(style)}
-                      className={`group relative flex min-h-[120px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                      className={`group relative flex min-h-[130px] flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                         isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                       }`}
                       style={{
                         boxShadow: isSelected
-                          ? '0 0 25px rgba(255,107,71,0.5)'
-                          : '0 4px 20px rgba(0,0,0,0.4)',
+                          ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.2)'
+                          : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
                       }}
                     >
-                      {/* Full-bleed photo */}
-                      <img
-                        src={imgUrl}
-                        alt={style}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      {/* Full-bleed photo or broken fallback */}
+                      {brokenImgs.has(`preset-${style}`) ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
+                          <ImageIcon className="h-6 w-6 text-gray-600" />
+                          <span className="text-[10px] text-gray-600">No preview</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={imgUrl}
+                          alt={style}
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          onError={() => markBroken(`preset-${style}`)}
+                        />
+                      )}
 
                       {/* Gradient scrim so text is always readable */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -715,7 +727,7 @@ function App() {
                 onChange={(e) => setCustomInstructions(e.target.value)}
                 placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
                 rows={3}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-gray-300 placeholder-gray-600 backdrop-blur-2xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                className="glass-panel-sm w-full resize-none rounded-2xl px-5 py-4 text-sm text-gray-300 placeholder-gray-600 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
               />
             </section>
 
@@ -740,32 +752,38 @@ function App() {
                       key={entry.id}
                       type="button"
                       onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-44 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-2xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
-                        activeHistoryId === entry.id
-                          ? 'border-coral/70'
-                          : 'border-white/10 hover:border-white/25'
+                      className={`glass-panel-sm group relative shrink-0 w-52 overflow-hidden rounded-2xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+                        activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
                       }`}
                       style={{
                         boxShadow: activeHistoryId === entry.id
-                          ? '0 0 25px rgba(255,107,71,0.5)'
-                          : '0 4px 20px rgba(0,0,0,0.35)',
+                          ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.15)'
+                          : undefined,
                       }}
                     >
-                      <div className="relative h-28 overflow-hidden">
-                        <img
-                          src={entry.generatedUrl}
-                          alt={entry.styleName}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        {activeHistoryId === entry.id && (
+                      <div className="relative h-36 overflow-hidden">
+                        {brokenImgs.has(entry.id) ? (
+                          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface/80">
+                            <ImageIcon className="h-7 w-7 text-gray-600" />
+                            <p className="text-[11px] font-medium text-gray-600">Preview expired</p>
+                          </div>
+                        ) : (
+                          <img
+                            src={entry.generatedUrl}
+                            alt={entry.styleName}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            onError={() => markBroken(entry.id)}
+                          />
+                        )}
+                        {activeHistoryId === entry.id && !brokenImgs.has(entry.id) && (
                           <div className="absolute inset-0 bg-coral/10" />
                         )}
                       </div>
-                      <div className="px-3 py-2.5">
+                      <div className="px-3.5 py-3">
                         <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
                           {entry.styleName}
                         </p>
-                        <p className="mt-0.5 text-[10px] text-gray-600">
+                        <p className="mt-0.5 text-[11px] text-gray-600">
                           {formatTime(entry.timestamp)}
                         </p>
                       </div>
@@ -773,9 +791,9 @@ function App() {
                         type="button"
                         onClick={(e) => handleDeleteHistory(entry.id, e)}
                         aria-label="Remove from history"
-                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-opacity hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                        className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-all hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
                       >
-                        <X className="h-3 w-3" />
+                        <X className="h-3.5 w-3.5" />
                       </button>
                     </button>
                   ))}
@@ -804,20 +822,28 @@ function App() {
                   key={entry.id}
                   type="button"
                   onClick={() => handleLoadHistory(entry)}
-                  className="group relative shrink-0 w-40 overflow-hidden rounded-2xl border border-white/5 transition-all hover:border-coral/30 focus:outline-none"
+                  className="glass-panel-sm group relative shrink-0 w-52 overflow-hidden rounded-2xl transition-all duration-200 hover:scale-[1.02] hover:border-coral/30 focus:outline-none"
                 >
-                  <div className="h-28 overflow-hidden bg-card">
-                    <img
-                      src={entry.generatedUrl}
-                      alt={entry.styleName}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                  <div className="relative h-36 overflow-hidden">
+                    {brokenImgs.has(entry.id) ? (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface/80">
+                        <ImageIcon className="h-7 w-7 text-gray-600" />
+                        <p className="text-[11px] font-medium text-gray-600">Preview expired</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={entry.generatedUrl}
+                        alt={entry.styleName}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={() => markBroken(entry.id)}
+                      />
+                    )}
                   </div>
-                  <div className="bg-card px-3 py-2">
+                  <div className="px-3.5 py-3">
                     <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
                       {entry.styleName}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-gray-600">
+                    <p className="mt-0.5 text-[11px] text-gray-600">
                       {formatTime(entry.timestamp)}
                     </p>
                   </div>
@@ -825,9 +851,9 @@ function App() {
                     type="button"
                     onClick={(e) => handleDeleteHistory(entry.id, e)}
                     aria-label="Remove from history"
-                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-opacity hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                    className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-all hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </button>
               ))}
@@ -837,7 +863,7 @@ function App() {
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-white/5 backdrop-blur-2xl">
+      <div className="glass-panel fixed bottom-0 left-0 right-0 z-50 border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
           {error && (
             <p className="flex items-center justify-center gap-2 text-center text-sm text-red-400">
@@ -860,8 +886,8 @@ function App() {
               type="button"
               onClick={handleApplyEdit}
               disabled={isGenerating || !originalImage}
-              className="group flex min-w-[220px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-8 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
+              className="group flex min-h-[56px] min-w-[240px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-10 py-4 text-base font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ boxShadow: '0 0 30px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,255,255,0.2)' }}
             >
               {isGenerating ? (
                 <>
