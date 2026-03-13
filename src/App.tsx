@@ -463,9 +463,18 @@ function App() {
     setError(null)
     setRoomAnalysis(null)
     setAnalysisDismissed(false)
+  }
+
+  // ── Manual Claude Vision trigger ────────────────────────────────────────────
+  const handleAnalyzeWithAI = async () => {
+    if (!originalImage) return
+
+    setRoomAnalysis(null)
+    setAnalysisDismissed(false)
     setIsAnalyzing(true)
+
     try {
-      const dataUrl = await blobUrlToDataUrl(blobUrl)
+      const dataUrl = await blobUrlToDataUrl(originalImage)
       const analysis = await analyzeRoomWithClaude(dataUrl)
       setRoomAnalysis(analysis)
       // Auto-select only the recommended style; room type stays user-controlled
@@ -544,8 +553,7 @@ function App() {
       const prompt = [
         `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
         styledPrompt,
-        'STRICT INSTRUCTION: Do NOT change any structural element. Keep all walls, floors, ceiling, windows, doors, and room perspective 100% identical to the input photo. This is an image-to-image edit — only INSERT furniture and decor objects into the existing space. Do NOT reimagine or reconstruct the room.',
-        'Only ADD: furniture, rugs, curtains, wall art, lighting fixtures, plants, and decorative accessories.',
+        'Only ADD furniture and decor. Do NOT alter walls, floors, ceiling, windows, doors, or perspective.',
         customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
 
@@ -938,6 +946,21 @@ function App() {
                     {isGenerating ? 'Processing…' : generatedImage ? 'Before ← Drag → After' : 'Original Room'}
                   </p>
                 </div>
+
+                {/* ── Manual Claude Vision trigger ── */}
+                {originalImage && !isGenerating && (
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleAnalyzeWithAI}
+                      disabled={isAnalyzing}
+                      className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-2 text-xs font-semibold text-white shadow-coral-sm transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
+                    >
+                      <Brain className="h-4 w-4" />
+                      {isAnalyzing ? 'Analyzing…' : 'Analyze with AI'}
+                    </button>
+                  </div>
+                )}
 
                 {/* ── NEW: Claude Vision Analysis Banner ────────────────────── */}
                 {(isAnalyzing || (roomAnalysis && !analysisDismissed)) && (
