@@ -16,6 +16,7 @@ import {
   Crown,
   ArrowLeftRight,
   Brain,
+  Check,
   CheckCircle2,
   ChevronRight,
   type LucideIcon,
@@ -271,10 +272,19 @@ type StoredEntry = Omit<HistoryEntry, 'originalUrl'>
 
 // ─── NEW: Claude Vision analysis result ──────────────────────────────────────
 type RoomAnalysis = {
-  roomType: string          // e.g. "Living Room"
-  recommendedStyle: string  // must match a STYLES[].name exactly
+  roomType: string
+  recommendedStyle: string
   confidence: 'high' | 'medium' | 'low'
-  reasoning: string         // 1-2 sentence explanation shown to the user
+  reasoning: string
+  roomAnalysis?: {
+    lightingScore: number
+    lightingNote: string
+    spaceScore: number
+    spaceNote: string
+    conditionNote: string
+    strongPoints: string[]
+    stagingTips: string[]
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -997,6 +1007,61 @@ function App() {
                               <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
                                 {roomAnalysis.reasoning}
                               </p>
+                              {roomAnalysis.roomAnalysis && (
+                                <div className="mt-4 space-y-4">
+                                  {/* Score bars: Natural Light & Space & Flow */}
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Natural Light</p>
+                                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                                        <div
+                                          className="h-full rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] transition-all duration-700"
+                                          style={{ width: `${Math.min(10, Math.max(0, roomAnalysis.roomAnalysis.lightingScore)) * 10}%` }}
+                                        />
+                                      </div>
+                                      <p className="mt-1 text-[10px] text-gray-400">{roomAnalysis.roomAnalysis.lightingScore}/10 · {roomAnalysis.roomAnalysis.lightingNote}</p>
+                                    </div>
+                                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Space & Flow</p>
+                                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                                        <div
+                                          className="h-full rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] transition-all duration-700"
+                                          style={{ width: `${Math.min(10, Math.max(0, roomAnalysis.roomAnalysis.spaceScore)) * 10}%` }}
+                                        />
+                                      </div>
+                                      <p className="mt-1 text-[10px] text-gray-400">{roomAnalysis.roomAnalysis.spaceScore}/10 · {roomAnalysis.roomAnalysis.spaceNote}</p>
+                                    </div>
+                                  </div>
+                                  {/* Strong points — max 3 green check badges */}
+                                  {roomAnalysis.roomAnalysis.strongPoints?.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                      {(roomAnalysis.roomAnalysis.strongPoints.slice(0, 3)).map((point, i) => (
+                                        <span
+                                          key={i}
+                                          className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-[11px] font-medium text-green-400"
+                                        >
+                                          <Check className="h-3 w-3 shrink-0" />
+                                          {point}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {/* Staging tips — 2 bullets in darker box */}
+                                  {roomAnalysis.roomAnalysis.stagingTips?.length > 0 && (
+                                    <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
+                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">Staging Tips</p>
+                                      <ul className="space-y-1">
+                                        {(roomAnalysis.roomAnalysis.stagingTips.slice(0, 2)).map((tip, i) => (
+                                          <li key={i} className="flex gap-2 text-[11px] text-gray-300">
+                                            <span className="text-coral mt-0.5">•</span>
+                                            <span>{tip}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => {

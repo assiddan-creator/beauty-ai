@@ -18,8 +18,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
     body: JSON.stringify({
       model: 'claude-opus-4-6',
-      max_tokens: 300,
-      system: 'You are an expert interior designer. Respond ONLY with valid JSON, no markdown.',
+      max_tokens: 600,
+      system: 'You are an expert interior designer and real estate photographer. Respond ONLY with valid JSON, no markdown, no code fences.',
       messages: [{
         role: 'user',
         content: [
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           },
           {
             type: 'text',
-            text: `Available room types: ${roomTypes}\nAvailable staging styles: ${styleNames}\n\nRespond with ONLY this JSON:\n{\n  "roomType": "<pick from room types>",\n  "recommendedStyle": "<pick from staging styles>",\n  "confidence": "<high|medium|low>",\n  "reasoning": "<1-2 sentences>"\n}`,
+            text: `Available room types: ${roomTypes}\nAvailable staging styles: ${styleNames}\n\nAnalyze this room photo and respond with ONLY this JSON (no markdown):\n{\n  "roomType": "<pick from room types>",\n  "recommendedStyle": "<pick from staging styles>",\n  "confidence": "<high|medium|low>",\n  "reasoning": "<1-2 sentences why this style fits>",\n  "roomAnalysis": {\n    "lightingScore": <1-10 integer>,\n    "lightingNote": "<short note about natural/artificial light>",\n    "spaceScore": <1-10 integer>,\n    "spaceNote": "<short note about layout and flow>",\n    "conditionNote": "<brief note on condition, any wear or strengths>",\n    "strongPoints": ["<strength 1>", "<strength 2>", "<strength 3>"],\n    "stagingTips": ["<actionable tip 1>", "<actionable tip 2>"]\n  }\n}`,
           },
         ],
       }],
