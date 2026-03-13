@@ -1,4 +1,4 @@
-// Updated AI Presets and Camera Setup
+// AI Beauty Try-On — converted from Virtual Staging by Claude
 import { useState, useRef } from 'react'
 import {
   ImageIcon,
@@ -9,12 +9,14 @@ import {
   Send,
   X,
   Clock,
-  Building2,
-  Snowflake,
-  Leaf,
-  Waves,
   Palette,
-  Crown,
+  Heart,
+  Sun,
+  Moon,
+  Star,
+  Flower2,
+  Droplets,
+  Gem,
   ArrowLeftRight,
   Brain,
   Check,
@@ -27,304 +29,164 @@ import {
 const NANO_BANANA_PRO_VERSION =
   '99256cc418d9ac41854575e2f1c8846ce2defd0c0fb6ff2d5cbc3c826be75bc8'
 
-// ─── Style Presets ───────────────────────────────────────────────────────────
-const STYLES: Array<{
+// ─── Beauty Presets ──────────────────────────────────────────────────────────
+const BEAUTY_PRESETS: Array<{
   id: string
   name: string
+  nameHe: string
+  category: 'lips' | 'blush' | 'liner' | 'full'
   image: string
   icon: LucideIcon
+  tags: string[]
   prompt: string
 }> = [
   {
-    id: 'coastal-mediterranean',
-    name: 'Coastal Mediterranean',
-    image: '/Coastal-Mediterranean.jpg',
-    icon: Waves,
-    prompt: 'Virtual staging. Low-level curved sofas, terracotta decor accents, indoor plants, natural sunlight. Movie Look: Call Me By Your Name. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Preserve original architecture, photorealistic.',
+    id: 'natural-everyday',
+    name: 'Natural Everyday',
+    nameHe: 'טבעי יומיומי',
+    category: 'full',
+    image: '/looks/Natural-Everyday.jpg',
+    icon: Sun,
+    tags: ['everyday', 'natural', 'fresh'],
+    prompt: 'Beauty makeup try-on. Natural everyday look. Apply subtle nude-pink lip gloss, soft peachy blush on cheeks, minimal mascara. Skin looks fresh and dewy, not heavy. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: soft beauty ring light. Film: Kodak Portra 400. Natural editorial quality.',
   },
   {
-    id: 'modern-farmhouse',
-    name: 'Modern Farmhouse',
-    image: '/Modern-Farmhouse.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Oversized cozy linen sofas, reclaimed natural wood furniture, farmhouse decor, rustic lighting fixtures. Movie Look: Little Women. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Warm inviting lighting, preserve structural integrity.',
+    id: 'clean-glow',
+    name: 'Clean Glow',
+    nameHe: 'זוהר נקי',
+    category: 'blush',
+    image: '/looks/Clean-Glow.jpg',
+    icon: Droplets,
+    tags: ['glow', 'dewy', 'fresh'],
+    prompt: 'Beauty makeup try-on. Clean glow look. Apply luminous highlighter on cheekbones and brow bone, soft rose blush, clear glossy lip. Skin appears radiant and glowing. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: diffused window light. Film: Kodak Portra 400. Editorial beauty quality.',
   },
   {
-    id: 'mid-century',
-    name: 'Mid-Century Modern',
-    image: '/Century-Modern.jpg',
-    icon: Palette,
-    prompt: 'Virtual staging. Mid-Century Modern furniture, dark walnut wood tables, retro leather lounge chair, geometric rug. Movie Look: Mad Men. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Cinematic shadows, preserve room layout perfectly.',
+    id: 'office-polished',
+    name: 'Office Polished',
+    nameHe: 'מלוטשת למשרד',
+    category: 'full',
+    image: '/looks/Office-Polished.jpg',
+    icon: Gem,
+    tags: ['professional', 'polished', 'daytime'],
+    prompt: 'Beauty makeup try-on. Office polished look. Apply neutral mauve lipstick, subtle contour blush, defined but natural brows. Clean and professional. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: professional studio light. Film: Kodak Portra 400. Clean editorial quality.',
   },
   {
-    id: 'quiet-luxury',
-    name: 'Quiet Luxury Hotel',
-    image: '/Quiet-Luxury-Hotel.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Matte velvet sofa, elegant dark wood furniture, minimal premium decor, ambient cove lighting. Movie Look: Succession. Camera: ARRI Alexa 65. Lens: Prime 85mm. Film: Cinestill 800T. Elements: Sophisticated, premium materials, untouched architecture.',
+    id: 'soft-glam',
+    name: 'Soft Glam',
+    nameHe: 'גלאם עדין',
+    category: 'full',
+    image: '/looks/Soft-Glam.jpg',
+    icon: Star,
+    tags: ['glam', 'evening', 'romantic'],
+    prompt: 'Beauty makeup try-on. Soft glam look. Apply warm rose-gold lip, soft smoky shadow in warm tones, peachy-pink blush, subtle highlight. Romantic and elevated. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: warm golden hour. Film: Kodak Portra 400. Glamorous editorial quality.',
   },
   {
-    id: 'wabi-sabi',
-    name: 'Wabi-Sabi Japandi',
-    image: '/Wabi-Sabi-Japandi.jpg',
-    icon: Snowflake,
-    prompt: 'Virtual staging. Low wooden furniture, soft neutral rugs, perfectly imperfect ceramic decor, diffused lighting. Movie Look: Dune. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Peaceful atmosphere, preserve original room.',
+    id: 'classic-red-lip',
+    name: 'Classic Red Lip',
+    nameHe: 'שפתון אדום קלאסי',
+    category: 'lips',
+    image: '/looks/Classic-Red-Lip.jpg',
+    icon: Heart,
+    tags: ['bold', 'classic', 'evening', 'red'],
+    prompt: 'Beauty makeup try-on. Classic red lip look. Apply bold classic red matte lipstick with precise lip liner, minimal eye makeup, soft blush. Timeless and confident. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: dramatic side light. Film: Cinestill 800T. Classic editorial beauty quality.',
   },
   {
-    id: 'boho-chic',
-    name: 'Boho-Chic',
-    image: '/Boho-Chic.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Rattan furniture, macrame wall decor, lush indoor plants, colorful layered rugs. Movie Look: Euphoria. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Bright natural light, highly photogenic, preserve original walls.',
+    id: 'warm-bronze',
+    name: 'Warm Bronze',
+    nameHe: 'ברונז חם',
+    category: 'blush',
+    image: '/looks/Warm-Bronze.jpg',
+    icon: Sun,
+    tags: ['bronze', 'warm', 'summer', 'glow'],
+    prompt: 'Beauty makeup try-on. Warm bronze look. Apply terracotta-bronze blush and contour, warm amber-nude lip, golden highlight on cheekbones. Sun-kissed and warm. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: warm golden sunlight. Film: Kodak Portra 400. Sun-drenched editorial quality.',
   },
   {
-    id: 'urban-industrial',
-    name: 'Urban Industrial',
-    image: '/Urban-Industrial.jpg',
-    icon: Building2,
-    prompt: 'Virtual staging. Dark metallic furniture, distressed leather couch, sleek glass tables, subtle warm Edison bulb lamps. Movie Look: The Batman. Camera: Sony Venice. Lens: Anamorphic. Film: Cinestill 800T. Elements: Moody cinematic depth, preserve architecture.',
+    id: 'cool-chic',
+    name: 'Cool Chic',
+    nameHe: 'קול שיק',
+    category: 'full',
+    image: '/looks/Cool-Chic.jpg',
+    icon: Moon,
+    tags: ['cool', 'chic', 'editorial', 'berry'],
+    prompt: 'Beauty makeup try-on. Cool chic look. Apply deep berry-mauve lip with liner, cool-toned rosy blush, soft defined lashes. Modern and editorial. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: cool blue-tinted studio light. Film: Cinestill 800T. Fashion editorial quality.',
   },
   {
-    id: 'rustic-cabin',
-    name: 'Biophilic Rustic',
-    image: '/Biophilic-Rustic.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Raw natural wood edge coffee table, deep green velvet sofa, cozy woven throw blankets. Movie Look: The Revenant. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Deep depth of field, natural vibe, preserve layout.',
-  },
-  {
-    id: 'clean-modern',
-    name: 'Clean Modern',
-    image: '/Clean-Modern.jpg',
-    icon: Sparkles,
-    prompt: 'Virtual staging. Low-profile linen sofa, uncluttered modern furniture, light oak wood decor. Movie Look: Her. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Maximum light and space, preserve original architecture exactly.',
-  },
-  {
-    id: 'nordic-scandinavian',
-    name: 'Nordic Scandinavian',
-    image: '/Nordic-Scandinavian.jpg',
-    icon: Snowflake,
-    prompt: 'Virtual staging. Birch wood furniture, cozy wool textiles, potted plants, minimalistic decor. Movie Look: Force Majeure. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Calm bright atmosphere, preserve room structure completely.',
-  },
-  {
-    id: 'hamptons-coastal',
-    name: 'Hamptons Coastal',
-    image: '/Hamptons-Coastal.jpg',
-    icon: Waves,
-    prompt: 'Virtual staging. Navy and sand palette furniture, linen sofas, natural fiber rugs, elegant decor. Movie Look: The Talented Mr. Ripley. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Aspirational lifestyle, preserve all structural elements.',
-  },
-  {
-    id: 'timeless-classic',
-    name: 'Timeless Classic',
-    image: '/Timeless-Classic.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Refined upholstered furniture, classic art pieces, symmetrical furniture layout, muted tone rugs. Movie Look: The Crown. Camera: ARRI Alexa 65. Lens: Prime 50mm. Film: Cinestill 800T. Elements: Sophisticated and calm, preserve architecture perfectly.',
-  },
-  {
-    id: 'small-space-modern',
-    name: 'Small Space Modern',
-    image: '/Small-Space-Modern.jpg',
-    icon: ArrowLeftRight,
-    prompt: 'Virtual staging. Space-saving modular furniture, area rugs for zoning, modern floor lamps. Movie Look: Lost in Translation. Camera: Sony Venice. Lens: Prime 24mm. Film: Kodak Portra. Elements: Maximum sense of space, preserve all walls and windows exactly.',
-  },
-  {
-    id: 'art-deco-glamour',
-    name: 'Art Deco Glamour',
-    image: '/Art-Deco-Glamour.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Velvet furniture, gold accents, geometric pattern rugs, mirrored decor surfaces. Movie Look: The Great Gatsby. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Cinestill 800T. Elements: Glamorous and bold, preserve original room layout.',
-  },
-  {
-    id: 'french-country',
-    name: 'French Country',
-    image: '/French-Country.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Distressed wood furniture, soft linen upholstery, lavender accents, warm candlelight decor. Movie Look: Amelie. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Romantic and warm, preserve room architecture.',
-  },
-  {
-    id: 'tokyo-minimal',
-    name: 'Tokyo Minimal',
-    image: '/Tokyo-Minimal.jpg',
-    icon: Snowflake,
-    prompt: 'Virtual staging. Tatami-inspired low furniture, bonsai plant, minimal stone decor pieces. Movie Look: Lost in Translation. Camera: Sony Venice. Lens: Prime 50mm. Film: Kodak Portra. Elements: Serene and precise, preserve all architecture.',
-  },
-  {
-    id: 'hollywood-regency',
-    name: 'Hollywood Regency',
-    image: '/Hollywood-Regency.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Lacquered furniture, plush velvet seating, brass accents, dramatic floor lamps. Movie Look: Feud. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Cinestill 800T. Elements: Dramatic and luxurious, preserve room structure.',
-  },
-  {
-    id: 'new-york-loft',
-    name: 'New York Loft',
-    image: '/New-York-Loft.jpg',
-    icon: Building2,
-    prompt: 'Virtual staging. Distressed leather couch, black steel frame furniture, reclaimed wood tables, urban decor. Movie Look: Friends. Camera: Sony Venice. Lens: Anamorphic. Film: Kodak Portra. Elements: Urban and lived-in, preserve architecture.',
-  },
-  {
-    id: 'resort-bali',
-    name: 'Bali Resort',
-    image: '/Bali-Resort.jpg',
-    icon: Waves,
-    prompt: 'Virtual staging. Teak wood furniture, tropical indoor plants, rattan accents, warm lantern lamps. Movie Look: Eat Pray Love. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Tropical and serene, preserve room layout exactly.',
-  },
-  {
-    id: 'dark-moody',
-    name: 'Dark Moody',
-    image: '/Dark-Moody.jpg',
-    icon: Palette,
-    prompt: 'Virtual staging. Dark velvet sofa, brass lighting fixtures, deep forest green decor accents, layered rugs. Movie Look: Peaky Blinders. Camera: Sony Venice. Lens: Prime 35mm. Film: Cinestill 800T. Elements: Rich and atmospheric, preserve architecture.',
-  },
-  {
-    id: 'mediterranean-villa',
-    name: 'Mediterranean Villa',
-    image: '/Mediterranean-Villa.jpg',
-    icon: Waves,
-    prompt: 'Virtual staging. Rustic wood furniture, mosaic decor accents, wrought iron lamps, terracotta vases. Movie Look: Under the Tuscan Sun. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Sun-drenched and authentic, preserve architecture.',
-  },
-  {
-    id: 'zen-spa',
-    name: 'Zen Spa',
-    image: '/Zen-Spa.jpg',
-    icon: Snowflake,
-    prompt: 'Virtual staging. Bamboo furniture accents, white linen towels, indoor tabletop water feature, pebble decor. Movie Look: Crazy Rich Asians. Camera: Sony Venice. Lens: Prime 50mm. Film: Kodak Portra. Elements: Healing and calm, preserve room structure.',
-  },
-  {
-    id: 'parisian-chic',
-    name: 'Parisian Chic',
-    image: '/Parisian-Chic.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Velvet armchairs, vintage gold framed mirrors, soft grey area rugs, chic elegant furniture. Movie Look: Midnight in Paris. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Effortlessly elegant, preserve all architecture.',
-  },
-  {
-    id: 'desert-southwest',
-    name: 'Desert Southwest',
-    image: '/Desert-Southwest.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Navajo-pattern rugs, terracotta pots, cacti plants, warm sienna furniture accents. Movie Look: Breaking Bad. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Earthy and warm, preserve architecture.',
-  },
-  {
-    id: 'maximalist-eclectic',
-    name: 'Maximalist Eclectic',
-    image: '/Maximalist-Eclectic.jpg',
-    icon: Palette,
-    prompt: 'Virtual staging. Layered pattern rugs, global art objects, mixed era furniture, curated decorative clutter. Movie Look: The Royal Tenenbaums. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Curated and personal, preserve room layout.',
-  },
-  {
-    id: 'organic-modern',
-    name: 'Organic Modern',
-    image: '/Organic-Modern.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Curved furniture, natural stone coffee table, bouclé fabrics, dried pampas grass vases. Movie Look: Marriage Story. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Soft and natural, preserve original architecture.',
-  },
-  {
-    id: 'miami-modern',
-    name: 'Miami Modern',
-    image: '/Miami-Modern.jpg',
-    icon: Waves,
-    prompt: 'Virtual staging. White lacquer furniture, tropical art pieces, coral and turquoise decor pillows. Movie Look: Bloodline. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Bright and luxurious, preserve architecture.',
-  },
-  {
-    id: 'brutalist-chic',
-    name: 'Brutalist Chic',
-    image: '/Brutalist-Chic.jpg',
-    icon: Building2,
-    prompt: 'Virtual staging. Statement sculptural furniture, dark minimalist decor, architectural floor lamps. Movie Look: Ex Machina. Camera: Sony Venice. Lens: Prime 50mm. Film: Cinestill 800T. Elements: Bold and architectural, preserve all structural surfaces.',
-  },
-  {
-    id: 'cottagecore',
-    name: 'Cottagecore',
-    image: '/Cottagecore.jpg',
-    icon: Leaf,
-    prompt: 'Virtual staging. Vintage wood furniture, floral fabric cushions, dried flower vases, cozy layered textiles. Movie Look: Midsommar. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Whimsical and cozy, preserve room architecture.',
-  },
-  {
-    id: 'luxury-penthouse',
-    name: 'Luxury Penthouse',
-    image: '/Luxury-Penthouse.jpg',
-    icon: Crown,
-    prompt: 'Virtual staging. Ultra-luxury bespoke modern furniture, statement chandelier, marble surface tables, monochromatic luxury rugs. Movie Look: Call Me By Your Name. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Preserve original architecture, photorealistic.',
+    id: 'minimal-grooming',
+    name: 'Minimal Grooming',
+    nameHe: 'גרומינג מינימלי',
+    category: 'full',
+    image: '/looks/Minimal-Grooming.jpg',
+    icon: Flower2,
+    tags: ['minimal', 'clean', 'groomed', 'unisex'],
+    prompt: 'Beauty makeup try-on. Minimal grooming look. Apply skin-toned tinted balm on lips, very subtle definition and grooming, clear brow gel. Clean and effortless. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: natural diffused daylight. Film: Kodak Portra 400. Minimal clean editorial quality.',
   },
 ]
 
+// ─── i18n ────────────────────────────────────────────────────────────────────
 const T = {
   he: {
-    generateBtn: 'צור סטייג\'ינג',
+    generateBtn: 'נסי את הלוק',
     generating: 'מייצר...',
-    uploadTitle: 'העלה תמונת חדר',
-    uploadSub: 'גרור לכאן או לחץ לבחירת קובץ',
-    roomType: 'סוג חדר',
+    uploadTitle: 'העלי סלפי',
+    uploadSub: 'גרור לכאן או לחץ לבחירת תמונה',
+    uploadCta: 'נסי לוק על עצמך',
+    categoryLabel: 'קטגוריית מוצר',
     optional: 'אופציונלי',
-    popularStyles: 'סגנונות פופולריים',
+    popularLooks: 'לוקים פופולריים',
     customInstructions: 'הוראות מותאמות אישית',
-    customPlaceholder: 'בקשות ספציפיות? (למשל: הוסף טלוויזיה גדולה, שמור על הרצפה)',
-    proTouchUp: 'שיפור מקצועי',
-    proTouchUpSub: 'שיפור תאורה וצבעים — ללא שינוי רהיטים',
-    recentRenders: 'רינדורים אחרונים',
-    previousRenders: 'רינדורים קודמים',
+    customPlaceholder: 'בקשות ספציפיות? (למשל: גוון אדום כהה יותר, שפתון מט)',
+    refineOnly: 'עדן את הלוק',
+    refineOnlySub: 'שפר צבעים ופרטים — ללא שינוי הלוק הבסיסי',
+    recentLooks: 'לוקים אחרונים',
     downloadBtn: 'הורד תוצאה',
-    originalRoom: 'חדר מקורי',
+    originalPhoto: 'תמונה מקורית',
     analyzeBtn: 'נתח עם AI',
-    aiRoomAnalysis: 'ניתוח חדר AI',
-    changeStyle: 'שנה סגנון',
+    aiBeautyAnalysis: 'ניתוח יופי AI',
+    changeStyle: 'שנה לוק',
     highConfidence: 'ביטחון גבוה',
     medConfidence: 'ביטחון בינוני',
     lowConfidence: 'ביטחון נמוך',
-    room: 'חדר',
-    style: 'סגנון',
-    roiTitle: 'הערכת ROI לסטייג\'ינג שלך',
-    roiTag: 'על בסיס נתוני 2025',
-    roiPrice: 'עלייה במחיר',
-    roiFaster: 'מכירה מהירה יותר',
-    roiAvg: 'ROI ממוצע',
-    roiBuyers: 'קונים מדמיינים טוב יותר',
-    roiFooter: 'מבוסס על NAR 2025 · נחקרו 10,000+ נכסים',
+    skinTone: 'גוון עור',
+    undertone: 'אנדרטון',
+    disclaimer: 'תצוגה משוערת · לא ייצוג מדויק · Visual preview only',
   },
   en: {
-    generateBtn: 'Generate Staging',
+    generateBtn: 'Try This Look',
     generating: 'Generating...',
-    uploadTitle: 'Upload a Room Photo',
-    uploadSub: 'Drag here or click to select a file',
-    roomType: 'Room Type',
+    uploadTitle: 'Upload a Selfie',
+    uploadSub: 'Drag here or click to select a photo',
+    uploadCta: 'Try a Look on Yourself',
+    categoryLabel: 'Product Category',
     optional: 'Optional',
-    popularStyles: 'Popular Styles',
+    popularLooks: 'Popular Looks',
     customInstructions: 'Custom Instructions',
-    customPlaceholder: 'Any specific requests? (e.g., Add a large TV, Keep the flooring)',
-    proTouchUp: 'Pro Touch-Up',
-    proTouchUpSub: 'Enhance lighting & colors — no furniture changes',
-    recentRenders: 'Recent Renders',
-    previousRenders: 'Previous Renders',
+    customPlaceholder: 'Any specific requests? (e.g., darker red shade, matte finish)',
+    refineOnly: 'Refine Look',
+    refineOnlySub: 'Enhance colors & details — no look change',
+    recentLooks: 'Recent Looks',
     downloadBtn: 'Download Result',
-    originalRoom: 'Original Room',
+    originalPhoto: 'Original Photo',
     analyzeBtn: 'Analyze with AI',
-    aiRoomAnalysis: 'AI Room Analysis',
-    changeStyle: 'Change Style',
+    aiBeautyAnalysis: 'AI Beauty Analysis',
+    changeStyle: 'Change Look',
     highConfidence: 'High Confidence',
     medConfidence: 'Medium Confidence',
     lowConfidence: 'Low Confidence',
-    room: 'Room',
-    style: 'Style',
-    roiTitle: 'Your Staging ROI Estimate',
-    roiTag: 'Based on 2025 Data',
-    roiPrice: 'Price uplift',
-    roiFaster: 'Faster sale',
-    roiAvg: 'Avg ROI',
-    roiBuyers: 'Buyers visualize better',
-    roiFooter: 'Based on NAR 2025 · 10,000+ listings studied',
+    skinTone: 'Skin Tone',
+    undertone: 'Undertone',
+    disclaimer: 'Approximate preview · Not a perfect match · Visual try-on only',
   },
 } as const
 
-const ROOM_TYPES = [
-  'Living Room',
-  'Bedroom',
-  'Kitchen',
-  'Dining Room',
-  'Home Office',
-  'Bathroom',
-  'Empty Space',
+// ─── Product Categories ───────────────────────────────────────────────────────
+const PRODUCT_CATEGORIES = [
+  'Full Look',
+  'Lips',
+  'Blush',
+  'Liner',
 ] as const
 
-const HISTORY_STORAGE_KEY = 'vsa-history-v1'
+const HISTORY_STORAGE_KEY = 'beauty-tryon-history-v1'
 const MAX_HISTORY = 12
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -332,27 +194,19 @@ type HistoryEntry = {
   id: string
   originalUrl: string | null
   generatedUrl: string
-  styleName: string
+  lookName: string
   timestamp: number
 }
 
 type StoredEntry = Omit<HistoryEntry, 'originalUrl'>
 
-// ─── NEW: Claude Vision analysis result ──────────────────────────────────────
-type RoomAnalysis = {
-  roomType: string
-  recommendedStyle: string
+type FaceAnalysis = {
+  skinTone: string
+  undertone: string
+  recommendedPreset: string
   confidence: 'high' | 'medium' | 'low'
   reasoning: string
-  roomAnalysis?: {
-    lightingScore: number
-    lightingNote: string
-    spaceScore: number
-    spaceNote: string
-    conditionNote: string
-    strongPoints: string[]
-    stagingTips: string[]
-  }
+  beautyTips: string[]
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -442,37 +296,35 @@ async function runReplicatePrediction(
   return url
 }
 
-// ─── NEW: Claude Vision room analysis ────────────────────────────────────────
-async function analyzeRoomWithClaude(imageDataUrl: string, lang: 'he' | 'en'): Promise<RoomAnalysis> {
-  const response = await fetch('/api/analyze-room', {
+// ─── Claude Vision — Face / Beauty Analysis ──────────────────────────────────
+async function analyzeFaceWithClaude(imageDataUrl: string, lang: 'he' | 'en'): Promise<FaceAnalysis> {
+  const response = await fetch('/api/analyze-room', {  // reuse same endpoint
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       imageDataUrl,
-      styleNames: STYLES.map(s => s.name).join(', '),
-      roomTypes: ROOM_TYPES.join(', '),
+      styleNames: BEAUTY_PRESETS.map(p => p.name).join(', '),
+      roomTypes: PRODUCT_CATEGORIES.join(', '),
       lang,
+      mode: 'beauty', // signal to the API route to use beauty prompt
     }),
   })
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error((err as { error?: { message?: string } })?.error?.message ?? `Claude API error: ${response.status}`)
+    throw new Error((err as { error?: { message?: string } })?.error?.message ?? `Analysis error: ${response.status}`)
   }
 
   const data = await response.json()
   const rawText = (data.content as Array<{ type: string; text?: string }>)
     .find(b => b.type === 'text')?.text ?? ''
 
-  // Strip any accidental markdown fences
   const clean = rawText.replace(/```json|```/g, '').trim()
-  const parsed = JSON.parse(clean) as RoomAnalysis
+  const parsed = JSON.parse(clean) as FaceAnalysis
 
-  // Validate recommendedStyle is actually in our list
-  const validStyle = STYLES.find(s => s.name === parsed.recommendedStyle)
-  if (!validStyle) {
-    // Fallback: pick first style but keep the room type
-    return { ...parsed, recommendedStyle: STYLES[0].name }
+  const validPreset = BEAUTY_PRESETS.find(p => p.name === parsed.recommendedPreset)
+  if (!validPreset) {
+    return { ...parsed, recommendedPreset: BEAUTY_PRESETS[0].name }
   }
 
   return parsed
@@ -506,22 +358,21 @@ function App() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [sliderPosition, setSliderPosition] = useState(50)
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
-  const [selectedRoomType, setSelectedRoomType] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [customInstructions, setCustomInstructions] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistoryFromStorage)
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null)
   const [brokenImgs, setBrokenImgs] = useState<Set<string>>(new Set())
 
-  // ── NEW: Claude Vision state ─────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [roomAnalysis, setRoomAnalysis] = useState<RoomAnalysis | null>(null)
+  const [faceAnalysis, setFaceAnalysis] = useState<FaceAnalysis | null>(null)
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
 
-  // ── File upload ─────────────────────────────────────────────────────────────
+  // ── File upload ──────────────────────────────────────────────────────────────
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return
     if (originalImage) URL.revokeObjectURL(originalImage)
@@ -532,34 +383,33 @@ function App() {
     setGeneratedImage(null)
     setActiveHistoryId(null)
     setError(null)
-    setRoomAnalysis(null)
+    setFaceAnalysis(null)
     setAnalysisDismissed(false)
   }
 
-  // ── Manual Claude Vision trigger ────────────────────────────────────────────
+  // ── Claude Vision trigger ────────────────────────────────────────────────────
   const handleAnalyzeWithAI = async () => {
     if (!originalImage) return
 
-    setRoomAnalysis(null)
+    setFaceAnalysis(null)
     setAnalysisDismissed(false)
     setIsAnalyzing(true)
 
     try {
       const dataUrl = await blobUrlToDataUrl(originalImage)
-      const analysis = await analyzeRoomWithClaude(dataUrl, lang)
-      setRoomAnalysis(analysis)
-      // Auto-select only the recommended style; room type stays user-controlled
-      setSelectedPreset(analysis.recommendedStyle)
-      console.log('[Claude Vision] Analysis complete:', analysis)
+      const analysis = await analyzeFaceWithClaude(dataUrl, lang)
+      setFaceAnalysis(analysis)
+      setSelectedPreset(analysis.recommendedPreset)
+      console.log('[Claude Vision] Beauty analysis complete:', analysis)
     } catch (err) {
-      console.error('[Claude Vision] Analysis failed:', err)
+      console.error('[Claude Vision] Beauty analysis failed:', err)
       // Silent failure — user can still select manually
     } finally {
       setIsAnalyzing(false)
     }
   }
 
-  // ── Clear ───────────────────────────────────────────────────────────────────
+  // ── Clear ────────────────────────────────────────────────────────────────────
   const handleClear = () => {
     if (originalImage) {
       URL.revokeObjectURL(originalImage)
@@ -569,19 +419,19 @@ function App() {
     setGeneratedImage(null)
     setIsGenerating(false)
     setSelectedPreset(null)
-    setSelectedRoomType(null)
+    setSelectedCategory(null)
     setCustomInstructions('')
     setActiveHistoryId(null)
     setError(null)
-    setRoomAnalysis(null)
+    setFaceAnalysis(null)
     setAnalysisDismissed(false)
     setIsAnalyzing(false)
   }
 
-  // ── Download ────────────────────────────────────────────────────────────────
+  // ── Download ─────────────────────────────────────────────────────────────────
   const handleDownload = async () => {
     if (!generatedImage) return
-    const name = `Virtual-Staging-${(selectedPreset ?? 'Result').replace(/\s+/g, '-')}.jpg`
+    const name = `BeautyTryOn-${(selectedPreset ?? 'Look').replace(/\s+/g, '-')}.jpg`
     try {
       const res = await fetch(generatedImage)
       const blob = await res.blob()
@@ -598,7 +448,7 @@ function App() {
     }
   }
 
-  // ── Generate ────────────────────────────────────────────────────────────────
+  // ── Generate Look ────────────────────────────────────────────────────────────
   const handleApplyEdit = async () => {
     if (!originalImage) return
 
@@ -612,19 +462,18 @@ function App() {
     setIsGenerating(true)
 
     try {
-      const presetName  = selectedPreset ?? STYLES[0].name
-      const customNote  = customInstructions.trim()
-      const activeStyle = STYLES.find(s => s.name === presetName) ?? STYLES[0]
-      const roomLabel   = selectedRoomType ?? 'room'
+      const presetName = selectedPreset ?? BEAUTY_PRESETS[0].name
+      const customNote = customInstructions.trim()
+      const activePreset = BEAUTY_PRESETS.find(p => p.name === presetName) ?? BEAUTY_PRESETS[0]
 
-      const styledPrompt = selectedRoomType
-        ? activeStyle.prompt.replace(/^(Virtual staging)[^.]*\./, `$1, ${selectedRoomType}.`)
-        : activeStyle.prompt
+      // Optionally layer in category-specific instruction
+      const categoryNote = selectedCategory && selectedCategory !== 'Full Look'
+        ? ` Focus especially on ${selectedCategory.toLowerCase()} products.`
+        : ''
 
       const prompt = [
-        `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
-        styledPrompt,
-        'Only ADD furniture and decor. Do NOT alter walls, floors, ceiling, windows, doors, or perspective.',
+        activePreset.prompt,
+        categoryNote,
         customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
 
@@ -638,7 +487,7 @@ function App() {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
         generatedUrl: outputUrl,
-        styleName: presetName,
+        lookName: presetName,
         timestamp: Date.now(),
       }
       setHistory((prev) => {
@@ -648,14 +497,14 @@ function App() {
       })
       setActiveHistoryId(entry.id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Virtual staging failed.')
+      setError(err instanceof Error ? err.message : 'Beauty try-on failed.')
     } finally {
       setIsGenerating(false)
     }
   }
 
-  // ── Pro Touch-Up ────────────────────────────────────────────────────────────
-  const handleProTouchUp = async () => {
+  // ── Refine Only (no look change, just enhance) ───────────────────────────────
+  const handleRefineOnly = async () => {
     if (!originalImage) return
 
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
@@ -671,10 +520,9 @@ function App() {
       const customNote = customInstructions.trim()
 
       const prompt = [
-        'Edit this photo: enhance the visual quality for professional real estate photography.',
-        'Perfect lighting, clean up space, improve contrast and colors.',
-        'Movie Look: Architectural Digest. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra.',
-        'Elements: Preserve structural integrity and existing furniture completely, highly detailed, photorealistic, just enhance visual quality.',
+        'Beauty photo enhancement. Refine existing makeup colors — improve color vibrancy, blend edges, enhance skin glow.',
+        'Do NOT change the makeup look or add new products. Preserve face shape, identity, and all existing features completely.',
+        'Camera: Sony A7IV. Lighting: beauty ring light. Film: Kodak Portra 400. Photorealistic editorial quality.',
         customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
 
@@ -688,7 +536,7 @@ function App() {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
         generatedUrl: outputUrl,
-        styleName: 'Pro Touch-Up',
+        lookName: 'Refined Look',
         timestamp: Date.now(),
       }
       setHistory((prev) => {
@@ -698,24 +546,24 @@ function App() {
       })
       setActiveHistoryId(entry.id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Enhancement failed.')
+      setError(err instanceof Error ? err.message : 'Refinement failed.')
     } finally {
       setIsGenerating(false)
     }
   }
 
-  // ── Load history card ───────────────────────────────────────────────────────
+  // ── Load history card ────────────────────────────────────────────────────────
   const handleLoadHistory = (entry: HistoryEntry) => {
     setOriginalImage(entry.originalUrl)
     setGeneratedImage(entry.generatedUrl)
-    setSelectedPreset(entry.styleName)
+    setSelectedPreset(entry.lookName)
     setIsUploaded(true)
     setSliderPosition(50)
     setActiveHistoryId(entry.id)
     setError(null)
   }
 
-  // ── Delete history entry ────────────────────────────────────────────────────
+  // ── Delete history entry ─────────────────────────────────────────────────────
   const handleDeleteHistory = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setHistory((prev) => {
@@ -726,7 +574,6 @@ function App() {
     if (activeHistoryId === id) setActiveHistoryId(null)
   }
 
-  // ── Timestamp label — now shows date when not today ─────────────────────────
   const formatTime = (ts: number) => {
     const d = new Date(ts)
     const now = new Date()
@@ -742,7 +589,7 @@ function App() {
       d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
-  // ── Shared history gallery component ────────────────────────────────────────
+  // ── History Gallery ──────────────────────────────────────────────────────────
   const HistoryGallery = ({ activeStyle }: { activeStyle: boolean }) => (
     <div
       className="flex gap-3 overflow-x-auto pb-3"
@@ -771,7 +618,7 @@ function App() {
             ) : (
               <img
                 src={entry.generatedUrl}
-                alt={entry.styleName}
+                alt={entry.lookName}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 onError={() => markBroken(entry.id)}
               />
@@ -782,7 +629,7 @@ function App() {
           </div>
           <div className="px-3.5 py-3">
             <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
-              {entry.styleName}
+              {entry.lookName}
             </p>
             <p className="mt-0.5 text-[11px] text-gray-600">
               {formatTime(entry.timestamp)}
@@ -801,9 +648,10 @@ function App() {
     </div>
   )
 
-  const activeBgImage = (STYLES.find(s => s.name === selectedPreset) ?? STYLES[0]).image
+  const activeBgPreset = (BEAUTY_PRESETS.find(p => p.name === selectedPreset) ?? BEAUTY_PRESETS[0])
+  const activeBgImage = activeBgPreset.image
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
 
@@ -815,7 +663,7 @@ function App() {
           style={{ inset: '-8%', backgroundImage: `url(${activeBgImage})` }}
         />
       </div>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/35" aria-hidden="true" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />
 
       {/* ── Header ── */}
       <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
@@ -829,23 +677,27 @@ function App() {
             </div>
             <div>
               <p className="text-lg font-extrabold leading-none tracking-tight text-white">
-                Magic Snap Booth
+                Beauty AI
               </p>
               <p className="mt-1 text-xs leading-none text-gray-500">
-                Real Estate AI · Virtual Staging
+                Virtual Makeup Try-On
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
-              <p className="mt-0.5 text-[11px] text-gray-500">Virtual Staging Studio</p>
+              <p className="text-sm font-semibold text-white">
+                {lang === 'he' ? 'ברוכה הבאה 👋' : 'Welcome back 👋'}
+              </p>
+              <p className="mt-0.5 text-[11px] text-gray-500">
+                {lang === 'he' ? 'סטודיו לאיפור וירטואלי' : 'Makeup Try-On Studio'}
+              </p>
             </div>
             <div
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-base font-extrabold text-white"
               style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
             >
-              A
+              <Heart className="h-5 w-5" />
             </div>
           </div>
         </div>
@@ -870,7 +722,7 @@ function App() {
                     e.target.value = ''
                   }}
                   className="sr-only"
-                  aria-label="Upload room photo"
+                  aria-label="Upload selfie photo"
                 />
                 <div
                   role="button"
@@ -901,8 +753,14 @@ function App() {
                         <ImageIcon className="h-9 w-9" />
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-bold text-white">AI Space Designer Pro</p>
-                        <p className="mt-1.5 text-sm text-gray-400">Drop your room photo or click to upload</p>
+                        <p className="text-lg font-bold text-white">
+                          {lang === 'he' ? 'ביוטי AI — נסי לוק על עצמך' : 'Beauty AI — Try a Look on Yourself'}
+                        </p>
+                        <p className="mt-1.5 text-sm text-gray-400">
+                          {lang === 'he'
+                            ? 'העלי סלפי — בחרי לוק — ראי את התוצאה בשניות'
+                            : 'Upload a selfie · Choose a look · See the result in seconds'}
+                        </p>
                         <p className="mt-1 text-xs text-gray-600">PNG, JPG up to 10 MB</p>
                       </div>
                       <div
@@ -910,7 +768,13 @@ function App() {
                         style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
                       >
                         <Sparkles className="h-4 w-4" />
-                        Stage My Room
+                        {t.uploadCta}
+                      </div>
+                      {/* Tips row */}
+                      <div className="flex gap-4 text-[11px] text-gray-600">
+                        <span>✦ {lang === 'he' ? 'אור טוב' : 'Good lighting'}</span>
+                        <span>✦ {lang === 'he' ? 'פנים מלאות' : 'Face forward'}</span>
+                        <span>✦ {lang === 'he' ? 'ללא משקפיים' : 'No glasses'}</span>
                       </div>
                     </div>
                   </div>
@@ -930,7 +794,7 @@ function App() {
                     className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Clear / Start Over
+                    {lang === 'he' ? 'התחל מחדש' : 'Clear / Start Over'}
                   </button>
                   {generatedImage && (
                     <button
@@ -947,7 +811,7 @@ function App() {
 
                 {/* ── Image Viewer ── */}
                 <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-3xl">
-                  <div className="relative w-full overflow-hidden aspect-video max-h-[52vh]">
+                  <div className="relative w-full overflow-hidden aspect-[3/4] max-h-[65vh]">
 
                     {/* Generating Overlay */}
                     {isGenerating && (
@@ -959,9 +823,11 @@ function App() {
                           </div>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-white">AI is staging your room</p>
+                          <p className="text-sm font-semibold text-white">
+                            {lang === 'he' ? 'מייצר את הלוק שלך...' : 'Applying your look...'}
+                          </p>
                           <p className="mt-1 text-xs text-gray-500">
-                            {selectedPreset ?? STYLES[0].name} style · typically 30–60 sec
+                            {selectedPreset ?? BEAUTY_PRESETS[0].name} · {lang === 'he' ? 'בדרך כלל 30–60 שניות' : 'typically 30–60 sec'}
                           </p>
                         </div>
                         <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
@@ -973,11 +839,11 @@ function App() {
                     {/* Before / After Slider */}
                     {generatedImage && originalImage && !isGenerating ? (
                       <>
-                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover" />
+                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover object-top" />
                         <img
                           src={generatedImage}
                           alt="After"
-                          className="absolute inset-0 h-full w-full object-cover"
+                          className="absolute inset-0 h-full w-full object-cover object-top"
                           style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                         />
                         <div
@@ -990,8 +856,12 @@ function App() {
                         >
                           <ArrowLeftRight className="h-4 w-4 text-coral" />
                         </div>
-                        <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">Before</span>
-                        <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">After</span>
+                        <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+                          {lang === 'he' ? 'לפני' : 'Before'}
+                        </span>
+                        <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+                          {lang === 'he' ? 'אחרי' : 'After'}
+                        </span>
                         <input
                           type="range"
                           min={0}
@@ -1003,12 +873,12 @@ function App() {
                         />
                       </>
                     ) : generatedImage && !originalImage && !isGenerating ? (
-                      <img src={generatedImage} alt="Generated result" className="absolute inset-0 h-full w-full object-cover" />
+                      <img src={generatedImage} alt="Generated look" className="absolute inset-0 h-full w-full object-cover object-top" />
                     ) : (
                       <img
                         src={originalImage!}
-                        alt="Original room"
-                        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
+                        alt="Original selfie"
+                        className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
                       />
                     )}
                   </div>
@@ -1017,10 +887,15 @@ function App() {
                     {isGenerating
                       ? t.generating
                       : generatedImage
-                      ? 'Before ← Drag → After'
-                      : t.originalRoom}
+                      ? (lang === 'he' ? 'לפני ← גרור → אחרי' : 'Before ← Drag → After')
+                      : t.originalPhoto}
                   </p>
                 </div>
+
+                {/* ── Disclaimer ── */}
+                <p className="mt-3 text-center text-[11px] text-gray-600">
+                  ✦ {t.disclaimer}
+                </p>
 
                 {/* ── Manual Claude Vision trigger ── */}
                 {originalImage && !isGenerating && (
@@ -1037,8 +912,8 @@ function App() {
                   </div>
                 )}
 
-                {/* ── NEW: Claude Vision Analysis Banner ────────────────────── */}
-                {(isAnalyzing || (roomAnalysis && !analysisDismissed)) && (
+                {/* ── Claude Vision Beauty Analysis Banner ── */}
+                {(isAnalyzing || (faceAnalysis && !analysisDismissed)) && (
                   <div
                     className="mt-4 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-3xl transition-all duration-500"
                     style={{
@@ -1049,130 +924,86 @@ function App() {
                     }}
                   >
                     {isAnalyzing ? (
-                      /* ── Analyzing state ── */
                       <div className="flex items-center gap-3 px-5 py-4">
                         <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
                           <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
                           <Brain className="relative h-4 w-4 text-coral animate-pulse" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">{t.aiRoomAnalysis}</p>
+                          <p className="text-sm font-semibold text-white">{t.aiBeautyAnalysis}</p>
                           <p className="text-[11px] text-gray-500 mt-0.5">
                             {lang === 'he'
-                              ? 'מנתח סוג חדר וממליץ על סגנון סטייג׳ינג'
-                              : 'Detecting room type · Recommending best style'}
+                              ? 'מנתח גוון עור ומציע לוק מותאם אישית...'
+                              : 'Analyzing skin tone · Recommending best look...'}
                           </p>
                         </div>
                       </div>
-                    ) : roomAnalysis ? (
-                      /* ── Analysis result ── */
+                    ) : faceAnalysis ? (
                       <div className="px-5 py-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3">
-                            <div
-                              className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/20 to-purple-500/20 ring-1 ring-coral/30"
-                            >
+                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/20 to-purple-500/20 ring-1 ring-coral/30">
                               <CheckCircle2 className="h-4 w-4 text-coral" />
                             </div>
                             <div className="flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-bold text-white">{t.aiRoomAnalysis}</p>
+                                <p className="text-sm font-bold text-white">{t.aiBeautyAnalysis}</p>
                                 <span className="rounded-full border border-coral/30 bg-coral/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
                                   Claude Vision
                                 </span>
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                                    roomAnalysis.confidence === 'high'
+                                    faceAnalysis.confidence === 'high'
                                       ? 'bg-green-500/15 text-green-400 border border-green-500/25'
-                                      : roomAnalysis.confidence === 'medium'
+                                      : faceAnalysis.confidence === 'medium'
                                       ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
                                       : 'bg-gray-500/15 text-gray-400 border border-gray-500/25'
                                   }`}
                                 >
-                                  {roomAnalysis.confidence === 'high'
+                                  {faceAnalysis.confidence === 'high'
                                     ? t.highConfidence
-                                    : roomAnalysis.confidence === 'medium'
+                                    : faceAnalysis.confidence === 'medium'
                                     ? t.medConfidence
                                     : t.lowConfidence}
                                 </span>
                               </div>
                               <div className="mt-2 flex flex-wrap gap-3">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.room}:</span>
+                                  <span className="text-[11px] text-gray-500">{t.skinTone}:</span>
                                   <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                    {roomAnalysis.roomType}
+                                    {faceAnalysis.skinTone}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.style}:</span>
+                                  <span className="text-[11px] text-gray-500">{t.undertone}:</span>
                                   <span className="rounded-lg bg-coral/15 px-2 py-0.5 text-[11px] font-semibold text-coral">
-                                    {roomAnalysis.recommendedStyle}
+                                    {faceAnalysis.undertone}
                                   </span>
                                 </div>
                               </div>
                               <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
-                                {roomAnalysis.reasoning}
+                                {faceAnalysis.reasoning}
                               </p>
-                              {roomAnalysis.roomAnalysis && (
-                                <div className="mt-4 space-y-4">
-                                  {/* Score bars: Natural Light & Space & Flow */}
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
-                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Natural Light</p>
-                                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-                                        <div
-                                          className="h-full rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] transition-all duration-700"
-                                          style={{ width: `${Math.min(10, Math.max(0, roomAnalysis.roomAnalysis.lightingScore)) * 10}%` }}
-                                        />
-                                      </div>
-                                      <p className="mt-1 text-[10px] text-gray-400">{roomAnalysis.roomAnalysis.lightingScore}/10 · {roomAnalysis.roomAnalysis.lightingNote}</p>
-                                    </div>
-                                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5">
-                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">Space & Flow</p>
-                                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-                                        <div
-                                          className="h-full rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] transition-all duration-700"
-                                          style={{ width: `${Math.min(10, Math.max(0, roomAnalysis.roomAnalysis.spaceScore)) * 10}%` }}
-                                        />
-                                      </div>
-                                      <p className="mt-1 text-[10px] text-gray-400">{roomAnalysis.roomAnalysis.spaceScore}/10 · {roomAnalysis.roomAnalysis.spaceNote}</p>
-                                    </div>
-                                  </div>
-                                  {/* Strong points — max 3 green check badges */}
-                                  {roomAnalysis.roomAnalysis.strongPoints?.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {(roomAnalysis.roomAnalysis.strongPoints.slice(0, 3)).map((point, i) => (
-                                        <span
-                                          key={i}
-                                          className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-[11px] font-medium text-green-400"
-                                        >
-                                          <Check className="h-3 w-3 shrink-0" />
-                                          {point}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {/* Staging tips — 2 bullets in darker box */}
-                                  {roomAnalysis.roomAnalysis.stagingTips?.length > 0 && (
-                                    <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
-                                      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">Staging Tips</p>
-                                      <ul className="space-y-1">
-                                        {(roomAnalysis.roomAnalysis.stagingTips.slice(0, 2)).map((tip, i) => (
-                                          <li key={i} className="flex gap-2 text-[11px] text-gray-300">
-                                            <span className="text-coral mt-0.5">•</span>
-                                            <span>{tip}</span>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
+                              {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
+                                <div className="mt-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                                    {lang === 'he' ? 'טיפים לך' : 'Beauty Tips'}
+                                  </p>
+                                  <ul className="space-y-1">
+                                    {faceAnalysis.beautyTips.slice(0, 2).map((tip, i) => (
+                                      <li key={i} className="flex gap-2 text-[11px] text-gray-300">
+                                        <span className="text-coral mt-0.5">•</span>
+                                        <span>{tip}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
                                 </div>
                               )}
                               <button
                                 type="button"
                                 onClick={() => {
                                   setAnalysisDismissed(true)
-                                  document.getElementById('popular-styles-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                                  document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
                                 }}
                                 className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
                               >
@@ -1204,58 +1035,25 @@ function App() {
                   </div>
                 )}
 
-                {generatedImage && !isGenerating && (
-                  <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-3xl">
-                    <div className="px-5 py-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
-                          <Sparkles className="h-4 w-4 text-green-400" />
-                        </div>
-                        <h2 className="text-sm font-bold text-white">{t.roiTitle}</h2>
-                        <span className="rounded-full bg-green-500/15 border border-green-500/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-400">{t.roiTag}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
-                          <p className="text-lg font-extrabold text-white">6–10%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiPrice}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
-                          <p className="text-lg font-extrabold text-white">58%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiFaster}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
-                          <p className="text-lg font-extrabold text-coral">500–3,600%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiAvg}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
-                          <p className="text-lg font-extrabold text-white">83%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiBuyers}</p>
-                        </div>
-                      </div>
-                      <p className="mt-3 text-[11px] text-gray-600 text-center">{t.roiFooter}</p>
-                    </div>
-                  </section>
-                )}
-
-                {/* ── Style Presets carousel ── */}
-                <section id="popular-styles-carousel" className="mt-5">
+                {/* ── Looks Carousel ── */}
+                <section id="looks-carousel" className="mt-5">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">Popular Styles</h2>
+                    <h2 className="text-sm font-bold text-white">{t.popularLooks}</h2>
                     <span className="text-xs font-medium text-gray-500">
-                      {selectedPreset ?? 'None selected'}
+                      {selectedPreset ?? (lang === 'he' ? 'לא נבחר' : 'None selected')}
                     </span>
                   </div>
                   <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {STYLES.map((style) => {
-                      const PresetIcon = style.icon
-                      const isSelected = selectedPreset === style.name
-                      const isRecommended = roomAnalysis && !analysisDismissed && roomAnalysis.recommendedStyle === style.name
+                    {BEAUTY_PRESETS.map((preset) => {
+                      const PresetIcon = preset.icon
+                      const isSelected = selectedPreset === preset.name
+                      const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
                       return (
                         <button
-                          key={style.id}
+                          key={preset.id}
                           type="button"
-                          onClick={() => setSelectedPreset(style.name)}
-                          className={`group relative flex shrink-0 w-56 md:w-64 h-36 md:h-44 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                          onClick={() => setSelectedPreset(preset.name)}
+                          className={`group relative flex shrink-0 w-44 md:w-52 h-56 md:h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
                             isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
                           }`}
                           style={{
@@ -1264,40 +1062,52 @@ function App() {
                               : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
                           }}
                         >
-                          {brokenImgs.has(`preset-${style.id}`) ? (
+                          {brokenImgs.has(`preset-${preset.id}`) ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
                               <ImageIcon className="h-6 w-6 text-gray-600" />
                               <span className="text-[10px] text-gray-600">No preview</span>
                             </div>
                           ) : (
                             <img
-                              src={style.image}
-                              alt={style.name}
-                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              onError={() => markBroken(`preset-${style.id}`)}
+                              src={preset.image}
+                              alt={preset.name}
+                              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
+                              onError={() => markBroken(`preset-${preset.id}`)}
                             />
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                           {isSelected && (
                             <div className="absolute inset-0 bg-gradient-to-t from-coral/30 via-transparent to-transparent" />
                           )}
-                          {/* ── NEW: AI Recommended badge ── */}
+                          {/* Category badge */}
+                          <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 backdrop-blur-sm">
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-white/70">{preset.category}</span>
+                          </div>
+                          {/* AI Recommended badge */}
                           {isRecommended && !isSelected && (
-                            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-coral/90 px-2 py-0.5 backdrop-blur-sm">
+                            <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-coral/90 px-2 py-0.5 backdrop-blur-sm">
                               <Brain className="h-2.5 w-2.5 text-white" />
                               <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
                             </div>
                           )}
                           {isRecommended && isSelected && (
-                            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 backdrop-blur-sm">
+                            <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 backdrop-blur-sm">
                               <CheckCircle2 className="h-2.5 w-2.5 text-white" />
                               <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
                             </div>
                           )}
                           <div className="relative z-10 mt-auto flex items-end justify-between p-3">
-                            <span className="max-w-[80%] text-xs font-bold leading-tight text-white drop-shadow">
-                              {style.name}
-                            </span>
+                            <div>
+                              <span className="block max-w-[90%] text-xs font-bold leading-tight text-white drop-shadow">
+                                {lang === 'he' ? preset.nameHe : preset.name}
+                              </span>
+                              {/* Tags */}
+                              <div className="mt-1 flex gap-1 flex-wrap">
+                                {preset.tags.slice(0, 2).map(tag => (
+                                  <span key={tag} className="rounded-full bg-white/15 px-1.5 py-0.5 text-[9px] text-white/60">{tag}</span>
+                                ))}
+                              </div>
+                            </div>
                             <div
                               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
                                 isSelected
@@ -1315,21 +1125,25 @@ function App() {
                   </div>
                 </section>
 
-                {/* ── Room Type ── */}
+                {/* ── Product Category Filter ── */}
                 <section className="mt-6">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">{t.roomType}</h2>
+                    <h2 className="text-sm font-bold text-white">{t.categoryLabel}</h2>
                     <span className="text-xs font-medium text-coral">{t.optional}</span>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {ROOM_TYPES.map((room) => {
-                      const isActive = selectedRoomType === room
-                      const isAiDetected = roomAnalysis && !analysisDismissed && roomAnalysis.roomType === room
+                    {PRODUCT_CATEGORIES.map((cat) => {
+                      const isActive = selectedCategory === cat
+                      const isAiDetected = faceAnalysis && !analysisDismissed && (
+                        (cat === 'Lips' && ['Classic Red Lip', 'Soft Glam'].includes(faceAnalysis.recommendedPreset)) ||
+                        (cat === 'Blush' && ['Clean Glow', 'Warm Bronze'].includes(faceAnalysis.recommendedPreset)) ||
+                        (cat === 'Full Look' && ['Natural Everyday', 'Office Polished'].includes(faceAnalysis.recommendedPreset))
+                      )
                       return (
                         <button
-                          key={room}
+                          key={cat}
                           type="button"
-                          onClick={() => setSelectedRoomType(isActive ? null : room)}
+                          onClick={() => setSelectedCategory(isActive ? null : cat)}
                           className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
                             isActive
                               ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
@@ -1337,8 +1151,7 @@ function App() {
                           }`}
                           style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
                         >
-                          {room}
-                          {/* ── NEW: small dot indicator for AI-detected room ── */}
+                          {cat}
                           {isAiDetected && !isActive && (
                             <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-coral align-middle" />
                           )}
@@ -1348,11 +1161,11 @@ function App() {
                   </div>
                 </section>
 
-                {/* ── Pro Touch-Up ── */}
+                {/* ── Refine Only ── */}
                 <section className="mt-5">
                   <button
                     type="button"
-                    onClick={handleProTouchUp}
+                    onClick={handleRefineOnly}
                     disabled={isGenerating}
                     className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
                   >
@@ -1360,11 +1173,11 @@ function App() {
                       style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
                     />
                     <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40">
-                      <Sparkles className="h-4 w-4 text-coral" />
+                      <Palette className="h-4 w-4 text-coral" />
                     </div>
                     <div className="relative">
-                      <p className="text-sm font-semibold text-white">{t.proTouchUp}</p>
-                      <p className="mt-0.5 text-[11px] text-gray-500">{t.proTouchUpSub}</p>
+                      <p className="text-sm font-semibold text-white">{t.refineOnly}</p>
+                      <p className="mt-0.5 text-[11px] text-gray-500">{t.refineOnlySub}</p>
                     </div>
                     <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
                       <Send className="h-4 w-4" />
@@ -1392,11 +1205,11 @@ function App() {
                   <section className="mt-10">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <h2 className="text-sm font-bold text-white">{t.recentRenders}</h2>
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <h2 className="text-sm font-bold text-white">{t.recentLooks}</h2>
                       </div>
                       <span className="text-xs font-medium text-coral">
-                        {history.length} render{history.length !== 1 ? 's' : ''}
+                        {history.length} look{history.length !== 1 ? 's' : ''}
                       </span>
                     </div>
                     <HistoryGallery activeStyle={true} />
@@ -1412,7 +1225,9 @@ function App() {
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-gray-500" />
-                    <h2 className="text-sm font-bold text-white">Previous Renders</h2>
+                    <h2 className="text-sm font-bold text-white">
+                      {lang === 'he' ? 'לוקים קודמים' : 'Previous Looks'}
+                    </h2>
                   </div>
                   <span className="text-xs font-medium text-coral">{history.length} saved</span>
                 </div>
@@ -1439,8 +1254,8 @@ function App() {
           {isUploaded && !selectedPreset && !isGenerating && !error && (
             <p className="text-center text-xs text-gray-600">
               {lang === 'he'
-                ? 'בחר סוג חדר וסגנון סטייג׳ינג, ואז לחץ על כפתור היצירה'
-                : 'Select a room type & style preset, then click Generate'}
+                ? 'בחרי לוק מהקרוסלה, ואז לחצי על הכפתור'
+                : 'Choose a look from the carousel, then click Generate'}
             </p>
           )}
           <div className="flex items-center justify-center">
@@ -1466,7 +1281,7 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <Sparkles className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                     {t.generateBtn}
                   </>
                 )}
