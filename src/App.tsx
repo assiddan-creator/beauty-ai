@@ -15,18 +15,16 @@ import {
   Palette,
   Crown,
   ArrowLeftRight,
+  Brain,
+  CheckCircle2,
   type LucideIcon,
 } from 'lucide-react'
 
 // ─── Replicate ──────────────────────────────────────────────────────────────
-// google/nano-banana-pro — Google DeepMind / Gemini 3 Pro image editing model
-// Pinned to this version so deployments are deterministic.
 const NANO_BANANA_PRO_VERSION =
   '99256cc418d9ac41854575e2f1c8846ce2defd0c0fb6ff2d5cbc3c826be75bc8'
 
 // ─── Style Presets ───────────────────────────────────────────────────────────
-// Single source of truth: id, display name, local preview image, icon, and the
-// cinematic prompt sent directly to nano-banana-pro.
 const STYLES: Array<{
   id: string
   name: string
@@ -92,7 +90,6 @@ const STYLES: Array<{
   },
 ]
 
-
 const ROOM_TYPES = [
   'Living Room',
   'Bedroom',
@@ -109,13 +106,21 @@ const MAX_HISTORY = 12
 // ─── Types ───────────────────────────────────────────────────────────────────
 type HistoryEntry = {
   id: string
-  originalUrl: string | null  // blob URL (session only; null when loaded from localStorage)
-  generatedUrl: string        // Replicate delivery URL – persistent
+  originalUrl: string | null
+  generatedUrl: string
   styleName: string
   timestamp: number
 }
 
 type StoredEntry = Omit<HistoryEntry, 'originalUrl'>
+
+// ─── NEW: Claude Vision analysis result ──────────────────────────────────────
+type RoomAnalysis = {
+  roomType: string          // e.g. "Living Room"
+  recommendedStyle: string  // must match a STYLES[].name exactly
+  confidence: 'high' | 'medium' | 'low'
+  reasoning: string         // 1-2 sentence explanation shown to the user
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 async function blobUrlToDataUrl(blobUrl: string): Promise<string> {
@@ -131,7 +136,6 @@ async function blobUrlToDataUrl(blobUrl: string): Promise<string> {
   return `data:${mimeType};base64,${data}`
 }
 
-// Shape returned by every Replicate prediction endpoint call
 type ReplicatePrediction = {
   id: string
   status: 'starting' | 'processing' | 'succeeded' | 'failed' | 'canceled' | string
@@ -158,21 +162,11 @@ async function runReplicatePrediction(
     },
   }
 
-  // ── 1. Submit prediction ─────────────────────────────────────────────────
-  console.log('[Replicate] Submitting prediction', {
-    version: NANO_BANANA_PRO_VERSION,
-    promptLength: prompt.length,
-    prompt,
-    imagePrefixOk: imageDataUrl.startsWith('data:image/'),
-    imageSizeKB: Math.round(imageDataUrl.length * 0.75 / 1024),
-  })
-
   const submitRes = await fetch('/api/replicate/v1/predictions', {
     method: 'POST',
     headers: {
       Authorization: `Token ${token}`,
       'Content-Type': 'application/json',
-      // Ask the API to block and return the result if it finishes within 60 s
       Prefer: 'wait=60',
     },
     body: JSON.stringify(payload),
@@ -187,39 +181,17 @@ async function runReplicatePrediction(
 
   let prediction: ReplicatePrediction = await submitRes.json()
 
-  console.log('[Replicate] Initial response', {
-    id: prediction.id,
-    status: prediction.status,
-    output: prediction.output,
-    error: prediction.error,
-  })
-
-  // ── 2. Poll until done if the wait window expired ────────────────────────
-  // The Prefer: wait=60 header makes Replicate block for up to 60 s, but
-  // nano-banana-pro at 2 K can take longer. If it's still running we poll.
   while (prediction.status === 'starting' || prediction.status === 'processing') {
-    console.log(`[Replicate] Polling — current status: ${prediction.status}`)
-
     await new Promise<void>(r => setTimeout(r, 3000))
-
-    // Route poll through the same /api/replicate proxy to avoid CORS
     const pollPath = prediction.urls?.get?.replace('https://api.replicate.com', '/api/replicate')
     if (!pollPath) throw new Error('No polling URL returned by Replicate')
-
     const pollRes = await fetch(pollPath, {
       headers: { Authorization: `Token ${token}` },
     })
     if (!pollRes.ok) throw new Error(`Poll failed: ${pollRes.status}`)
-
     prediction = await pollRes.json()
-    console.log('[Replicate] Poll result', {
-      status: prediction.status,
-      output: prediction.output,
-      error: prediction.error,
-    })
   }
 
-  // ── 3. Handle terminal states ────────────────────────────────────────────
   if (prediction.status === 'failed' || prediction.status === 'canceled') {
     throw new Error(prediction.error ?? `Prediction ${prediction.status}`)
   }
@@ -227,19 +199,93 @@ async function runReplicatePrediction(
     throw new Error(`Unexpected status: ${prediction.status}`)
   }
 
-  // ── 4. Extract output URL ────────────────────────────────────────────────
-  // nano-banana-pro returns a plain string, but guard against array output
-  // from fallback models (seedream-4.5 returns string[] in some versions).
   const rawOutput = prediction.output
   const url = Array.isArray(rawOutput) ? rawOutput[0] : rawOutput
-
-  console.log('[Replicate] ✅ Final output URL:', url)
 
   if (typeof url !== 'string' || url.trim() === '') {
     throw new Error(`No valid output URL received. Raw output: ${JSON.stringify(rawOutput)}`)
   }
 
   return url
+}
+
+// ─── NEW: Claude Vision room analysis ────────────────────────────────────────
+async function analyzeRoomWithClaude(imageDataUrl: string): Promise<RoomAnalysis> {
+  const styleNames = STYLES.map(s => s.name).join(', ')
+  const roomTypes = ROOM_TYPES.join(', ')
+
+  const systemPrompt = `You are an expert interior designer and real estate photographer.
+Your job is to analyze a room photo and recommend the best virtual staging style.
+You MUST respond with ONLY valid JSON, no markdown, no explanation outside the JSON.`
+
+  const userPrompt = `Look at this room photo carefully.
+
+Available room types: ${roomTypes}
+Available staging styles: ${styleNames}
+
+Respond with ONLY this JSON (no markdown, no backticks):
+{
+  "roomType": "<pick the best match from available room types>",
+  "recommendedStyle": "<pick exactly one from available staging styles>",
+  "confidence": "<high | medium | low>",
+  "reasoning": "<1-2 sentence explanation of why this style suits this specific room>"
+}`
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // The x-api-key header is injected automatically by the claude.ai proxy
+      // when called from an Artifact; for production use VITE_ANTHROPIC_API_KEY
+      // via a backend route (never expose in client bundle).
+      'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY ?? '',
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 300,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: imageDataUrl.split(';')[0].replace('data:', '') as 'image/jpeg' | 'image/png' | 'image/webp',
+                data: imageDataUrl.split(',')[1],
+              },
+            },
+            { type: 'text', text: userPrompt },
+          ],
+        },
+      ],
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error((err as { error?: { message?: string } })?.error?.message ?? `Claude API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  const rawText = (data.content as Array<{ type: string; text?: string }>)
+    .find(b => b.type === 'text')?.text ?? ''
+
+  // Strip any accidental markdown fences
+  const clean = rawText.replace(/```json|```/g, '').trim()
+  const parsed = JSON.parse(clean) as RoomAnalysis
+
+  // Validate recommendedStyle is actually in our list
+  const validStyle = STYLES.find(s => s.name === parsed.recommendedStyle)
+  if (!validStyle) {
+    // Fallback: pick first style but keep the room type
+    return { ...parsed, recommendedStyle: STYLES[0].name }
+  }
+
+  return parsed
 }
 
 function loadHistoryFromStorage(): HistoryEntry[] {
@@ -272,20 +318,55 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistoryFromStorage)
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null)
-  // Tracks history entry IDs and preset names whose remote images have expired / failed
   const [brokenImgs, setBrokenImgs] = useState<Set<string>>(new Set())
+
+  // ── NEW: Claude Vision state ─────────────────────────────────────────────
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [roomAnalysis, setRoomAnalysis] = useState<RoomAnalysis | null>(null)
+  const [analysisDismissed, setAnalysisDismissed] = useState(false)
+
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
 
   // ── File upload ─────────────────────────────────────────────────────────────
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return
     if (originalImage) URL.revokeObjectURL(originalImage)
-    setOriginalImage(URL.createObjectURL(file))
+
+    const blobUrl = URL.createObjectURL(file)
+    setOriginalImage(blobUrl)
     setIsUploaded(true)
     setGeneratedImage(null)
     setActiveHistoryId(null)
     setError(null)
+    setRoomAnalysis(null)
+    setAnalysisDismissed(false)
+
+    // ── Trigger Claude Vision analysis in the background ──────────────────
+    const anthropicKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+    if (!anthropicKey) {
+      // Skip analysis silently if no key — app still works normally
+      console.warn('[Claude Vision] VITE_ANTHROPIC_API_KEY not set, skipping analysis')
+      return
+    }
+
+    setIsAnalyzing(true)
+    try {
+      const dataUrl = await blobUrlToDataUrl(blobUrl)
+      const analysis = await analyzeRoomWithClaude(dataUrl)
+      setRoomAnalysis(analysis)
+      // Auto-select the recommended style and room type
+      setSelectedPreset(analysis.recommendedStyle)
+      setSelectedRoomType(
+        ROOM_TYPES.find(r => r === analysis.roomType) ?? null
+      )
+      console.log('[Claude Vision] Analysis complete:', analysis)
+    } catch (err) {
+      console.error('[Claude Vision] Analysis failed:', err)
+      // Silent failure — user can still select manually
+    } finally {
+      setIsAnalyzing(false)
+    }
   }
 
   // ── Clear ───────────────────────────────────────────────────────────────────
@@ -302,9 +383,12 @@ function App() {
     setCustomInstructions('')
     setActiveHistoryId(null)
     setError(null)
+    setRoomAnalysis(null)
+    setAnalysisDismissed(false)
+    setIsAnalyzing(false)
   }
 
-  // ── Download (blob fetch to bypass CORS) ────────────────────────────────────
+  // ── Download ────────────────────────────────────────────────────────────────
   const handleDownload = async () => {
     if (!generatedImage) return
     const name = `Virtual-Staging-${(selectedPreset ?? 'Result').replace(/\s+/g, '-')}.jpg`
@@ -343,26 +427,18 @@ function App() {
       const activeStyle = STYLES.find(s => s.name === presetName) ?? STYLES[0]
       const roomLabel   = selectedRoomType ?? 'room'
 
-      // If a room type is selected, splice it cleanly into the style prompt so
-      // "Virtual staging, living room. ..." becomes "Virtual staging, Bedroom. ..."
       const styledPrompt = selectedRoomType
         ? activeStyle.prompt.replace(/^(Virtual staging)[^.]*\./, `$1, ${selectedRoomType}.`)
         : activeStyle.prompt
 
-      // nano-banana-pro (Gemini 3 Pro) responds to explicit EDIT instructions.
       const prompt = [
-        // ① Clear edit command
         `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
-        // ② Cinematic style formula with room type already spliced in
         styledPrompt,
-        // ③ Structural preservation constraint
         'Keep all walls, floors, ceiling, windows, and doors exactly as they appear in the input photo — do NOT repaint, retile, or alter any structural surface.',
         'Only ADD: furniture, rugs, curtains, wall art, lighting fixtures, plants, and decorative accessories.',
-        // ④ User note (optional)
         customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
 
-      console.log('[handleApplyEdit] Final prompt:', prompt)
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
@@ -403,13 +479,15 @@ function App() {
     setIsGenerating(true)
 
     try {
-      const prompt =
-        'Edit this photo: enhance the visual quality for professional real estate photography. ' +
-        'Perfect lighting, clean up space, improve contrast and colors. ' +
-        'Movie Look: Architectural Digest. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. ' +
-        'Elements: Preserve structural integrity and existing furniture completely, highly detailed, photorealistic, just enhance visual quality.'
+      const customNote = customInstructions.trim()
 
-      console.log('[handleProTouchUp] Enhancement prompt:', prompt)
+      const prompt = [
+        'Edit this photo: enhance the visual quality for professional real estate photography.',
+        'Perfect lighting, clean up space, improve contrast and colors.',
+        'Movie Look: Architectural Digest. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra.',
+        'Elements: Preserve structural integrity and existing furniture completely, highly detailed, photorealistic, just enhance visual quality.',
+        customNote ? `Additional request: ${customNote}` : null,
+      ].filter(Boolean).join(' ')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
@@ -459,13 +537,81 @@ function App() {
     if (activeHistoryId === id) setActiveHistoryId(null)
   }
 
-  // ── Timestamp label ─────────────────────────────────────────────────────────
+  // ── Timestamp label — now shows date when not today ─────────────────────────
   const formatTime = (ts: number) => {
     const d = new Date(ts)
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const now = new Date()
+    const isToday =
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear()
+    if (isToday) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
+      ' · ' +
+      d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
-  // Always show a background — fall back to the first style on initial load
+  // ── Shared history gallery component ────────────────────────────────────────
+  const HistoryGallery = ({ activeStyle }: { activeStyle: boolean }) => (
+    <div
+      className="flex gap-3 overflow-x-auto pb-3"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    >
+      {history.map((entry) => (
+        <button
+          key={entry.id}
+          type="button"
+          onClick={() => handleLoadHistory(entry)}
+          className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-3xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
+            activeStyle && activeHistoryId === entry.id
+              ? 'border-coral/70'
+              : 'border-white/10 hover:border-coral/30'
+          }`}
+          style={activeStyle && activeHistoryId === entry.id ? {
+            boxShadow: '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.15)',
+          } : undefined}
+        >
+          <div className="relative h-36 overflow-hidden">
+            {brokenImgs.has(entry.id) ? (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface/80">
+                <ImageIcon className="h-7 w-7 text-gray-600" />
+                <p className="text-[11px] font-medium text-gray-600">Preview expired</p>
+              </div>
+            ) : (
+              <img
+                src={entry.generatedUrl}
+                alt={entry.styleName}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={() => markBroken(entry.id)}
+              />
+            )}
+            {activeStyle && activeHistoryId === entry.id && !brokenImgs.has(entry.id) && (
+              <div className="absolute inset-0 bg-coral/10" />
+            )}
+          </div>
+          <div className="px-3.5 py-3">
+            <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
+              {entry.styleName}
+            </p>
+            <p className="mt-0.5 text-[11px] text-gray-600">
+              {formatTime(entry.timestamp)}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => handleDeleteHistory(entry.id, e)}
+            aria-label="Remove from history"
+            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-all hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </button>
+      ))}
+    </div>
+  )
+
   const activeBgImage = (STYLES.find(s => s.name === selectedPreset) ?? STYLES[0]).image
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -473,27 +619,18 @@ function App() {
     <div className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
 
       {/* ── Cinematic dynamic background ── */}
-      {/* Outer wrapper clips the Ken Burns overflow so edges never show */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {/* key forces remount → CSS fade-in fires on each preset change.
-            The div is 16% larger than the viewport on every side so the
-            Ken Burns scale/pan never reveals a white/black edge. */}
         <div
           key={selectedPreset ?? 'default'}
           className="bg-cinematic absolute bg-cover bg-center"
-          style={{
-            inset: '-8%',
-            backgroundImage: `url(${activeBgImage})`,
-          }}
+          style={{ inset: '-8%', backgroundImage: `url(${activeBgImage})` }}
         />
       </div>
-      {/* Permanent dark scrim — keeps UI readable regardless of photo brightness */}
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/35" aria-hidden="true" />
 
       {/* ── Header ── */}
       <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
-          {/* Logo */}
           <div className="flex items-center gap-4">
             <div
               className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] p-3 text-white"
@@ -510,7 +647,6 @@ function App() {
               </p>
             </div>
           </div>
-          {/* User section */}
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-white">Welcome back, Assi 👋</p>
@@ -532,491 +668,434 @@ function App() {
         <div className="rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl">
           <div className="p-5 sm:p-6">
 
-        {/* ── Upload Dropzone ── */}
-        {!isUploaded && (
-          <section className="mt-8">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) handleFileSelect(file)
-                e.target.value = ''
-              }}
-              className="sr-only"
-              aria-label="Upload room photo"
-            />
-            {/* Feature card — styled like the reference "AI Space Designer Pro" card */}
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => fileInputRef.current?.click()}
-              onDrop={(e) => {
-                e.preventDefault()
-                const file = e.dataTransfer.files?.[0]
-                if (file) handleFileSelect(file)
-              }}
-              onDragOver={(e) => {
-                e.preventDefault()
-                e.dataTransfer.dropEffect = 'copy'
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  fileInputRef.current?.click()
-                }
-              }}
-              className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
-            >
-              {/* Upload card */}
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-3xl transition-all duration-300 group-hover:bg-white/[0.09]">
-                {/* Decorative corner glow */}
-                <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
-                <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
-
-                <div className="relative flex flex-col items-center gap-5">
-                  {/* Icon container */}
-                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-coral/15 text-coral ring-1 ring-coral/20 transition-all duration-300 group-hover:bg-coral/25 group-hover:ring-coral/40">
-                    <ImageIcon className="h-9 w-9" />
-                  </div>
-
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-white">
-                      AI Space Designer Pro
-                    </p>
-                    <p className="mt-1.5 text-sm text-gray-400">
-                      Drop your room photo or click to upload
-                    </p>
-                    <p className="mt-1 text-xs text-gray-600">PNG, JPG up to 10 MB</p>
-                  </div>
-
-                  {/* CTA chip */}
-                  <div
-                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 group-hover:scale-105"
-                    style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    Stage My Room
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── Main Editor (uploaded) ── */}
-        {isUploaded && (
-          <div className="mt-8">
-
-            {/* Control Bar */}
-            <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-3xl">
-              <button
-                type="button"
-                onClick={handleClear}
-                className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
-              >
-                <Trash2 className="h-4 w-4" />
-                Clear / Start Over
-              </button>
-              {generatedImage && (
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
-                  style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
-                >
-                  <Download className="h-4 w-4" />
-                  Download Result
-                </button>
-              )}
-            </div>
-
-            {/* ── Image Viewer ── */}
-            <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-3xl">
-
-              {/*
-                Canvas: aspect-video (16:9) gives a natural cinematic shape at any
-                width; max-h-[70vh] prevents it from ever overwhelming the controls
-                on tall viewports. Children use absolute inset-0 to fill exactly this box.
-              */}
-              <div className="relative w-full overflow-hidden aspect-video max-h-[52vh]">
-
-                {/* Generating Overlay */}
-                {isGenerating && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-md">
-                    <div className="relative flex h-16 w-16 items-center justify-center">
-                      <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
-                      <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-coral/15">
-                        <Loader2 className="h-6 w-6 animate-spin text-coral" />
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-white">AI is staging your room</p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {selectedPreset ?? STYLES[0].name} style · typically 30–60 sec
-                      </p>
-                    </div>
-                    <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full animate-pulse rounded-full bg-coral" style={{ width: '65%' }} />
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Before / After Slider ── */}
-                {generatedImage && originalImage && !isGenerating ? (
-                  <>
-                    {/* Before layer */}
-                    <img
-                      src={originalImage}
-                      alt="Before"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                    {/* After layer — clipped from the left by the slider */}
-                    <img
-                      src={generatedImage}
-                      alt="After"
-                      className="absolute inset-0 h-full w-full object-cover"
-                      style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
-                    />
-                    {/* Divider line */}
-                    <div
-                      className="pointer-events-none absolute inset-y-0 w-0.5 bg-coral"
-                      style={{ left: `${sliderPosition}%`, boxShadow: '0 0 12px rgba(255,107,71,0.9)' }}
-                    />
-                    {/* Handle */}
-                    <div
-                      className="pointer-events-none absolute top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-black/70 shadow-xl backdrop-blur-sm"
-                      style={{ left: `${sliderPosition}%` }}
-                    >
-                      <ArrowLeftRight className="h-4 w-4 text-coral" />
-                    </div>
-                    {/* Labels */}
-                    <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
-                      Before
-                    </span>
-                    <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
-                      After
-                    </span>
-                    {/* Invisible range input — captures drag across the full canvas */}
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      value={sliderPosition}
-                      onChange={(e) => setSliderPosition(Number(e.target.value))}
-                      className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
-                      aria-label="Compare before and after"
-                    />
-                  </>
-
-                ) : generatedImage && !originalImage && !isGenerating ? (
-                  /* Generated result only (no original) */
-                  <img
-                    src={generatedImage}
-                    alt="Generated result"
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-
-                ) : (
-                  /* Original room (pre-generation or while generating) */
-                  <img
-                    src={originalImage!}
-                    alt="Original room"
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
-                  />
-                )}
-              </div>
-
-              {/* Caption bar */}
-              <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
-                {isGenerating
-                  ? 'Processing…'
-                  : generatedImage
-                  ? 'Before ← Drag → After'
-                  : 'Original Room'}
-              </p>
-            </div>
-
-            {/* ── Style Presets carousel (now first, enlarged) ── */}
-            <section className="mt-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-white">Popular Styles</h2>
-                <span className="text-xs font-medium text-gray-500">
-                  {selectedPreset ?? 'None selected'}
-                </span>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {STYLES.map((style) => {
-                  const PresetIcon = style.icon
-                  const isSelected = selectedPreset === style.name
-                  const imgUrl = style.image
-                  return (
-                    <button
-                      key={style.id}
-                      type="button"
-                      onClick={() => setSelectedPreset(style.name)}
-                      className={`group relative flex shrink-0 w-56 md:w-64 h-36 md:h-44 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
-                        isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
-                      }`}
-                      style={{
-                        boxShadow: isSelected
-                          ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.2)'
-                          : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                      }}
-                    >
-                      {/* Full-bleed photo or broken fallback */}
-                      {brokenImgs.has(`preset-${style.id}`) ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
-                          <ImageIcon className="h-6 w-6 text-gray-600" />
-                          <span className="text-[10px] text-gray-600">No preview</span>
-                        </div>
-                      ) : (
-                        <img
-                          src={imgUrl}
-                          alt={style.name}
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          onError={() => markBroken(`preset-${style.id}`)}
-                        />
-                      )}
-
-                      {/* Gradient scrim */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-
-                      {/* Selected coral wash */}
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-gradient-to-t from-coral/30 via-transparent to-transparent" />
-                      )}
-
-                      {/* Content pinned to bottom */}
-                      <div className="relative z-10 mt-auto flex items-end justify-between p-3">
-                        <span className="max-w-[80%] text-xs font-bold leading-tight text-white drop-shadow">
-                          {style.name}
-                        </span>
-                        <div
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
-                            isSelected
-                              ? 'bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E]'
-                              : 'bg-white/20 group-hover:bg-white/35'
-                          }`}
-                          style={isSelected ? { boxShadow: '0 0 10px rgba(255,107,71,0.6)' } : undefined}
-                        >
-                          <PresetIcon className="h-3 w-3 text-white" />
-                        </div>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* ── Room Type ── */}
-            <section className="mt-6">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-white">Room Type</h2>
-                <span className="text-xs font-medium text-coral">Optional</span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {ROOM_TYPES.map((room) => {
-                  const isActive = selectedRoomType === room
-                  return (
-                    <button
-                      key={room}
-                      type="button"
-                      onClick={() => setSelectedRoomType(isActive ? null : room)}
-                      className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
-                        isActive
-                          ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                          : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
-                      }`}
-                      style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
-                    >
-                      {room}
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* ── Pro Touch-Up (premium redesign) ── */}
-            <section className="mt-5">
-              <button
-                type="button"
-                onClick={handleProTouchUp}
-                disabled={isGenerating}
-                className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
-              >
-                {/* Radial glow that appears on hover */}
-                <div
-                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
+            {/* ── Upload Dropzone ── */}
+            {!isUploaded && (
+              <section className="mt-8">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleFileSelect(file)
+                    e.target.value = ''
+                  }}
+                  className="sr-only"
+                  aria-label="Upload room photo"
                 />
-                {/* Icon */}
                 <div
-                  className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40"
-                  style={{ boxShadow: '0 0 0 0 rgba(255,107,71,0)' }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    const file = e.dataTransfer.files?.[0]
+                    if (file) handleFileSelect(file)
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'copy'
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      fileInputRef.current?.click()
+                    }
+                  }}
+                  className="group relative cursor-pointer overflow-hidden rounded-3xl focus:outline-none"
                 >
-                  <Sparkles className="h-4 w-4 text-coral" />
-                </div>
-                {/* Text */}
-                <div className="relative">
-                  <p className="text-sm font-semibold text-white">Pro Touch-Up</p>
-                  <p className="mt-0.5 text-[11px] text-gray-500">Enhance lighting & colors — no furniture changes</p>
-                </div>
-                {/* Arrow hint */}
-                <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
-                  <Send className="h-4 w-4" />
-                </div>
-              </button>
-            </section>
-
-            {/* Custom Instructions */}
-            <section className="mt-7">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-white">Custom Instructions</h2>
-                <span className="text-xs text-gray-600">Optional</span>
-              </div>
-              <textarea
-                value={customInstructions}
-                onChange={(e) => setCustomInstructions(e.target.value)}
-                placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
-                rows={3}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-3xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
-              />
-            </section>
-
-            {/* History Gallery */}
-            {history.length > 0 && (
-              <section className="mt-10">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <h2 className="text-sm font-bold text-white">Recent Renders</h2>
-                  </div>
-                  <span className="text-xs font-medium text-coral">
-                    {history.length} render{history.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                <div
-                  className="flex gap-3 overflow-x-auto pb-3"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  {history.map((entry) => (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => handleLoadHistory(entry)}
-                      className={`group relative shrink-0 w-52 overflow-hidden rounded-2xl border bg-white/5 backdrop-blur-3xl transition-all duration-200 focus:outline-none hover:scale-[1.02] ${
-                        activeHistoryId === entry.id ? 'border-coral/70' : 'border-white/10'
-                      }`}
-                      style={{
-                        boxShadow: activeHistoryId === entry.id
-                          ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.15)'
-                          : undefined,
-                      }}
-                    >
-                      <div className="relative h-36 overflow-hidden">
-                        {brokenImgs.has(entry.id) ? (
-                          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface/80">
-                            <ImageIcon className="h-7 w-7 text-gray-600" />
-                            <p className="text-[11px] font-medium text-gray-600">Preview expired</p>
-                          </div>
-                        ) : (
-                          <img
-                            src={entry.generatedUrl}
-                            alt={entry.styleName}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            onError={() => markBroken(entry.id)}
-                          />
-                        )}
-                        {activeHistoryId === entry.id && !brokenImgs.has(entry.id) && (
-                          <div className="absolute inset-0 bg-coral/10" />
-                        )}
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-8 py-12 backdrop-blur-3xl transition-all duration-300 group-hover:bg-white/[0.09]">
+                    <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-coral/20 blur-3xl transition-all duration-500 group-hover:bg-coral/30" />
+                    <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl" />
+                    <div className="relative flex flex-col items-center gap-5">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-coral/15 text-coral ring-1 ring-coral/20 transition-all duration-300 group-hover:bg-coral/25 group-hover:ring-coral/40">
+                        <ImageIcon className="h-9 w-9" />
                       </div>
-                      <div className="px-3.5 py-3">
-                        <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
-                          {entry.styleName}
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-gray-600">
-                          {formatTime(entry.timestamp)}
-                        </p>
+                      <div className="text-center">
+                        <p className="text-lg font-bold text-white">AI Space Designer Pro</p>
+                        <p className="mt-1.5 text-sm text-gray-400">Drop your room photo or click to upload</p>
+                        <p className="mt-1 text-xs text-gray-600">PNG, JPG up to 10 MB</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => handleDeleteHistory(entry.id, e)}
-                        aria-label="Remove from history"
-                        className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-all hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                      <div
+                        className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 group-hover:scale-105"
+                        style={{ boxShadow: '0 0 20px rgba(255,107,71,0.4)' }}
                       >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </button>
-                  ))}
+                        <Sparkles className="h-4 w-4" />
+                        Stage My Room
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
             )}
-          </div>
-        )}
 
-        {/* History gallery on the upload screen (inside glass panel) */}
-        {!isUploaded && history.length > 0 && (
-          <section className="mt-8">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <h2 className="text-sm font-bold text-white">Previous Renders</h2>
-              </div>
-              <span className="text-xs font-medium text-coral">{history.length} saved</span>
-            </div>
-            <div
-              className="flex gap-3 overflow-x-auto pb-3"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {history.map((entry) => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => handleLoadHistory(entry)}
-                  className="group relative shrink-0 w-52 overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all duration-200 hover:scale-[1.02] hover:border-coral/30 focus:outline-none"
-                >
-                  <div className="relative h-36 overflow-hidden">
-                    {brokenImgs.has(entry.id) ? (
-                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface/80">
-                        <ImageIcon className="h-7 w-7 text-gray-600" />
-                        <p className="text-[11px] font-medium text-gray-600">Preview expired</p>
+            {/* ── Main Editor (uploaded) ── */}
+            {isUploaded && (
+              <div className="mt-8">
+
+                {/* Control Bar */}
+                <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-3xl">
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Clear / Start Over
+                  </button>
+                  {generatedImage && (
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
+                      style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Result
+                    </button>
+                  )}
+                </div>
+
+                {/* ── Image Viewer ── */}
+                <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-3xl">
+                  <div className="relative w-full overflow-hidden aspect-video max-h-[52vh]">
+
+                    {/* Generating Overlay */}
+                    {isGenerating && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-md">
+                        <div className="relative flex h-16 w-16 items-center justify-center">
+                          <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
+                          <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-coral/15">
+                            <Loader2 className="h-6 w-6 animate-spin text-coral" />
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-semibold text-white">AI is staging your room</p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {selectedPreset ?? STYLES[0].name} style · typically 30–60 sec
+                          </p>
+                        </div>
+                        <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
+                          <div className="h-full animate-pulse rounded-full bg-coral" style={{ width: '65%' }} />
+                        </div>
                       </div>
+                    )}
+
+                    {/* Before / After Slider */}
+                    {generatedImage && originalImage && !isGenerating ? (
+                      <>
+                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover" />
+                        <img
+                          src={generatedImage}
+                          alt="After"
+                          className="absolute inset-0 h-full w-full object-cover"
+                          style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
+                        />
+                        <div
+                          className="pointer-events-none absolute inset-y-0 w-0.5 bg-coral"
+                          style={{ left: `${sliderPosition}%`, boxShadow: '0 0 12px rgba(255,107,71,0.9)' }}
+                        />
+                        <div
+                          className="pointer-events-none absolute top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-black/70 shadow-xl backdrop-blur-sm"
+                          style={{ left: `${sliderPosition}%` }}
+                        >
+                          <ArrowLeftRight className="h-4 w-4 text-coral" />
+                        </div>
+                        <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">Before</span>
+                        <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">After</span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={sliderPosition}
+                          onChange={(e) => setSliderPosition(Number(e.target.value))}
+                          className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
+                          aria-label="Compare before and after"
+                        />
+                      </>
+                    ) : generatedImage && !originalImage && !isGenerating ? (
+                      <img src={generatedImage} alt="Generated result" className="absolute inset-0 h-full w-full object-cover" />
                     ) : (
                       <img
-                        src={entry.generatedUrl}
-                        alt={entry.styleName}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        onError={() => markBroken(entry.id)}
+                        src={originalImage!}
+                        alt="Original room"
+                        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
                       />
                     )}
                   </div>
-                  <div className="px-3.5 py-3">
-                    <p className="truncate text-xs font-semibold text-gray-300 group-hover:text-white">
-                      {entry.styleName}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-gray-600">
-                      {formatTime(entry.timestamp)}
-                    </p>
+
+                  <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
+                    {isGenerating ? 'Processing…' : generatedImage ? 'Before ← Drag → After' : 'Original Room'}
+                  </p>
+                </div>
+
+                {/* ── NEW: Claude Vision Analysis Banner ────────────────────── */}
+                {(isAnalyzing || (roomAnalysis && !analysisDismissed)) && (
+                  <div
+                    className="mt-4 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-3xl transition-all duration-500"
+                    style={{
+                      background: isAnalyzing
+                        ? 'rgba(255,107,71,0.05)'
+                        : 'linear-gradient(135deg, rgba(255,107,71,0.08) 0%, rgba(139,92,246,0.06) 100%)',
+                      borderColor: isAnalyzing ? 'rgba(255,107,71,0.2)' : 'rgba(255,107,71,0.25)',
+                    }}
+                  >
+                    {isAnalyzing ? (
+                      /* ── Analyzing state ── */
+                      <div className="flex items-center gap-3 px-5 py-4">
+                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+                          <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
+                          <Brain className="relative h-4 w-4 text-coral animate-pulse" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">Claude is analyzing your room…</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5">Detecting room type · Recommending best style</p>
+                        </div>
+                      </div>
+                    ) : roomAnalysis ? (
+                      /* ── Analysis result ── */
+                      <div className="px-5 py-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/20 to-purple-500/20 ring-1 ring-coral/30"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-coral" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-bold text-white">AI Room Analysis</p>
+                                <span className="rounded-full border border-coral/30 bg-coral/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
+                                  Claude Vision
+                                </span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                                  roomAnalysis.confidence === 'high'
+                                    ? 'bg-green-500/15 text-green-400 border border-green-500/25'
+                                    : roomAnalysis.confidence === 'medium'
+                                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
+                                    : 'bg-gray-500/15 text-gray-400 border border-gray-500/25'
+                                }`}>
+                                  {roomAnalysis.confidence} confidence
+                                </span>
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-3">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-gray-500">Room:</span>
+                                  <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
+                                    {roomAnalysis.roomType}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-gray-500">Style:</span>
+                                  <span className="rounded-lg bg-coral/15 px-2 py-0.5 text-[11px] font-semibold text-coral">
+                                    {roomAnalysis.recommendedStyle}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
+                                {roomAnalysis.reasoning}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAnalysisDismissed(true)}
+                            className="shrink-0 rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-300 focus:outline-none"
+                            aria-label="Dismiss analysis"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
+                )}
+
+                {/* ── Style Presets carousel ── */}
+                <section className="mt-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-white">Popular Styles</h2>
+                    <span className="text-xs font-medium text-gray-500">
+                      {selectedPreset ?? 'None selected'}
+                    </span>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {STYLES.map((style) => {
+                      const PresetIcon = style.icon
+                      const isSelected = selectedPreset === style.name
+                      const isRecommended = roomAnalysis && !analysisDismissed && roomAnalysis.recommendedStyle === style.name
+                      return (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => setSelectedPreset(style.name)}
+                          className={`group relative flex shrink-0 w-56 md:w-64 h-36 md:h-44 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
+                            isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
+                          }`}
+                          style={{
+                            boxShadow: isSelected
+                              ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.2)'
+                              : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+                          }}
+                        >
+                          {brokenImgs.has(`preset-${style.id}`) ? (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
+                              <ImageIcon className="h-6 w-6 text-gray-600" />
+                              <span className="text-[10px] text-gray-600">No preview</span>
+                            </div>
+                          ) : (
+                            <img
+                              src={style.image}
+                              alt={style.name}
+                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              onError={() => markBroken(`preset-${style.id}`)}
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-gradient-to-t from-coral/30 via-transparent to-transparent" />
+                          )}
+                          {/* ── NEW: AI Recommended badge ── */}
+                          {isRecommended && !isSelected && (
+                            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-coral/90 px-2 py-0.5 backdrop-blur-sm">
+                              <Brain className="h-2.5 w-2.5 text-white" />
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
+                            </div>
+                          )}
+                          {isRecommended && isSelected && (
+                            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 backdrop-blur-sm">
+                              <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
+                            </div>
+                          )}
+                          <div className="relative z-10 mt-auto flex items-end justify-between p-3">
+                            <span className="max-w-[80%] text-xs font-bold leading-tight text-white drop-shadow">
+                              {style.name}
+                            </span>
+                            <div
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
+                                isSelected
+                                  ? 'bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E]'
+                                  : 'bg-white/20 group-hover:bg-white/35'
+                              }`}
+                              style={isSelected ? { boxShadow: '0 0 10px rgba(255,107,71,0.6)' } : undefined}
+                            >
+                              <PresetIcon className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+
+                {/* ── Room Type ── */}
+                <section className="mt-6">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-white">Room Type</h2>
+                    <span className="text-xs font-medium text-coral">Optional</span>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {ROOM_TYPES.map((room) => {
+                      const isActive = selectedRoomType === room
+                      const isAiDetected = roomAnalysis && !analysisDismissed && roomAnalysis.roomType === room
+                      return (
+                        <button
+                          key={room}
+                          type="button"
+                          onClick={() => setSelectedRoomType(isActive ? null : room)}
+                          className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
+                            isActive
+                              ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
+                              : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
+                          }`}
+                          style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
+                        >
+                          {room}
+                          {/* ── NEW: small dot indicator for AI-detected room ── */}
+                          {isAiDetected && !isActive && (
+                            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-coral align-middle" />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+
+                {/* ── Pro Touch-Up ── */}
+                <section className="mt-5">
                   <button
                     type="button"
-                    onClick={(e) => handleDeleteHistory(entry.id, e)}
-                    aria-label="Remove from history"
-                    className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-gray-400 opacity-0 transition-all hover:bg-red-500/80 hover:text-white group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                    onClick={handleProTouchUp}
+                    disabled={isGenerating}
+                    className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                      style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
+                    />
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40">
+                      <Sparkles className="h-4 w-4 text-coral" />
+                    </div>
+                    <div className="relative">
+                      <p className="text-sm font-semibold text-white">Pro Touch-Up</p>
+                      <p className="mt-0.5 text-[11px] text-gray-500">Enhance lighting & colors — no furniture changes</p>
+                    </div>
+                    <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
+                      <Send className="h-4 w-4" />
+                    </div>
                   </button>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
+                </section>
 
-          </div>{/* end .p-5 inner padding */}
-        </div>{/* end dark glass panel */}
+                {/* ── Custom Instructions ── */}
+                <section className="mt-7">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-white">Custom Instructions</h2>
+                    <span className="text-xs text-gray-600">Optional</span>
+                  </div>
+                  <textarea
+                    value={customInstructions}
+                    onChange={(e) => setCustomInstructions(e.target.value)}
+                    placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
+                    rows={3}
+                    className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-3xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
+                  />
+                </section>
+
+                {/* ── History Gallery (post-upload) ── */}
+                {history.length > 0 && (
+                  <section className="mt-10">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <h2 className="text-sm font-bold text-white">Recent Renders</h2>
+                      </div>
+                      <span className="text-xs font-medium text-coral">
+                        {history.length} render{history.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <HistoryGallery activeStyle={true} />
+                  </section>
+                )}
+
+              </div>
+            )}
+
+            {/* ── History gallery on upload screen ── */}
+            {!isUploaded && history.length > 0 && (
+              <section className="mt-8">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm font-bold text-white">Previous Renders</h2>
+                  </div>
+                  <span className="text-xs font-medium text-coral">{history.length} saved</span>
+                </div>
+                <HistoryGallery activeStyle={false} />
+              </section>
+            )}
+
+          </div>
+        </div>
       </main>
 
       {/* ── Fixed Bottom Bar ── */}
@@ -1029,9 +1108,7 @@ function App() {
             </p>
           )}
           {!isUploaded && !error && (
-            <p className="text-center text-xs text-gray-600">
-              Upload a room photo to get started
-            </p>
+            <p className="text-center text-xs text-gray-600">Upload a room photo to get started</p>
           )}
           {isUploaded && !selectedPreset && !isGenerating && !error && (
             <p className="text-center text-xs text-gray-600">
