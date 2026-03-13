@@ -211,9 +211,6 @@ async function runReplicatePrediction(
 
 // ─── NEW: Claude Vision room analysis ────────────────────────────────────────
 async function analyzeRoomWithClaude(imageDataUrl: string): Promise<RoomAnalysis> {
-  const styleNames = STYLES.map(s => s.name).join(', ')
-  const roomTypes = ROOM_TYPES.join(', ')
-
   const response = await fetch('/api/analyze-room', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
