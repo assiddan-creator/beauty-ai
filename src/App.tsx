@@ -17,6 +17,7 @@ import {
   ArrowLeftRight,
   Brain,
   CheckCircle2,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -877,16 +878,36 @@ function App() {
                               <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
                                 {roomAnalysis.reasoning}
                               </p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAnalysisDismissed(true)
+                                  document.getElementById('popular-styles-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                                }}
+                                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
+                              >
+                                Change Style
+                              </button>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => setAnalysisDismissed(true)}
-                            className="shrink-0 rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-300 focus:outline-none"
-                            aria-label="Dismiss analysis"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setAnalysisDismissed(true)}
+                              className="flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
+                            >
+                              Change Style
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setAnalysisDismissed(true)}
+                              className="rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-300 focus:outline-none"
+                              aria-label="Dismiss analysis"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : null}
@@ -927,7 +948,7 @@ function App() {
                 )}
 
                 {/* ── Style Presets carousel ── */}
-                <section className="mt-5">
+                <section id="popular-styles-carousel" className="mt-5">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-bold text-white">Popular Styles</h2>
                     <span className="text-xs font-medium text-gray-500">
