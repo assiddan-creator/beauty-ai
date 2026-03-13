@@ -231,37 +231,13 @@ Respond with ONLY this JSON (no markdown, no backticks):
   "reasoning": "<1-2 sentence explanation of why this style suits this specific room>"
 }`
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('/api/analyze-room', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // The x-api-key header is injected automatically by the claude.ai proxy
-      // when called from an Artifact; for production use VITE_ANTHROPIC_API_KEY
-      // via a backend route (never expose in client bundle).
-      'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY ?? '',
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-opus-4-6',
-      max_tokens: 300,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: imageDataUrl.split(';')[0].replace('data:', '') as 'image/jpeg' | 'image/png' | 'image/webp',
-                data: imageDataUrl.split(',')[1],
-              },
-            },
-            { type: 'text', text: userPrompt },
-          ],
-        },
-      ],
+      imageDataUrl,
+      styleNames: STYLES.map(s => s.name).join(', '),
+      roomTypes: ROOM_TYPES.join(', '),
     }),
   })
 
@@ -341,15 +317,6 @@ function App() {
     setError(null)
     setRoomAnalysis(null)
     setAnalysisDismissed(false)
-
-    // ── Trigger Claude Vision analysis in the background ──────────────────
-    const anthropicKey = import.meta.env.VITE_ANTHROPIC_API_KEY
-    if (!anthropicKey) {
-      // Skip analysis silently if no key — app still works normally
-      console.warn('[Claude Vision] VITE_ANTHROPIC_API_KEY not set, skipping analysis')
-      return
-    }
-
     setIsAnalyzing(true)
     try {
       const dataUrl = await blobUrlToDataUrl(blobUrl)
