@@ -547,7 +547,7 @@ function App() {
       const prompt = [
         `Edit this photo: virtually stage this empty ${roomLabel} by adding furniture and decor.`,
         styledPrompt,
-        'Keep all walls, floors, ceiling, windows, and doors exactly as they appear in the input photo — do NOT repaint, retile, or alter any structural surface.',
+        'STRICT INSTRUCTION: Do NOT change any structural element. Keep all walls, floors, ceiling, windows, doors, and room perspective 100% identical to the input photo. This is an image-to-image edit — only INSERT furniture and decor objects into the existing space. Do NOT reimagine or reconstruct the room.',
         'Only ADD: furniture, rugs, curtains, wall art, lighting fixtures, plants, and decorative accessories.',
         customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join(' ')
