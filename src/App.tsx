@@ -324,7 +324,7 @@ async function runReplicatePrediction(
       aspect_ratio: 'match_input_image',
       resolution: '2K',
       output_format: 'jpg',
-      allow_fallback_model: true,
+      allow_fallback_model: false,
     },
   }
 
