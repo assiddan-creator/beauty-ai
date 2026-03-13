@@ -214,23 +214,6 @@ async function analyzeRoomWithClaude(imageDataUrl: string): Promise<RoomAnalysis
   const styleNames = STYLES.map(s => s.name).join(', ')
   const roomTypes = ROOM_TYPES.join(', ')
 
-  const systemPrompt = `You are an expert interior designer and real estate photographer.
-Your job is to analyze a room photo and recommend the best virtual staging style.
-You MUST respond with ONLY valid JSON, no markdown, no explanation outside the JSON.`
-
-  const userPrompt = `Look at this room photo carefully.
-
-Available room types: ${roomTypes}
-Available staging styles: ${styleNames}
-
-Respond with ONLY this JSON (no markdown, no backticks):
-{
-  "roomType": "<pick the best match from available room types>",
-  "recommendedStyle": "<pick exactly one from available staging styles>",
-  "confidence": "<high | medium | low>",
-  "reasoning": "<1-2 sentence explanation of why this style suits this specific room>"
-}`
-
   const response = await fetch('/api/analyze-room', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
