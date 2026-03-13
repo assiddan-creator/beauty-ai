@@ -88,6 +88,41 @@ const STYLES: Array<{
     icon: Leaf,
     prompt: 'Virtual staging, luxury rustic cabin. Raw natural wood edge coffee table, deep green velvet sofa, cozy woven throw blankets, earthy tones. Movie Look: The Revenant. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Deep depth of field, natural vibe, preserve layout.',
   },
+  {
+    id: 'clean-modern',
+    name: 'Clean Modern',
+    image: '/Clean-Modern.jpg',
+    icon: Sparkles,
+    prompt: 'Virtual staging, minimalist modern interior. Clean white walls, light oak flooring, simple low-profile sofa in greige, uncluttered layout, abundant natural light. Movie Look: A Beautiful Mind interiors. Camera: ARRI Alexa 65. Lens: Prime 24mm. Film: Kodak Portra. Elements: Maximum light and space, preserve all architecture exactly.',
+  },
+  {
+    id: 'nordic-scandinavian',
+    name: 'Nordic Scandinavian',
+    image: '/Nordic-Scandinavian.jpg',
+    icon: Snowflake,
+    prompt: 'Virtual staging, Scandinavian hygge interior. White walls, light birch wood furniture, cozy wool textiles, potted plants, warm ambient lighting. Movie Look: The Hundred-Year-Old Man. Camera: Sony Venice. Lens: Prime 35mm. Film: Kodak Portra. Elements: Calm and bright atmosphere, preserve room structure completely.',
+  },
+  {
+    id: 'hamptons-coastal',
+    name: 'Hamptons Coastal',
+    image: '/Hamptons-Coastal.jpg',
+    icon: Waves,
+    prompt: 'Virtual staging, luxury Hamptons coastal interior. White paneled walls, navy and sand palette, linen slipcovered sofas, natural fiber rugs, large windows emphasized, polished and symmetrical layout. Movie Look: The Talented Mr. Ripley. Camera: ARRI Alexa 65. Lens: Prime 35mm. Film: Kodak Portra. Elements: Aspirational lifestyle, preserve all structural elements.',
+  },
+  {
+    id: 'timeless-classic',
+    name: 'Timeless Classic',
+    image: '/Timeless-Classic.jpg',
+    icon: Crown,
+    prompt: 'Virtual staging, traditional elegant interior. Symmetrical layout, classic millwork details, refined upholstered furniture in muted tones, tasteful art, warm ambient lighting. Movie Look: The Crown. Camera: ARRI Alexa 65. Lens: Prime 50mm. Film: Cinestill 800T. Elements: Sophisticated and calm, preserve architecture perfectly.',
+  },
+  {
+    id: 'small-space-modern',
+    name: 'Small Space Modern',
+    image: '/Small-Space-Modern.jpg',
+    icon: ArrowLeftRight,
+    prompt: 'Virtual staging, compact modern interior optimized for small spaces. Space-saving modular furniture, clear circulation paths, zoning with rugs and lighting, built-in storage, multifunctional pieces. Movie Look: Lost in Translation hotel interiors. Camera: Sony Venice. Lens: Prime 24mm. Film: Kodak Portra. Elements: Maximum sense of space and light, preserve all walls and windows.',
+  },
 ]
 
 const ROOM_TYPES = [
@@ -856,6 +891,39 @@ function App() {
                       </div>
                     ) : null}
                   </div>
+                )}
+
+                {generatedImage && !isGenerating && (
+                  <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-3xl">
+                    <div className="px-5 py-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
+                          <Sparkles className="h-4 w-4 text-green-400" />
+                        </div>
+                        <h2 className="text-sm font-bold text-white">Your Staging ROI Estimate</h2>
+                        <span className="rounded-full bg-green-500/15 border border-green-500/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-400">Based on 2025 Data</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
+                          <p className="text-lg font-extrabold text-white">6–10%</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">Price uplift</p>
+                        </div>
+                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
+                          <p className="text-lg font-extrabold text-white">58%</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">Faster sale</p>
+                        </div>
+                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
+                          <p className="text-lg font-extrabold text-coral">500–3,600%</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">Avg ROI</p>
+                        </div>
+                        <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
+                          <p className="text-lg font-extrabold text-white">83%</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">Buyers visualize better</p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-[11px] text-gray-600 text-center">Based on NAR 2025 · 10,000+ listings studied · Traditional staging costs $4,500–$11,500 vs AI staging ~$50</p>
+                    </div>
+                  </section>
                 )}
 
                 {/* ── Style Presets carousel ── */}
