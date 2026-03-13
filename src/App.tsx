@@ -247,6 +247,73 @@ const STYLES: Array<{
   },
 ]
 
+const T = {
+  he: {
+    generateBtn: 'צור סטייג\'ינג',
+    generating: 'מייצר...',
+    uploadTitle: 'העלה תמונת חדר',
+    uploadSub: 'גרור לכאן או לחץ לבחירת קובץ',
+    roomType: 'סוג חדר',
+    optional: 'אופציונלי',
+    popularStyles: 'סגנונות פופולריים',
+    customInstructions: 'הוראות מותאמות אישית',
+    customPlaceholder: 'בקשות ספציפיות? (למשל: הוסף טלוויזיה גדולה, שמור על הרצפה)',
+    proTouchUp: 'שיפור מקצועי',
+    proTouchUpSub: 'שיפור תאורה וצבעים — ללא שינוי רהיטים',
+    recentRenders: 'רינדורים אחרונים',
+    previousRenders: 'רינדורים קודמים',
+    downloadBtn: 'הורד תוצאה',
+    originalRoom: 'חדר מקורי',
+    analyzeBtn: 'נתח עם AI',
+    aiRoomAnalysis: 'ניתוח חדר AI',
+    changeStyle: 'שנה סגנון',
+    highConfidence: 'ביטחון גבוה',
+    medConfidence: 'ביטחון בינוני',
+    lowConfidence: 'ביטחון נמוך',
+    room: 'חדר',
+    style: 'סגנון',
+    roiTitle: 'הערכת ROI לסטייג\'ינג שלך',
+    roiTag: 'על בסיס נתוני 2025',
+    roiPrice: 'עלייה במחיר',
+    roiFaster: 'מכירה מהירה יותר',
+    roiAvg: 'ROI ממוצע',
+    roiBuyers: 'קונים מדמיינים טוב יותר',
+    roiFooter: 'מבוסס על NAR 2025 · נחקרו 10,000+ נכסים',
+  },
+  en: {
+    generateBtn: 'Generate Staging',
+    generating: 'Generating...',
+    uploadTitle: 'Upload a Room Photo',
+    uploadSub: 'Drag here or click to select a file',
+    roomType: 'Room Type',
+    optional: 'Optional',
+    popularStyles: 'Popular Styles',
+    customInstructions: 'Custom Instructions',
+    customPlaceholder: 'Any specific requests? (e.g., Add a large TV, Keep the flooring)',
+    proTouchUp: 'Pro Touch-Up',
+    proTouchUpSub: 'Enhance lighting & colors — no furniture changes',
+    recentRenders: 'Recent Renders',
+    previousRenders: 'Previous Renders',
+    downloadBtn: 'Download Result',
+    originalRoom: 'Original Room',
+    analyzeBtn: 'Analyze with AI',
+    aiRoomAnalysis: 'AI Room Analysis',
+    changeStyle: 'Change Style',
+    highConfidence: 'High Confidence',
+    medConfidence: 'Medium Confidence',
+    lowConfidence: 'Low Confidence',
+    room: 'Room',
+    style: 'Style',
+    roiTitle: 'Your Staging ROI Estimate',
+    roiTag: 'Based on 2025 Data',
+    roiPrice: 'Price uplift',
+    roiFaster: 'Faster sale',
+    roiAvg: 'Avg ROI',
+    roiBuyers: 'Buyers visualize better',
+    roiFooter: 'Based on NAR 2025 · 10,000+ listings studied',
+  },
+} as const
+
 const ROOM_TYPES = [
   'Living Room',
   'Bedroom',
@@ -376,7 +443,7 @@ async function runReplicatePrediction(
 }
 
 // ─── NEW: Claude Vision room analysis ────────────────────────────────────────
-async function analyzeRoomWithClaude(imageDataUrl: string): Promise<RoomAnalysis> {
+async function analyzeRoomWithClaude(imageDataUrl: string, lang: 'he' | 'en'): Promise<RoomAnalysis> {
   const response = await fetch('/api/analyze-room', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -384,6 +451,7 @@ async function analyzeRoomWithClaude(imageDataUrl: string): Promise<RoomAnalysis
       imageDataUrl,
       styleNames: STYLES.map(s => s.name).join(', '),
       roomTypes: ROOM_TYPES.join(', '),
+      lang,
     }),
   })
 
@@ -428,6 +496,9 @@ function saveHistoryToStorage(entries: HistoryEntry[]) {
 // ─── App ─────────────────────────────────────────────────────────────────────
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [lang, setLang] = useState<'he' | 'en'>('he')
+  const t = T[lang]
 
   const [originalImage, setOriginalImage] = useState<string | null>(null)
   const [isUploaded, setIsUploaded] = useState(false)
@@ -475,7 +546,7 @@ function App() {
 
     try {
       const dataUrl = await blobUrlToDataUrl(originalImage)
-      const analysis = await analyzeRoomWithClaude(dataUrl)
+      const analysis = await analyzeRoomWithClaude(dataUrl, lang)
       setRoomAnalysis(analysis)
       // Auto-select only the recommended style; room type stays user-controlled
       setSelectedPreset(analysis.recommendedStyle)
@@ -734,7 +805,7 @@ function App() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
 
       {/* ── Cinematic dynamic background ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -869,7 +940,7 @@ function App() {
                       style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
                     >
                       <Download className="h-4 w-4" />
-                      Download Result
+                      {t.downloadBtn}
                     </button>
                   )}
                 </div>
@@ -943,7 +1014,11 @@ function App() {
                   </div>
 
                   <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
-                    {isGenerating ? 'Processing…' : generatedImage ? 'Before ← Drag → After' : 'Original Room'}
+                    {isGenerating
+                      ? t.generating
+                      : generatedImage
+                      ? 'Before ← Drag → After'
+                      : t.originalRoom}
                   </p>
                 </div>
 
@@ -957,7 +1032,7 @@ function App() {
                       className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-2 text-xs font-semibold text-white shadow-coral-sm transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
                     >
                       <Brain className="h-4 w-4" />
-                      {isAnalyzing ? 'Analyzing…' : 'Analyze with AI'}
+                      {isAnalyzing ? t.generating : t.analyzeBtn}
                     </button>
                   </div>
                 )}
@@ -981,8 +1056,12 @@ function App() {
                           <Brain className="relative h-4 w-4 text-coral animate-pulse" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">Claude is analyzing your room…</p>
-                          <p className="text-[11px] text-gray-500 mt-0.5">Detecting room type · Recommending best style</p>
+                          <p className="text-sm font-semibold text-white">{t.aiRoomAnalysis}</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {lang === 'he'
+                              ? 'מנתח סוג חדר וממליץ על סגנון סטייג׳ינג'
+                              : 'Detecting room type · Recommending best style'}
+                          </p>
                         </div>
                       </div>
                     ) : roomAnalysis ? (
@@ -997,29 +1076,35 @@ function App() {
                             </div>
                             <div className="flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-bold text-white">AI Room Analysis</p>
+                                <p className="text-sm font-bold text-white">{t.aiRoomAnalysis}</p>
                                 <span className="rounded-full border border-coral/30 bg-coral/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
                                   Claude Vision
                                 </span>
-                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                                  roomAnalysis.confidence === 'high'
-                                    ? 'bg-green-500/15 text-green-400 border border-green-500/25'
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                                    roomAnalysis.confidence === 'high'
+                                      ? 'bg-green-500/15 text-green-400 border border-green-500/25'
+                                      : roomAnalysis.confidence === 'medium'
+                                      ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
+                                      : 'bg-gray-500/15 text-gray-400 border border-gray-500/25'
+                                  }`}
+                                >
+                                  {roomAnalysis.confidence === 'high'
+                                    ? t.highConfidence
                                     : roomAnalysis.confidence === 'medium'
-                                    ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
-                                    : 'bg-gray-500/15 text-gray-400 border border-gray-500/25'
-                                }`}>
-                                  {roomAnalysis.confidence} confidence
+                                    ? t.medConfidence
+                                    : t.lowConfidence}
                                 </span>
                               </div>
                               <div className="mt-2 flex flex-wrap gap-3">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">Room:</span>
+                                  <span className="text-[11px] text-gray-500">{t.room}:</span>
                                   <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
                                     {roomAnalysis.roomType}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">Style:</span>
+                                  <span className="text-[11px] text-gray-500">{t.style}:</span>
                                   <span className="rounded-lg bg-coral/15 px-2 py-0.5 text-[11px] font-semibold text-coral">
                                     {roomAnalysis.recommendedStyle}
                                   </span>
@@ -1091,7 +1176,7 @@ function App() {
                                 }}
                                 className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
                               >
-                                Change Style
+                                {t.changeStyle}
                               </button>
                             </div>
                           </div>
@@ -1101,7 +1186,7 @@ function App() {
                               onClick={() => setAnalysisDismissed(true)}
                               className="flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
                             >
-                              Change Style
+                              {t.changeStyle}
                               <ChevronRight className="h-3.5 w-3.5" />
                             </button>
                             <button
@@ -1126,28 +1211,28 @@ function App() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
                           <Sparkles className="h-4 w-4 text-green-400" />
                         </div>
-                        <h2 className="text-sm font-bold text-white">Your Staging ROI Estimate</h2>
-                        <span className="rounded-full bg-green-500/15 border border-green-500/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-400">Based on 2025 Data</span>
+                        <h2 className="text-sm font-bold text-white">{t.roiTitle}</h2>
+                        <span className="rounded-full bg-green-500/15 border border-green-500/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-green-400">{t.roiTag}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                         <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
                           <p className="text-lg font-extrabold text-white">6–10%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">Price uplift</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiPrice}</p>
                         </div>
                         <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
                           <p className="text-lg font-extrabold text-white">58%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">Faster sale</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiFaster}</p>
                         </div>
                         <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
                           <p className="text-lg font-extrabold text-coral">500–3,600%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">Avg ROI</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiAvg}</p>
                         </div>
                         <div className="rounded-xl bg-white/5 px-4 py-3 text-center">
                           <p className="text-lg font-extrabold text-white">83%</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">Buyers visualize better</p>
+                          <p className="mt-0.5 text-[11px] text-gray-500">{t.roiBuyers}</p>
                         </div>
                       </div>
-                      <p className="mt-3 text-[11px] text-gray-600 text-center">Based on NAR 2025 · 10,000+ listings studied · Traditional staging costs $4,500–$11,500 vs AI staging ~$50</p>
+                      <p className="mt-3 text-[11px] text-gray-600 text-center">{t.roiFooter}</p>
                     </div>
                   </section>
                 )}
@@ -1233,8 +1318,8 @@ function App() {
                 {/* ── Room Type ── */}
                 <section className="mt-6">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">Room Type</h2>
-                    <span className="text-xs font-medium text-coral">Optional</span>
+                    <h2 className="text-sm font-bold text-white">{t.roomType}</h2>
+                    <span className="text-xs font-medium text-coral">{t.optional}</span>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {ROOM_TYPES.map((room) => {
@@ -1278,8 +1363,8 @@ function App() {
                       <Sparkles className="h-4 w-4 text-coral" />
                     </div>
                     <div className="relative">
-                      <p className="text-sm font-semibold text-white">Pro Touch-Up</p>
-                      <p className="mt-0.5 text-[11px] text-gray-500">Enhance lighting & colors — no furniture changes</p>
+                      <p className="text-sm font-semibold text-white">{t.proTouchUp}</p>
+                      <p className="mt-0.5 text-[11px] text-gray-500">{t.proTouchUpSub}</p>
                     </div>
                     <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
                       <Send className="h-4 w-4" />
@@ -1290,13 +1375,13 @@ function App() {
                 {/* ── Custom Instructions ── */}
                 <section className="mt-7">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">Custom Instructions</h2>
-                    <span className="text-xs text-gray-600">Optional</span>
+                    <h2 className="text-sm font-bold text-white">{t.customInstructions}</h2>
+                    <span className="text-xs text-gray-600">{t.optional}</span>
                   </div>
                   <textarea
                     value={customInstructions}
                     onChange={(e) => setCustomInstructions(e.target.value)}
-                    placeholder="Any specific requests? (e.g., 'Add a large TV over the fireplace', 'Keep the flooring')"
+                    placeholder={t.customPlaceholder}
                     rows={3}
                     className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-3xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
                   />
@@ -1307,8 +1392,8 @@ function App() {
                   <section className="mt-10">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-500" />
-                        <h2 className="text-sm font-bold text-white">Recent Renders</h2>
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <h2 className="text-sm font-bold text-white">{t.recentRenders}</h2>
                       </div>
                       <span className="text-xs font-medium text-coral">
                         {history.length} render{history.length !== 1 ? 's' : ''}
@@ -1349,33 +1434,44 @@ function App() {
             </p>
           )}
           {!isUploaded && !error && (
-            <p className="text-center text-xs text-gray-600">Upload a room photo to get started</p>
+            <p className="text-center text-xs text-gray-600">{t.uploadTitle}</p>
           )}
           {isUploaded && !selectedPreset && !isGenerating && !error && (
             <p className="text-center text-xs text-gray-600">
-              Select a room type &amp; style preset, then click Generate
+              {lang === 'he'
+                ? 'בחר סוג חדר וסגנון סטייג׳ינג, ואז לחץ על כפתור היצירה'
+                : 'Select a room type & style preset, then click Generate'}
             </p>
           )}
           <div className="flex items-center justify-center">
-            <button
-              type="button"
-              onClick={handleApplyEdit}
-              disabled={isGenerating || !originalImage}
-              className="group flex min-h-[56px] min-w-[240px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-10 py-4 text-base font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ boxShadow: '0 0 30px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,255,255,0.2)' }}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  Generate Staging
-                </>
-              )}
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
+                className="flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-300 backdrop-blur-3xl transition-all hover:border-coral/30 hover:text-white focus:outline-none"
+              >
+                {lang === 'he' ? 'EN' : 'עב'}
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyEdit}
+                disabled={isGenerating || !originalImage}
+                className="group flex min-h-[56px] min-w-[240px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-10 py-4 text-base font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ boxShadow: '0 0 30px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,255,255,0.2)' }}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t.generating}
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    {t.generateBtn}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
