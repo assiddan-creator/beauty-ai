@@ -1,3 +1,4 @@
+// Updated AI Presets and Camera Setup
 import { useState, useRef } from 'react'
 import {
   ImageIcon,
