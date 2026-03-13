@@ -19,7 +19,6 @@ import {
   Gem,
   ArrowLeftRight,
   Brain,
-  Check,
   CheckCircle2,
   ChevronRight,
   type LucideIcon,
