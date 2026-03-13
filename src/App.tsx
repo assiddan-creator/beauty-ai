@@ -468,11 +468,8 @@ function App() {
       const dataUrl = await blobUrlToDataUrl(blobUrl)
       const analysis = await analyzeRoomWithClaude(dataUrl)
       setRoomAnalysis(analysis)
-      // Auto-select the recommended style and room type
+      // Auto-select only the recommended style; room type stays user-controlled
       setSelectedPreset(analysis.recommendedStyle)
-      setSelectedRoomType(
-        ROOM_TYPES.find(r => r === analysis.roomType) ?? null
-      )
       console.log('[Claude Vision] Analysis complete:', analysis)
     } catch (err) {
       console.error('[Claude Vision] Analysis failed:', err)
