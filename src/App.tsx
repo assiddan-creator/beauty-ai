@@ -924,7 +924,7 @@ function App() {
   const [selectedProductCategory, setSelectedProductCategory] = useState<string | null>(null)
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
   const [selectedProductName, setSelectedProductName] = useState<string | null>(null)
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null)
+  const [, setSelectedProduct] = useState<ProductItem | null>(null)
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
