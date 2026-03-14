@@ -2002,48 +2002,93 @@ function App() {
                                     const meta = LOOK_METADATA[preset.name]
                                     const isSelected = selectedPreset === preset.name
                                     const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
-                                    const PresetIcon = preset.icon
                                     return (
                                       <button
                                         key={preset.id}
                                         type="button"
                                         onClick={() => setSelectedPreset(preset.name)}
-                                        className="group relative flex shrink-0 w-40 h-52 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none"
+                                        className="group relative flex shrink-0 w-44 h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] focus:outline-none"
                                         style={{
-                                          border: isSelected ? '1.5px solid rgba(255,107,71,0.7)' : '1px solid rgba(255,255,255,0.07)',
-                                          boxShadow: isSelected ? '0 0 25px rgba(255,107,71,0.4), 0 0 50px rgba(255,107,71,0.15)' : '0 8px 32px rgba(0,0,0,0.5)',
+                                          border: isSelected ? '1.5px solid rgba(255,107,71,0.6)' : '1px solid rgba(255,255,255,0.07)',
+                                          boxShadow: isSelected
+                                            ? '0 0 30px rgba(255,107,71,0.35), 0 0 60px rgba(255,107,71,0.12), inset 0 1px 0 rgba(255,107,71,0.2)'
+                                            : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
                                         }}
                                       >
                                         {brokenImgs.has(`preset-${preset.id}`) ? (
-                                          <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(255,107,71,0.04)' }}>
-                                            <ImageIcon className="h-5 w-5 text-gray-700" />
+                                          <div
+                                            className="absolute inset-0"
+                                            style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
+                                          >
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                              <ImageIcon className="h-6 w-6 text-gray-800" />
+                                            </div>
                                           </div>
                                         ) : (
                                           <img
                                             src={preset.image}
                                             alt={preset.name}
-                                            className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                            className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
                                             onError={() => markBroken(`preset-${preset.id}`)}
                                           />
                                         )}
-                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
-                                        {isSelected && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.08) 0%, transparent 50%)' }} />}
+                                        <div
+                                          className="absolute inset-0"
+                                          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
+                                        />
+                                        {isSelected && (
+                                          <div
+                                            className="absolute inset-0 transition-opacity duration-300"
+                                            style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.1) 0%, transparent 60%)' }}
+                                          />
+                                        )}
                                         {isRecommended && (
-                                          <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5" style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.5)' }}>
+                                          <div
+                                            className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
+                                            style={{
+                                              background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)',
+                                              boxShadow: '0 0 12px rgba(255,107,71,0.6)',
+                                            }}
+                                          >
                                             <Brain className="h-2.5 w-2.5 text-white" />
                                             <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
                                           </div>
                                         )}
-                                        <div className="relative z-10 mt-auto p-3">
-                                          <p className="text-xs font-extrabold leading-tight text-white" style={{ letterSpacing: '-0.01em' }}>
+                                        <div className="relative z-10 mt-auto flex flex-col p-3.5">
+                                          {meta?.vibe && (
+                                            <span
+                                              className="mb-1 text-[9px] font-medium tracking-[0.08em] uppercase line-clamp-1"
+                                              style={{ color: 'rgba(255,255,255,0.35)' }}
+                                            >
+                                              {meta.vibe.split(',')[0].trim()}
+                                            </span>
+                                          )}
+                                          <p
+                                            className="text-sm font-extrabold leading-tight text-white"
+                                            style={{ letterSpacing: '-0.02em' }}
+                                          >
                                             {lang === 'he' ? preset.nameHe : preset.name}
                                           </p>
-                                          {meta && (
-                                            <p className="mt-0.5 text-[9px] leading-relaxed text-gray-400 line-clamp-2">{meta.salesLine}</p>
+                                          {meta?.salesLine && (
+                                            <p
+                                              className="mt-1 text-[10px] leading-relaxed line-clamp-2"
+                                              style={{ color: 'rgba(255,255,255,0.45)' }}
+                                            >
+                                              {meta.salesLine}
+                                            </p>
                                           )}
                                           {isSelected && (
-                                            <div className="mt-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 8px rgba(255,107,71,0.6)' }}>
-                                              <PresetIcon className="h-2.5 w-2.5 text-white" />
+                                            <div className="mt-2 flex items-center gap-1.5">
+                                              <div
+                                                className="h-1.5 w-1.5 rounded-full"
+                                                style={{ background: '#FF6B47', boxShadow: '0 0 6px rgba(255,107,71,0.8)' }}
+                                              />
+                                              <span
+                                                className="text-[9px] font-semibold tracking-wide"
+                                                style={{ color: 'rgba(255,107,71,0.8)' }}
+                                              >
+                                                {lang === 'he' ? 'נבחר' : 'Selected'}
+                                              </span>
                                             </div>
                                           )}
                                         </div>
@@ -2060,48 +2105,93 @@ function App() {
                               const meta = LOOK_METADATA[preset.name]
                               const isSelected = selectedPreset === preset.name
                               const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
-                              const PresetIcon = preset.icon
                               return (
                                 <button
                                   key={preset.id}
                                   type="button"
                                   onClick={() => setSelectedPreset(preset.name)}
-                                  className="group relative flex shrink-0 w-40 h-52 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none"
+                                  className="group relative flex shrink-0 w-44 h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] focus:outline-none"
                                   style={{
-                                    border: isSelected ? '1.5px solid rgba(255,107,71,0.7)' : '1px solid rgba(255,255,255,0.07)',
-                                    boxShadow: isSelected ? '0 0 25px rgba(255,107,71,0.4), 0 0 50px rgba(255,107,71,0.15)' : '0 8px 32px rgba(0,0,0,0.5)',
+                                    border: isSelected ? '1.5px solid rgba(255,107,71,0.6)' : '1px solid rgba(255,255,255,0.07)',
+                                    boxShadow: isSelected
+                                      ? '0 0 30px rgba(255,107,71,0.35), 0 0 60px rgba(255,107,71,0.12), inset 0 1px 0 rgba(255,107,71,0.2)'
+                                      : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
                                   }}
                                 >
                                   {brokenImgs.has(`preset-${preset.id}`) ? (
-                                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(255,107,71,0.04)' }}>
-                                      <ImageIcon className="h-5 w-5 text-gray-700" />
+                                    <div
+                                      className="absolute inset-0"
+                                      style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
+                                    >
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <ImageIcon className="h-6 w-6 text-gray-800" />
+                                      </div>
                                     </div>
                                   ) : (
                                     <img
                                       src={preset.image}
                                       alt={preset.name}
-                                      className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                      className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
                                       onError={() => markBroken(`preset-${preset.id}`)}
                                     />
                                   )}
-                                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
-                                  {isSelected && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.08) 0%, transparent 50%)' }} />}
+                                  <div
+                                    className="absolute inset-0"
+                                    style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
+                                  />
+                                  {isSelected && (
+                                    <div
+                                      className="absolute inset-0 transition-opacity duration-300"
+                                      style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.1) 0%, transparent 60%)' }}
+                                    />
+                                  )}
                                   {isRecommended && (
-                                    <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5" style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.5)' }}>
+                                    <div
+                                      className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
+                                      style={{
+                                        background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)',
+                                        boxShadow: '0 0 12px rgba(255,107,71,0.6)',
+                                      }}
+                                    >
                                       <Brain className="h-2.5 w-2.5 text-white" />
                                       <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
                                     </div>
                                   )}
-                                  <div className="relative z-10 mt-auto p-3">
-                                    <p className="text-xs font-extrabold leading-tight text-white" style={{ letterSpacing: '-0.01em' }}>
+                                  <div className="relative z-10 mt-auto flex flex-col p-3.5">
+                                    {meta?.vibe && (
+                                      <span
+                                        className="mb-1 text-[9px] font-medium tracking-[0.08em] uppercase line-clamp-1"
+                                        style={{ color: 'rgba(255,255,255,0.35)' }}
+                                      >
+                                        {meta.vibe.split(',')[0].trim()}
+                                      </span>
+                                    )}
+                                    <p
+                                      className="text-sm font-extrabold leading-tight text-white"
+                                      style={{ letterSpacing: '-0.02em' }}
+                                    >
                                       {lang === 'he' ? preset.nameHe : preset.name}
                                     </p>
-                                    {meta && (
-                                      <p className="mt-0.5 text-[9px] leading-relaxed text-gray-400 line-clamp-2">{meta.salesLine}</p>
+                                    {meta?.salesLine && (
+                                      <p
+                                        className="mt-1 text-[10px] leading-relaxed line-clamp-2"
+                                        style={{ color: 'rgba(255,255,255,0.45)' }}
+                                      >
+                                        {meta.salesLine}
+                                      </p>
                                     )}
                                     {isSelected && (
-                                      <div className="mt-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 8px rgba(255,107,71,0.6)' }}>
-                                        <PresetIcon className="h-2.5 w-2.5 text-white" />
+                                      <div className="mt-2 flex items-center gap-1.5">
+                                        <div
+                                          className="h-1.5 w-1.5 rounded-full"
+                                          style={{ background: '#FF6B47', boxShadow: '0 0 6px rgba(255,107,71,0.8)' }}
+                                        />
+                                        <span
+                                          className="text-[9px] font-semibold tracking-wide"
+                                          style={{ color: 'rgba(255,107,71,0.8)' }}
+                                        >
+                                          {lang === 'he' ? 'נבחר' : 'Selected'}
+                                        </span>
                                       </div>
                                     )}
                                   </div>
