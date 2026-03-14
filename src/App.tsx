@@ -1199,115 +1199,124 @@ function App() {
     <div
       className="fixed inset-0 z-50 flex items-end justify-center"
       onClick={(e) => { if (e.target === e.currentTarget) setShowAnalysisPanel(false) }}
-      style={{ background: 'rgba(4,2,6,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+      style={{ background: 'rgba(4,2,6,0.88)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
     >
       <div
         className="w-full max-w-3xl overflow-y-auto"
         style={{
-          background: 'linear-gradient(180deg, #0e0810 0%, #080508 60%, #060306 100%)',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          background: 'linear-gradient(180deg, #0e0810 0%, #080508 70%, #060306 100%)',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
           borderRadius: '28px 28px 0 0',
           maxHeight: '90vh',
-          boxShadow: '0 -30px 80px rgba(0,0,0,0.7), 0 -1px 0 rgba(255,107,71,0.15)',
+          boxShadow: '0 -30px 80px rgba(0,0,0,0.7), 0 -1px 0 rgba(255,107,71,0.12)',
         }}
       >
-        {/* Glow accent top */}
+        {/* Top glow line */}
         <div
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: 200, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.5), transparent)', top: 0 }}
+          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
+          style={{ width: 160, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.45), transparent)' }}
         />
 
         {/* Handle */}
         <div className="flex justify-center pt-3.5 pb-1">
-          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.12)' }} />
         </div>
 
         <div className="px-5 pb-14 pt-3">
 
           {/* Header */}
-          <div className="mb-6 flex items-start justify-between">
+          <div className="mb-5 flex items-start justify-between">
             <div>
               <p
-                className="text-xl font-extrabold text-white"
+                className="text-lg font-extrabold text-white"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                {lang === 'he' ? 'הניתוח שלך מוכן' : 'Your analysis is ready'}
-                <span className="ml-2 inline-block" style={{ filter: 'drop-shadow(0 0 8px rgba(255,200,100,0.8))' }}>✨</span>
+                {lang === 'he' ? 'הכיוון שהכי מחמיא לך' : 'The look that flatters you most'}
               </p>
-              <p className="mt-1 text-[11px] tracking-wider text-gray-600 uppercase">
-                {lang === 'he' ? 'מצאנו את הלוקים שהכי יכולים להתאים לך' : 'curated looks · selected for you'}
+              <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                {lang === 'he' ? 'על בסיס הניתוח שלך' : 'based on your analysis'}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowAnalysisPanel(false)}
-              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-gray-600 hover:text-gray-300 focus:outline-none transition-colors"
+              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full transition-colors focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5 text-gray-500" />
             </button>
           </div>
 
           {/* AI Pick Hero Card */}
           {recommendedPreset && (
             <div
-              className="relative mb-5 overflow-hidden rounded-2xl"
+              className="relative mb-4 overflow-hidden rounded-2xl"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,107,71,0.08) 0%, rgba(100,40,80,0.12) 50%, rgba(20,10,30,0.2) 100%)',
-                border: '1px solid rgba(255,107,71,0.2)',
-                boxShadow: '0 0 40px rgba(255,107,71,0.08), inset 0 1px 0 rgba(255,107,71,0.15)',
+                background: 'linear-gradient(135deg, rgba(255,107,71,0.09) 0%, rgba(80,30,60,0.12) 60%, rgba(15,8,20,0.2) 100%)',
+                border: '1px solid rgba(255,107,71,0.18)',
+                boxShadow: '0 0 40px rgba(255,107,71,0.07), inset 0 1px 0 rgba(255,107,71,0.12)',
               }}
             >
-              {/* Top glow line */}
+              {/* Top accent line */}
               <div
                 className="absolute top-0 left-0 right-0 h-px"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.6), transparent)' }}
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.5), transparent)' }}
               />
 
               <div className="flex gap-4 p-4">
-                {/* Preview image */}
+                {/* Preview */}
                 <div
-                  className="relative h-28 w-22 shrink-0 overflow-hidden rounded-xl"
-                  style={{ width: 80, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+                  className="relative h-28 shrink-0 overflow-hidden rounded-xl"
+                  style={{ width: 76, border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                 >
                   <img
                     src={recommendedPreset.image}
                     alt={recommendedPreset.name}
                     className="h-full w-full object-cover object-top"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.05)'
+                      (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.04)'
                     }}
                   />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.5) 100%)' }} />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.5) 100%)' }} />
                 </div>
 
-                {/* Text content */}
-                <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
-                  <div>
-                    {/* AI Pick badge */}
-                    <div className="mb-2 flex items-center gap-2">
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white"
-                        style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 12px rgba(255,107,71,0.5)' }}
-                      >
-                        <Brain className="h-2.5 w-2.5" />
-                        AI Pick
-                      </span>
-                    </div>
-
-                    <p
-                      className="text-lg font-extrabold text-white leading-tight"
-                      style={{ letterSpacing: '-0.02em' }}
+                {/* Text */}
+                <div className="flex flex-1 flex-col min-w-0 py-0.5">
+                  {/* AI Pick badge */}
+                  <div className="mb-2">
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white"
+                      style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.45)' }}
                     >
-                      {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-gray-500 tracking-wide">
-                      {LOOK_METADATA[recommendedPreset.name]?.salesLine ?? ''}
-                    </p>
-                    <p className="mt-2 text-[11px] leading-relaxed text-gray-400 line-clamp-2">
-                      {faceAnalysis.reasoning}
-                    </p>
+                      <Brain className="h-2.5 w-2.5" />
+                      AI Pick
+                    </span>
                   </div>
+
+                  {/* Look name */}
+                  <p
+                    className="text-base font-extrabold text-white leading-tight"
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
+                    {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
+                  </p>
+
+                  {/* Sales line */}
+                  {LOOK_METADATA[recommendedPreset.name]?.salesLine && (
+                    <p className="mt-0.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      {LOOK_METADATA[recommendedPreset.name].salesLine}
+                    </p>
+                  )}
+
+                  {/* Reasoning — 1 sentence only */}
+                  {faceAnalysis.reasoning && (
+                    <p
+                      className="mt-2 text-[11px] leading-relaxed line-clamp-2"
+                      style={{ color: 'rgba(255,255,255,0.55)' }}
+                    >
+                      {faceAnalysis.reasoning.split('.')[0]}.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1323,7 +1332,7 @@ function App() {
                   className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
                   style={{
                     background: 'linear-gradient(135deg, #FF6B47 0%, #FF8A65 50%, #FF9D6E 100%)',
-                    boxShadow: '0 0 30px rgba(255,107,71,0.45), 0 0 60px rgba(255,107,71,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    boxShadow: '0 0 28px rgba(255,107,71,0.4), 0 0 56px rgba(255,107,71,0.12), inset 0 1px 0 rgba(255,255,255,0.18)',
                     letterSpacing: '0.01em',
                   }}
                 >
@@ -1334,43 +1343,35 @@ function App() {
             </div>
           )}
 
-          {recommendedPreset && (
-            <LookNavigator
-              currentLookName={recommendedPreset.name}
-              onSelect={(name) => {
-                setSelectedPreset(name)
-                setShowAnalysisPanel(false)
-                setAnalysisDismissed(true)
-              }}
-              lang={lang}
-            />
-          )}
-
-          {/* Analysis summary */}
+          {/* What we detected — compact two-col */}
           <div
-            className="mb-4 rounded-2xl p-4"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+            className="mb-4 rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <div className="grid grid-cols-2 gap-4 mb-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
+                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
                   {lang === 'he' ? 'מה זיהינו' : 'Detected'}
                 </p>
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-600">{lang === 'he' ? 'גוון' : 'Skin'}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      {lang === 'he' ? 'גוון' : 'Skin'}
+                    </span>
                     <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-gray-200"
-                      style={{ background: 'rgba(255,255,255,0.07)' }}
+                      className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.75)' }}
                     >
                       {faceAnalysis.skinTone}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-gray-600">{lang === 'he' ? 'אנדרטון' : 'Undertone'}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      {lang === 'he' ? 'אנדרטון' : 'Undertone'}
+                    </span>
                     <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-coral"
-                      style={{ background: 'rgba(255,107,71,0.12)' }}
+                      className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                      style={{ background: 'rgba(255,107,71,0.1)', color: 'rgba(255,140,100,0.9)' }}
                     >
                       {faceAnalysis.undertone}
                     </span>
@@ -1379,27 +1380,31 @@ function App() {
               </div>
 
               <div>
-                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
+                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
                   {lang === 'he' ? 'מה יחמיא לך' : 'What flatters you'}
                 </p>
                 <div className="space-y-1.5">
                   {faceAnalysis.lipColorFamily && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-gray-600">{lang === 'he' ? 'שפתיים' : 'Lips'}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {lang === 'he' ? 'שפתיים' : 'Lips'}
+                      </span>
                       <span
-                        className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-pink-300"
-                        style={{ background: 'rgba(236,72,153,0.1)' }}
+                        className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{ background: 'rgba(236,72,153,0.1)', color: 'rgba(240,150,190,0.9)' }}
                       >
                         {faceAnalysis.lipColorFamily}
                       </span>
                     </div>
                   )}
                   {faceAnalysis.blushColorFamily && (
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-gray-600">{lang === 'he' ? 'סומק' : 'Blush'}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {lang === 'he' ? 'סומק' : 'Blush'}
+                      </span>
                       <span
-                        className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-orange-300"
-                        style={{ background: 'rgba(249,115,22,0.1)' }}
+                        className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
+                        style={{ background: 'rgba(249,115,22,0.1)', color: 'rgba(255,180,120,0.9)' }}
                       >
                         {faceAnalysis.blushColorFamily}
                       </span>
@@ -1409,13 +1414,14 @@ function App() {
               </div>
             </div>
 
+            {/* Beauty tips */}
             {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
               <>
                 <div className="my-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {faceAnalysis.beautyTips.map((tip, i) => (
-                    <div key={i} className="flex gap-2.5 text-[11px] leading-relaxed text-gray-400">
-                      <span className="mt-0.5 shrink-0 text-coral opacity-70">✦</span>
+                    <div key={i} className="flex gap-2 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <span className="mt-0.5 shrink-0" style={{ color: 'rgba(255,107,71,0.5)' }}>✦</span>
                       <span>{tip}</span>
                     </div>
                   ))}
@@ -1426,20 +1432,25 @@ function App() {
 
           {/* Alternate looks */}
           {alternatePresets.length > 0 && (
-            <div className="mb-5">
-              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
-                {lang === 'he' ? 'לוקים נוספים שיכולים להתאים לך' : 'More looks for you'}
+            <div className="mb-4">
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                {lang === 'he' ? 'אם בא לך כיוון אחר' : 'If you want a different direction'}
               </p>
               <div className="flex flex-col gap-2">
                 {alternatePresets.map((preset) => (
                   <div
                     key={preset.id}
-                    className="flex items-center gap-3 rounded-xl p-3 transition-all"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    className="flex items-center gap-3 rounded-xl p-3 transition-all cursor-pointer"
+                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    onClick={() => {
+                      setSelectedPreset(preset.name)
+                      setShowAnalysisPanel(false)
+                      setAnalysisDismissed(true)
+                    }}
                   >
                     <div
                       className="h-12 w-10 shrink-0 overflow-hidden rounded-lg"
-                      style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                      style={{ border: '1px solid rgba(255,255,255,0.07)' }}
                     >
                       <img
                         src={preset.image}
@@ -1452,26 +1463,16 @@ function App() {
                       <p className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
                         {lang === 'he' ? preset.nameHe : preset.name}
                       </p>
-                      <p className="text-[10px] text-gray-600">{LOOK_METADATA[preset.name]?.salesLine ?? ''}</p>
-                      {LOOK_METADATA[preset.name]?.adjacentLook && (
-                        <p className="mt-0.5 text-[9px] text-gray-700">
-                          {lang === 'he' ? 'נסי גם: ' : 'Also try: '}
-                          {LOOK_METADATA[preset.name]?.adjacentLook}
-                        </p>
-                      )}
+                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        {LOOK_METADATA[preset.name]?.salesLine ?? ''}
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPreset(preset.name)
-                        setShowAnalysisPanel(false)
-                        setAnalysisDismissed(true)
-                      }}
-                      className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold text-coral transition-colors hover:opacity-80 focus:outline-none"
-                      style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.2)' }}
+                    <span
+                      className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-colors"
+                      style={{ background: 'rgba(255,107,71,0.08)', border: '1px solid rgba(255,107,71,0.15)', color: 'rgba(255,107,71,0.8)' }}
                     >
                       {lang === 'he' ? 'נסי' : 'Try'}
-                    </button>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1482,10 +1483,10 @@ function App() {
           <button
             type="button"
             onClick={() => setShowAnalysisPanel(false)}
-            className="flex w-full items-center justify-center rounded-xl py-3 text-xs font-medium text-gray-600 transition-all hover:text-gray-400 focus:outline-none"
-            style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+            className="flex w-full items-center justify-center rounded-xl py-3 text-xs font-medium transition-all hover:opacity-70 focus:outline-none"
+            style={{ color: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            {lang === 'he' ? 'בחרי לוק בעצמי' : 'Choose a look myself'}
+            {lang === 'he' ? 'נסי כיוון אחר בעצמי' : 'Explore looks myself'}
           </button>
 
         </div>
