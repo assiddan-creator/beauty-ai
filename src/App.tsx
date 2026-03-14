@@ -2204,11 +2204,11 @@ function App() {
 
                     {generatedImage && originalImage && !isGenerating ? (
                       <>
-                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover object-center" />
+                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-contain" />
                         <img
                           src={generatedImage}
                           alt="After"
-                          className="absolute inset-0 h-full w-full object-cover object-top"
+                          className="absolute inset-0 h-full w-full object-contain"
                           style={{
                             clipPath: `inset(0 0 0 ${sliderPosition}%)`,
                             opacity: makeupOpacity / 100,
@@ -2255,12 +2255,12 @@ function App() {
                         </div>
                       </>
                     ) : generatedImage && !originalImage && !isGenerating ? (
-                      <img src={generatedImage} alt="Generated look" className="absolute inset-0 h-full w-full object-cover object-top" />
+                      <img src={generatedImage} alt="Generated look" className="absolute inset-0 h-full w-full object-contain" />
                     ) : (
                       <img
                         src={originalImage!}
                         alt="Original selfie"
-                        className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
+                        className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
                       />
                     )}
                   </div>
