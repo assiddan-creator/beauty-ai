@@ -60,7 +60,7 @@ const ENGINES = [
     name: 'Flux 2 Pro',
     model: 'black-forest-labs/flux-2-pro',
     description: 'מנוע חזק של Black Forest Labs — עריכה ויצירה באיכות גבוהה',
-    inputKey: 'image_input',
+    inputKey: 'input_images',
     isArray: true,
     supportsEdit: true,
     badge: 'לניסיון',
