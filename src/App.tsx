@@ -1058,210 +1058,284 @@ function App() {
     }
 
     return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      onClick={(e) => { if (e.target === e.currentTarget) setShowAnalysisPanel(false) }}
+      style={{ background: 'rgba(4,2,6,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+    >
       <div
-        className="fixed inset-0 z-50 flex items-end justify-center"
-        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
-        onClick={(e) => { if (e.target === e.currentTarget) setShowAnalysisPanel(false) }}
+        className="w-full max-w-3xl overflow-y-auto"
+        style={{
+          background: 'linear-gradient(180deg, #0e0810 0%, #080508 60%, #060306 100%)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '28px 28px 0 0',
+          maxHeight: '90vh',
+          boxShadow: '0 -30px 80px rgba(0,0,0,0.7), 0 -1px 0 rgba(255,107,71,0.15)',
+        }}
       >
+        {/* Glow accent top */}
         <div
-          className="w-full max-w-3xl overflow-y-auto rounded-t-3xl border-t border-white/10"
-          style={{
-            background: 'linear-gradient(180deg, #111 0%, #0d0808 100%)',
-            maxHeight: '88vh',
-            boxShadow: '0 -20px 60px rgba(0,0,0,0.5)',
-          }}
-        >
-          {/* Handle */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="h-1 w-10 rounded-full bg-white/20" />
-          </div>
+          className="pointer-events-none absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ width: 200, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.5), transparent)', top: 0 }}
+        />
 
-          <div className="px-5 pb-12 pt-1">
+        {/* Handle */}
+        <div className="flex justify-center pt-3.5 pb-1">
+          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        </div>
 
-            {/* Header */}
-            <div className="mb-5 flex items-start justify-between">
-              <div>
-                <p className="text-lg font-extrabold text-white">
-                  {lang === 'he' ? 'הניתוח שלך מוכן ✨' : 'Your analysis is ready ✨'}
-                </p>
-                <p className="mt-0.5 text-xs text-gray-500">
-                  {lang === 'he' ? 'מצאנו את הלוקים שהכי יכולים להתאים לך' : 'We found the looks that suit you best'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAnalysisPanel(false)}
-                className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white focus:outline-none"
+        <div className="px-5 pb-14 pt-3">
+
+          {/* Header */}
+          <div className="mb-6 flex items-start justify-between">
+            <div>
+              <p
+                className="text-xl font-extrabold text-white"
+                style={{ letterSpacing: '-0.02em' }}
               >
-                <X className="h-3.5 w-3.5" />
-              </button>
+                {lang === 'he' ? 'הניתוח שלך מוכן' : 'Your analysis is ready'}
+                <span className="ml-2 inline-block" style={{ filter: 'drop-shadow(0 0 8px rgba(255,200,100,0.8))' }}>✨</span>
+              </p>
+              <p className="mt-1 text-[11px] tracking-wider text-gray-600 uppercase">
+                {lang === 'he' ? 'מצאנו את הלוקים שהכי יכולים להתאים לך' : 'curated looks · selected for you'}
+              </p>
             </div>
-
-            {/* AI Pick Card */}
-            {recommendedPreset && (
-              <div
-                className="mb-4 overflow-hidden rounded-2xl border border-coral/25"
-                style={{ background: 'linear-gradient(135deg, rgba(255,107,71,0.1) 0%, rgba(80,40,60,0.15) 100%)' }}
-              >
-                <div className="flex gap-4 p-4">
-                  {/* Preview thumbnail */}
-                  <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-white/5">
-                    <img
-                      src={recommendedPreset.image}
-                      alt={recommendedPreset.name}
-                      className="h-full w-full object-cover object-top"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex flex-1 flex-col justify-between min-w-0">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-2 py-0.5">
-                          <Brain className="h-2.5 w-2.5 text-white" />
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
-                        </span>
-                      </div>
-                      <p className="text-base font-extrabold text-white leading-tight">
-                        {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-gray-400">{vibeMap[recommendedPreset.name] ?? ''}</p>
-                      <p className="mt-1.5 text-[11px] leading-relaxed text-gray-300 line-clamp-2">{faceAnalysis.reasoning}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CTA inside card */}
-                <div className="px-4 pb-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPreset(recommendedPreset.name)
-                      setShowAnalysisPanel(false)
-                      setAnalysisDismissed(true)
-                    }}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] py-3 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
-                    style={{ boxShadow: '0 0 20px rgba(255,107,71,0.35)' }}
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {lang === 'he' ? 'המשיכי עם הלוק הזה' : 'Continue with this look'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Analysis summary — two columns */}
-            <div className="mb-4 rounded-2xl border border-white/8 bg-white/4 p-4">
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                    {lang === 'he' ? 'מה זיהינו' : 'What we detected'}
-                  </p>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-gray-500">{lang === 'he' ? 'גוון עור' : 'Skin tone'}</span>
-                      <span className="text-[11px] font-semibold text-gray-200">{faceAnalysis.skinTone}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-gray-500">{lang === 'he' ? 'אנדרטון' : 'Undertone'}</span>
-                      <span className="text-[11px] font-semibold text-coral">{faceAnalysis.undertone}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                    {lang === 'he' ? 'מה יחמיא לך' : 'What suits you'}
-                  </p>
-                  <div className="space-y-1">
-                    {faceAnalysis.lipColorFamily && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-500">{lang === 'he' ? 'שפתיים' : 'Lips'}</span>
-                        <span className="text-[11px] font-semibold text-pink-300">{faceAnalysis.lipColorFamily}</span>
-                      </div>
-                    )}
-                    {faceAnalysis.blushColorFamily && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-500">{lang === 'he' ? 'סומק' : 'Blush'}</span>
-                        <span className="text-[11px] font-semibold text-orange-300">{faceAnalysis.blushColorFamily}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
-                <>
-                  <div className="my-3 border-t border-white/8" />
-                  <div className="space-y-1.5">
-                    {faceAnalysis.beautyTips.map((tip, i) => (
-                      <div key={i} className="flex gap-2 text-[11px] text-gray-300">
-                        <span className="mt-0.5 shrink-0 text-coral">✦</span>
-                        <span>{tip}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Alternate looks */}
-            {alternatePresets.length > 0 && (
-              <div className="mb-4">
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-                  {lang === 'he' ? 'לוקים נוספים שיכולים להתאים לך' : 'More looks for you'}
-                </p>
-                <div className="flex flex-col gap-2">
-                  {alternatePresets.map((preset) => (
-                    <div
-                      key={preset.id}
-                      className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/4 p-3"
-                    >
-                      <div className="h-12 w-10 shrink-0 overflow-hidden rounded-lg bg-white/5">
-                        <img
-                          src={preset.image}
-                          alt={preset.name}
-                          className="h-full w-full object-cover object-top"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-white">
-                          {lang === 'he' ? preset.nameHe : preset.name}
-                        </p>
-                        <p className="text-[10px] text-gray-500">{vibeMap[preset.name] ?? ''}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPreset(preset.name)
-                          setShowAnalysisPanel(false)
-                          setAnalysisDismissed(true)
-                        }}
-                        className="shrink-0 rounded-lg border border-coral/30 bg-coral/10 px-3 py-1.5 text-[11px] font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
-                      >
-                        {lang === 'he' ? 'נסי' : 'Try'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Secondary CTA */}
             <button
               type="button"
               onClick={() => setShowAnalysisPanel(false)}
-              className="flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-semibold text-gray-500 transition-all hover:bg-white/8 hover:text-gray-300 focus:outline-none"
+              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-gray-600 hover:text-gray-300 focus:outline-none transition-colors"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              {lang === 'he' ? 'בחרי לוק בעצמי' : 'Choose a look myself'}
+              <X className="h-3.5 w-3.5" />
             </button>
-
           </div>
+
+          {/* AI Pick Hero Card */}
+          {recommendedPreset && (
+            <div
+              className="relative mb-5 overflow-hidden rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,107,71,0.08) 0%, rgba(100,40,80,0.12) 50%, rgba(20,10,30,0.2) 100%)',
+                border: '1px solid rgba(255,107,71,0.2)',
+                boxShadow: '0 0 40px rgba(255,107,71,0.08), inset 0 1px 0 rgba(255,107,71,0.15)',
+              }}
+            >
+              {/* Top glow line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-px"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.6), transparent)' }}
+              />
+
+              <div className="flex gap-4 p-4">
+                {/* Preview image */}
+                <div
+                  className="relative h-28 w-22 shrink-0 overflow-hidden rounded-xl"
+                  style={{ width: 80, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+                >
+                  <img
+                    src={recommendedPreset.image}
+                    alt={recommendedPreset.name}
+                    className="h-full w-full object-cover object-top"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.05)'
+                    }}
+                  />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.5) 100%)' }} />
+                </div>
+
+                {/* Text content */}
+                <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
+                  <div>
+                    {/* AI Pick badge */}
+                    <div className="mb-2 flex items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white"
+                        style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 12px rgba(255,107,71,0.5)' }}
+                      >
+                        <Brain className="h-2.5 w-2.5" />
+                        AI Pick
+                      </span>
+                    </div>
+
+                    <p
+                      className="text-lg font-extrabold text-white leading-tight"
+                      style={{ letterSpacing: '-0.02em' }}
+                    >
+                      {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-500 tracking-wide">
+                      {vibeMap[recommendedPreset.name] ?? ''}
+                    </p>
+                    <p className="mt-2 text-[11px] leading-relaxed text-gray-400 line-clamp-2">
+                      {faceAnalysis.reasoning}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="px-4 pb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPreset(recommendedPreset.name)
+                    setShowAnalysisPanel(false)
+                    setAnalysisDismissed(true)
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
+                  style={{
+                    background: 'linear-gradient(135deg, #FF6B47 0%, #FF8A65 50%, #FF9D6E 100%)',
+                    boxShadow: '0 0 30px rgba(255,107,71,0.45), 0 0 60px rgba(255,107,71,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {lang === 'he' ? 'המשיכי עם הלוק הזה' : 'Continue with this look'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Analysis summary */}
+          <div
+            className="mb-4 rounded-2xl p-4"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
+                  {lang === 'he' ? 'מה זיהינו' : 'Detected'}
+                </p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-gray-600">{lang === 'he' ? 'גוון' : 'Skin'}</span>
+                    <span
+                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-gray-200"
+                      style={{ background: 'rgba(255,255,255,0.07)' }}
+                    >
+                      {faceAnalysis.skinTone}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-gray-600">{lang === 'he' ? 'אנדרטון' : 'Undertone'}</span>
+                    <span
+                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-coral"
+                      style={{ background: 'rgba(255,107,71,0.12)' }}
+                    >
+                      {faceAnalysis.undertone}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
+                  {lang === 'he' ? 'מה יחמיא לך' : 'What flatters you'}
+                </p>
+                <div className="space-y-1.5">
+                  {faceAnalysis.lipColorFamily && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-600">{lang === 'he' ? 'שפתיים' : 'Lips'}</span>
+                      <span
+                        className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-pink-300"
+                        style={{ background: 'rgba(236,72,153,0.1)' }}
+                      >
+                        {faceAnalysis.lipColorFamily}
+                      </span>
+                    </div>
+                  )}
+                  {faceAnalysis.blushColorFamily && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-600">{lang === 'he' ? 'סומק' : 'Blush'}</span>
+                      <span
+                        className="rounded-md px-2 py-0.5 text-[10px] font-semibold text-orange-300"
+                        style={{ background: 'rgba(249,115,22,0.1)' }}
+                      >
+                        {faceAnalysis.blushColorFamily}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
+              <>
+                <div className="my-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
+                <div className="space-y-2">
+                  {faceAnalysis.beautyTips.map((tip, i) => (
+                    <div key={i} className="flex gap-2.5 text-[11px] leading-relaxed text-gray-400">
+                      <span className="mt-0.5 shrink-0 text-coral opacity-70">✦</span>
+                      <span>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Alternate looks */}
+          {alternatePresets.length > 0 && (
+            <div className="mb-5">
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-700">
+                {lang === 'he' ? 'לוקים נוספים שיכולים להתאים לך' : 'More looks for you'}
+              </p>
+              <div className="flex flex-col gap-2">
+                {alternatePresets.map((preset) => (
+                  <div
+                    key={preset.id}
+                    className="flex items-center gap-3 rounded-xl p-3 transition-all"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  >
+                    <div
+                      className="h-12 w-10 shrink-0 overflow-hidden rounded-lg"
+                      style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <img
+                        src={preset.image}
+                        alt={preset.name}
+                        className="h-full w-full object-cover object-top"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
+                        {lang === 'he' ? preset.nameHe : preset.name}
+                      </p>
+                      <p className="text-[10px] text-gray-600">{vibeMap[preset.name] ?? ''}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPreset(preset.name)
+                        setShowAnalysisPanel(false)
+                        setAnalysisDismissed(true)
+                      }}
+                      className="shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold text-coral transition-colors hover:opacity-80 focus:outline-none"
+                      style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.2)' }}
+                    >
+                      {lang === 'he' ? 'נסי' : 'Try'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Secondary CTA */}
+          <button
+            type="button"
+            onClick={() => setShowAnalysisPanel(false)}
+            className="flex w-full items-center justify-center rounded-xl py-3 text-xs font-medium text-gray-600 transition-all hover:text-gray-400 focus:outline-none"
+            style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            {lang === 'he' ? 'בחרי לוק בעצמי' : 'Choose a look myself'}
+          </button>
+
         </div>
       </div>
-    )
+    </div>
+  )
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
