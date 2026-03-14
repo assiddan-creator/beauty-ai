@@ -2913,6 +2913,7 @@ function App() {
 
   const handleIntentSelectLook = (lookName: string) => {
     setSelectedPreset(lookName)
+    setShowPathScreen(false)
     document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -3949,7 +3950,8 @@ function App() {
         </div>
       </main>
 
-      {/* ── Fixed Bottom Bar ── */}
+      {/* ── Fixed Bottom Bar (hidden on path selection screen) ── */}
+      {!showPathScreen && (
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-4 py-4 sm:px-8">
           {error && (
@@ -4008,6 +4010,7 @@ function App() {
           </div>
         </div>
       </div>
+      )}
     </div>
   )
 }
