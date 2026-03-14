@@ -25,8 +25,7 @@ import {
 } from 'lucide-react'
 
 // ─── Replicate ──────────────────────────────────────────────────────────────
-const NANO_BANANA_PRO_VERSION =
-  '99256cc418d9ac41854575e2f1c8846ce2defd0c0fb6ff2d5cbc3c826be75bc8'
+const NANO_BANANA_2_MODEL = 'google/nano-banana-2'
 
 // ─── Beauty Presets ──────────────────────────────────────────────────────────
 const BEAUTY_PRESETS: Array<{
@@ -488,14 +487,12 @@ async function runReplicatePrediction(
   const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string
 
   const payload = {
-    version: NANO_BANANA_PRO_VERSION,
+    version: undefined,
     input: {
       prompt,
       image_input: [imageDataUrl],
       aspect_ratio: 'match_input_image',
-      resolution: '2K',
       output_format: 'jpg',
-      allow_fallback_model: false,
     },
   }
 

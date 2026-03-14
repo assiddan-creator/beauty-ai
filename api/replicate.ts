@@ -39,7 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // or:                             /api/replicate/v1/predictions/abc123
   // We strip the /api/replicate prefix and forward the rest to Replicate
   const upstreamPath = (req.url ?? '').replace(/^\/api\/replicate/, '')
-  const upstreamUrl = `${REPLICATE_BASE}${upstreamPath}`
+  const upstreamUrl = upstreamPath.includes('/predictions/')
+    ? `${REPLICATE_BASE}${upstreamPath}`
+    : `${REPLICATE_BASE}/v1/models/google/nano-banana-2/predictions`
 
   // ── Forward the request ───────────────────────────────────────────────────
   try {
