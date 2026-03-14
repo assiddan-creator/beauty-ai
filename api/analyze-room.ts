@@ -31,6 +31,32 @@ async function callClaude(systemPrompt: string, userContent: object[]) {
   return res.json()
 }
 
+async function callClaudeChat(systemPrompt: string, messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+  const apiMessages = messages.map((m) => ({
+    role: m.role,
+    content: [{ type: 'text' as const, text: m.content }],
+  }))
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': process.env.ANTHROPIC_API_KEY ?? '',
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: apiMessages,
+    }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(JSON.stringify(err))
+  }
+  return res.json()
+}
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 type FaceAnalysis = {
   skinTone: string
@@ -166,6 +192,33 @@ Keep the prompt under 80 words.`
       return res.status(200).json({ description: text })
     } catch (err) {
       console.error('[analyze-room] result-description Error:', err)
+      return res.status(500).json({ error: { message: err instanceof Error ? err.message : 'Unknown error' } })
+    }
+  }
+
+  // ─── Beauty-chat mode (advisor chat on result screen) ───────────────────────
+  const bodyChat = req.body as {
+    mode?: string
+    lookName?: string
+    lang?: 'he' | 'en'
+    messages?: Array<{ role: 'user' | 'assistant'; content: string }>
+  }
+  if (bodyChat.mode === 'beauty-chat' && bodyChat.lookName && Array.isArray(bodyChat.messages)) {
+    const key = process.env.ANTHROPIC_API_KEY
+    if (!key) {
+      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
+    }
+    const langChat = bodyChat.lang ?? 'en'
+    const systemPrompt = `You are a warm, expert beauty advisor inside a virtual makeup try-on app. The user has just tried on a makeup look. Your role is to answer questions about that look in a warm, premium, beauty-native tone. You know which look was applied. Keep answers short — 2-3 sentences maximum. Do not mention AI. Do not use technical language. Sound like a knowledgeable beauty advisor friend. Respond in Hebrew if lang is 'he', in English if lang is 'en'.
+
+The look currently applied is: ${bodyChat.lookName}.`
+    try {
+      const data = await callClaudeChat(systemPrompt, bodyChat.messages)
+      const text = (data.content as Array<{ type: string; text?: string }>)
+        .find((b) => b.type === 'text')?.text?.trim() ?? ''
+      return res.status(200).json({ reply: text })
+    } catch (err) {
+      console.error('[analyze-room] beauty-chat Error:', err)
       return res.status(500).json({ error: { message: err instanceof Error ? err.message : 'Unknown error' } })
     }
   }

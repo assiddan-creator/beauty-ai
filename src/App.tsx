@@ -1413,6 +1413,136 @@ const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: s
   )
 }
 
+// ─── Beauty Advisor Chat (result screen) ──────────────────────────────────────
+type BeautyAdvisorChatProps = { lookName: string; lang: 'he' | 'en' }
+
+function BeautyAdvisorChat({ lookName, lang }: BeautyAdvisorChatProps) {
+  const initialMessage =
+    lang === 'he'
+      ? 'שאלי אותי כל שאלה על הלוק הזה — מוצרים, איך להרכיב, מה מתאים לאיזה אירוע 💄'
+      : 'Ask me anything about this look — products, how to wear it, what occasion it suits 💄'
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
+    { role: 'assistant', content: initialMessage },
+  ])
+  const [inputValue, setInputValue] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+  const handleSend = async () => {
+    const trimmed = inputValue.trim()
+    if (!trimmed || isLoading) return
+    const userMessage = { role: 'user' as const, content: trimmed }
+    setInputValue('')
+    setMessages((prev) => [...prev, userMessage])
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/analyze-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'beauty-chat',
+          lookName,
+          lang,
+          messages: [...messages, userMessage],
+        }),
+      })
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({})) as { error?: string }
+        throw new Error(typeof err?.error === 'string' ? err.error : 'Chat failed')
+      }
+      const data = (await response.json()) as { reply?: string }
+      const reply = data.reply?.trim() ?? ''
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: lang === 'he' ? 'משהו השתבש — נסי שוב 💄' : 'Something went wrong — try again 💄',
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  React.useEffect(() => {
+    if (isExpanded) scrollToBottom()
+  }, [messages, isExpanded])
+
+  const toggleLabel = lang === 'he' ? 'שאלי את יועצת המאפר שלך ✨' : 'Ask your beauty advisor ✨'
+  const placeholder = lang === 'he' ? 'שאלי שאלה על הלוק...' : 'Ask about this look...'
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-2xl" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.2)' }}>
+      <button
+        type="button"
+        onClick={() => setIsExpanded((e) => !e)}
+        className="flex w-full items-center justify-center gap-2 py-3 px-4 text-sm font-semibold text-white/90 transition-colors hover:bg-white/5 focus:outline-none"
+      >
+        <Sparkles className="h-4 w-4" style={{ color: 'rgba(255,107,71,0.9)' }} />
+        {toggleLabel}
+      </button>
+      {isExpanded && (
+        <>
+          <div
+            className="overflow-y-auto px-3 py-2 space-y-2"
+            style={{ maxHeight: '220px', minHeight: '80px' }}
+          >
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`rounded-xl px-3 py-2 text-[13px] ${
+                  m.role === 'assistant'
+                    ? 'ml-0 mr-6 text-left'
+                    : 'ml-6 mr-0 text-right'
+                }`}
+                style={
+                  m.role === 'assistant'
+                    ? { background: 'rgba(255,107,71,0.12)', color: 'rgba(255,255,255,0.95)', border: '1px solid rgba(255,107,71,0.2)' }
+                    : { background: 'rgba(255,255,255,0.08)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }
+                }
+              >
+                {m.content}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex items-center gap-2 px-3 py-2 text-white/5">
+                <Loader2 className="h-4 w-4 animate-spin" style={{ color: 'rgba(255,107,71,0.8)' }} />
+                <span className="text-xs text-white/50">{lang === 'he' ? 'כותבת...' : 'Writing...'}</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="flex gap-2 p-3 border-t border-white/5">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              placeholder={placeholder}
+              disabled={isLoading}
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-coral/50 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!inputValue.trim() || isLoading}
+              className="shrink-0 rounded-xl px-4 py-2.5 flex items-center justify-center transition-opacity disabled:opacity-40 focus:outline-none"
+              style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white' }}
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── App ─────────────────────────────────────────────────────────────────────
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -3501,6 +3631,16 @@ function App() {
                 <p className="mt-3 text-center text-[11px] text-gray-600">
                   ✦ {t.disclaimer}
                 </p>
+
+                {generatedImage && !isGenerating && (() => {
+                  const chatEntry = history.find(h => h.id === activeHistoryId)
+                  return chatEntry ? (
+                    <BeautyAdvisorChat
+                      lookName={chatEntry.lookName}
+                      lang={lang}
+                    />
+                  ) : null
+                })()}
 
                 {generatedImage && !isGenerating && (() => {
                   const activeEntry = history.find(h => h.id === activeHistoryId)
