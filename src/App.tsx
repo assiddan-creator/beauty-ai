@@ -1025,6 +1025,7 @@ function App() {
   const [showPathScreen, setShowPathScreen] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
   const [showUploadChoice, setShowUploadChoice] = useState(false)
+  const [showAnalyzingScreen, setShowAnalyzingScreen] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
@@ -1059,16 +1060,17 @@ function App() {
     setFaceAnalysis(null)
     setAnalysisDismissed(false)
     setIsAnalyzing(true)
+    setShowAnalyzingScreen(true)
 
     try {
       const dataUrl = await blobUrlToDataUrl(originalImage)
       const analysis = await analyzeFaceWithClaude(dataUrl, lang)
       setFaceAnalysis(analysis)
-      setShowAnalysisPanel(true)
       setSelectedPreset(analysis.recommendedPreset)
       console.log('[Claude Vision] Beauty analysis complete:', analysis)
     } catch (err) {
       console.error('[Claude Vision] Beauty analysis failed:', err)
+      setShowAnalyzingScreen(false)
       // Silent failure — user can still select manually
     } finally {
       setIsAnalyzing(false)
@@ -1097,6 +1099,7 @@ function App() {
     setIsAnalyzing(false)
     setShowSplash(true)
     setShowUploadChoice(false)
+    setShowAnalyzingScreen(false)
     setShowPathScreen(false)
     setAppMode('looks')
     setProductStep('category')
@@ -1684,6 +1687,171 @@ function App() {
     )
   }
 
+  const AnalyzingScreen = () => {
+    const [dots, setDots] = React.useState(1)
+    const [visible, setVisible] = React.useState(false)
+
+    React.useEffect(() => {
+      const t = setTimeout(() => setVisible(true), 30)
+      return () => clearTimeout(t)
+    }, [])
+
+    React.useEffect(() => {
+      const t = setInterval(() => setDots(d => d === 3 ? 1 : d + 1), 600)
+      return () => clearInterval(t)
+    }, [])
+
+    return (
+      <div
+        className="fixed inset-0 z-[90] flex flex-col items-center justify-center"
+        style={{
+          background: 'linear-gradient(160deg, #0a0408 0%, #0d0610 50%, #080410 100%)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+        }}
+      >
+        {/* Ambient glow */}
+        <div
+          className="pointer-events-none absolute"
+          style={{ top: '25%', left: '50%', transform: 'translateX(-50%)', width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,107,71,0.06)', filter: 'blur(100px)' }}
+        />
+
+        {/* Selfie preview */}
+        {originalImage && (
+          <div
+            className="relative mb-8 overflow-hidden rounded-full"
+            style={{
+              width: 120,
+              height: 120,
+              border: '2px solid rgba(255,107,71,0.3)',
+              boxShadow: '0 0 40px rgba(255,107,71,0.2)',
+            }}
+          >
+            <img
+              src={originalImage}
+              alt="Your photo"
+              className="h-full w-full object-cover object-center"
+            />
+            {/* Scanning overlay animation */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(180deg, transparent 0%, rgba(255,107,71,0.15) 50%, transparent 100%)',
+                animation: 'scan 2s ease-in-out infinite',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Pulsing ring around photo */}
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: '50%',
+            border: '1px solid rgba(255,107,71,0.2)',
+            animation: 'analyzingPing 1.5s ease-out infinite',
+            top: '50%',
+            left: '50%',
+            transform: originalImage ? 'translate(-50%, calc(-50% - 68px))' : 'translate(-50%, -50%)',
+          }}
+        />
+
+        {/* Text */}
+        <div className="relative z-10 text-center px-8">
+          <p
+            className="text-2xl font-extrabold text-white mb-3"
+            style={{ letterSpacing: '-0.02em' }}
+          >
+            {lang === 'he' ? 'מנתחת את התמונה שלך' : 'Analyzing your photo'}
+            <span style={{ color: 'rgba(255,107,71,0.8)' }}>{'·'.repeat(dots)}</span>
+          </p>
+          <p
+            className="text-sm mb-10"
+            style={{ color: 'rgba(255,255,255,0.3)' }}
+          >
+            {lang === 'he'
+              ? 'מזהה גוון עור, אנדרטון, ומוצאת לוקים מחמיאים'
+              : 'Detecting skin tone, undertone, and finding flattering looks'}
+          </p>
+
+          {/* Steps indicator */}
+          <div className="flex flex-col gap-2 text-right mb-10" style={{ direction: lang === 'he' ? 'rtl' : 'ltr' }}>
+            {[
+              { textHe: 'מזהה גוון עור', textEn: 'Detecting skin tone', done: !isAnalyzing || true },
+              { textHe: 'מנתחת אנדרטון', textEn: 'Analyzing undertone', done: !isAnalyzing || dots >= 2 },
+              { textHe: 'מוצאת לוקים מחמיאים', textEn: 'Finding flattering looks', done: !isAnalyzing },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-2" style={{ justifyContent: lang === 'he' ? 'flex-end' : 'flex-start' }}>
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  {lang === 'he' ? step.textHe : step.textEn}
+                </span>
+                <div
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: i < dots ? '#FF6B47' : 'rgba(255,255,255,0.15)',
+                    boxShadow: i < dots ? '0 0 6px rgba(255,107,71,0.6)' : 'none',
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Result button — shows when analysis is done */}
+          {!isAnalyzing && faceAnalysis && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAnalyzingScreen(false)
+                setShowAnalysisPanel(true)
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
+              style={{
+                background: 'linear-gradient(135deg, #FF6B47 0%, #FF9D6E 100%)',
+                boxShadow: '0 0 30px rgba(255,107,71,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+                animation: 'fadeInUp 0.4s ease forwards',
+              }}
+            >
+              <Sparkles className="h-4 w-4" />
+              {lang === 'he' ? 'ראי את הניתוח שלך ✨' : 'See your analysis ✨'}
+            </button>
+          )}
+
+          {/* Loading bar */}
+          {isAnalyzing && (
+            <div className="h-0.5 w-48 mx-auto overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: '70%',
+                  background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        <style>{`
+          @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+          }
+          @keyframes analyzingPing {
+            0% { opacity: 0.5; }
+            100% { opacity: 0; }
+          }
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
   const PathScreen = () => {
     const [visible, setVisible] = React.useState(false)
 
@@ -2157,6 +2325,7 @@ function App() {
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
       {showSplash && <SplashScreen />}
+      {showAnalyzingScreen && <AnalyzingScreen />}
       {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
       <AnalysisPanel />
