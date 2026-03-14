@@ -356,6 +356,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [sliderPosition, setSliderPosition] = useState(50)
+  const [makeupOpacity, setMakeupOpacity] = useState(100)
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [customInstructions, setCustomInstructions] = useState('')
@@ -417,6 +418,7 @@ function App() {
     setIsUploaded(false)
     setGeneratedImage(null)
     setIsGenerating(false)
+    setMakeupOpacity(100)
     setSelectedPreset(null)
     setSelectedCategory(null)
     setCustomInstructions('')
@@ -843,7 +845,10 @@ function App() {
                           src={generatedImage}
                           alt="After"
                           className="absolute inset-0 h-full w-full object-cover object-top"
-                          style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
+                          style={{
+                            clipPath: `inset(0 0 0 ${sliderPosition}%)`,
+                            opacity: makeupOpacity / 100,
+                          }}
                         />
                         <div
                           className="pointer-events-none absolute inset-y-0 w-0.5 bg-coral"
@@ -870,6 +875,19 @@ function App() {
                           className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
                           aria-label="Compare before and after"
                         />
+                        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
+                          <span className="text-[11px] font-semibold text-white/70">Intensity</span>
+                          <input
+                            type="range"
+                            min={20}
+                            max={100}
+                            value={makeupOpacity}
+                            onChange={(e) => setMakeupOpacity(Number(e.target.value))}
+                            className="w-24 accent-[#FF6B47]"
+                            aria-label="Makeup intensity"
+                          />
+                          <span className="text-[11px] font-semibold text-coral w-8 text-center">{makeupOpacity}%</span>
+                        </div>
                       </>
                     ) : generatedImage && !originalImage && !isGenerating ? (
                       <img src={generatedImage} alt="Generated look" className="absolute inset-0 h-full w-full object-cover object-top" />
