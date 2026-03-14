@@ -55,6 +55,26 @@ const ENGINES = [
     supportsEdit: true,
     badge: 'לניסיון',
   },
+  {
+    id: 'flux-2-pro',
+    name: 'Flux 2 Pro',
+    model: 'black-forest-labs/flux-2-pro',
+    description: 'מנוע חזק של Black Forest Labs — עריכה ויצירה באיכות גבוהה',
+    inputKey: 'image_input',
+    isArray: true,
+    supportsEdit: true,
+    badge: 'לניסיון',
+  },
+  {
+    id: 'seedream-4.5',
+    name: 'Seedream 4.5',
+    model: 'bytedance/seedream-4.5',
+    description: 'מנוע ByteDance עם הבנה מרחבית חזקה',
+    inputKey: 'image_input',
+    isArray: true,
+    supportsEdit: true,
+    badge: 'לניסיון',
+  },
 ] as const
 
 type Engine = (typeof ENGINES)[number]
