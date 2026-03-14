@@ -520,6 +520,36 @@ const LOOK_METADATA: Record<string, {
   'Local Chic': { category: 'מסודר ויוקרתי', vibe: 'נגיש, יפה, מסחרי', whenToChoose: 'כשאת רוצה לוק יפה, קל להבנה וקל לאהוב', bestFor: 'מי שאוהבת יופי יומיומי עם gloss וניקיון', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Glass Nude', salesLine: 'לוק מסחרי, נגיש ומחמיא שקל להתאהב בו' },
 }
 
+const LOOK_NAVIGATION: Record<string, {
+  moreNatural: string
+  moreGlam: string
+  moreWarm: string
+  moreCool: string
+  saferOption: string
+  bolderOption: string
+}> = {
+  'Natural Everyday': { moreNatural: 'Minimal Grooming', moreGlam: 'Office Polished', moreWarm: 'Peach Pop', moreCool: 'Fresh Rosy', saferOption: 'Minimal Grooming', bolderOption: 'Office Polished' },
+  'Clean Glow': { moreNatural: 'Natural Everyday', moreGlam: 'Soft Glam', moreWarm: 'Peach Pop', moreCool: 'Fresh Rosy', saferOption: 'Natural Everyday', bolderOption: 'Soft Glam' },
+  'Office Polished': { moreNatural: 'Natural Everyday', moreGlam: 'Power Nude', moreWarm: 'Rosewood Satin', moreCool: 'Cool Chic', saferOption: 'Natural Everyday', bolderOption: 'Power Nude' },
+  'Soft Glam': { moreNatural: 'Clean Glow', moreGlam: 'Evening Luxury', moreWarm: 'Date Night Romantic', moreCool: 'Berry Chic', saferOption: 'Date Night Romantic', bolderOption: 'Evening Luxury' },
+  'Classic Red Lip': { moreNatural: 'Berry Chic', moreGlam: 'Evening Luxury', moreWarm: 'Date Night Romantic', moreCool: 'Berry Chic', saferOption: 'Berry Chic', bolderOption: 'Evening Luxury' },
+  'Warm Bronze': { moreNatural: 'Terracotta Nude', moreGlam: 'Evening Luxury', moreWarm: 'Coral Breeze', moreCool: 'Rosewood Satin', saferOption: 'Terracotta Nude', bolderOption: 'Evening Luxury' },
+  'Cool Chic': { moreNatural: 'Office Polished', moreGlam: 'Berry Chic', moreWarm: 'Rosewood Satin', moreCool: 'Fresh Rosy', saferOption: 'Office Polished', bolderOption: 'Berry Chic' },
+  'Minimal Grooming': { moreNatural: 'Glass Nude', moreGlam: 'Natural Everyday', moreWarm: 'Glass Nude', moreCool: 'Fresh Rosy', saferOption: 'Glass Nude', bolderOption: 'Natural Everyday' },
+  'Date Night Romantic': { moreNatural: 'Fresh Rosy', moreGlam: 'Soft Glam', moreWarm: 'Rosewood Satin', moreCool: 'Berry Chic', saferOption: 'Fresh Rosy', bolderOption: 'Soft Glam' },
+  'Evening Luxury': { moreNatural: 'Soft Glam', moreGlam: 'Classic Red Lip', moreWarm: 'Warm Bronze', moreCool: 'Cool Chic', saferOption: 'Soft Glam', bolderOption: 'Classic Red Lip' },
+  'Fresh Rosy': { moreNatural: 'Clean Glow', moreGlam: 'Date Night Romantic', moreWarm: 'Peach Pop', moreCool: 'Cool Chic', saferOption: 'Clean Glow', bolderOption: 'Date Night Romantic' },
+  'Nude Sculpt': { moreNatural: 'Office Polished', moreGlam: 'Evening Luxury', moreWarm: 'Rosewood Satin', moreCool: 'Cool Chic', saferOption: 'Office Polished', bolderOption: 'Evening Luxury' },
+  'Peach Pop': { moreNatural: 'Clean Glow', moreGlam: 'Coral Breeze', moreWarm: 'Warm Bronze', moreCool: 'Fresh Rosy', saferOption: 'Clean Glow', bolderOption: 'Coral Breeze' },
+  'Rosewood Satin': { moreNatural: 'Office Polished', moreGlam: 'Nude Sculpt', moreWarm: 'Terracotta Nude', moreCool: 'Cool Chic', saferOption: 'Office Polished', bolderOption: 'Nude Sculpt' },
+  'Berry Chic': { moreNatural: 'Cool Chic', moreGlam: 'Classic Red Lip', moreWarm: 'Date Night Romantic', moreCool: 'Evening Luxury', saferOption: 'Cool Chic', bolderOption: 'Classic Red Lip' },
+  'Terracotta Nude': { moreNatural: 'Warm Bronze', moreGlam: 'Power Nude', moreWarm: 'Coral Breeze', moreCool: 'Rosewood Satin', saferOption: 'Warm Bronze', bolderOption: 'Power Nude' },
+  'Glass Nude': { moreNatural: 'Minimal Grooming', moreGlam: 'Clean Glow', moreWarm: 'Local Chic', moreCool: 'Fresh Rosy', saferOption: 'Minimal Grooming', bolderOption: 'Clean Glow' },
+  'Coral Breeze': { moreNatural: 'Peach Pop', moreGlam: 'Warm Bronze', moreWarm: 'Terracotta Nude', moreCool: 'Fresh Rosy', saferOption: 'Peach Pop', bolderOption: 'Warm Bronze' },
+  'Power Nude': { moreNatural: 'Office Polished', moreGlam: 'Nude Sculpt', moreWarm: 'Terracotta Nude', moreCool: 'Cool Chic', saferOption: 'Office Polished', bolderOption: 'Nude Sculpt' },
+  'Local Chic': { moreNatural: 'Glass Nude', moreGlam: 'Power Nude', moreWarm: 'Peach Pop', moreCool: 'Office Polished', saferOption: 'Glass Nude', bolderOption: 'Power Nude' },
+}
+
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const T = {
   he: {
@@ -743,6 +773,66 @@ function loadHistoryFromStorage(): HistoryEntry[] {
 function saveHistoryToStorage(entries: HistoryEntry[]) {
   const stored: StoredEntry[] = entries.map(({ originalUrl: _, ...rest }) => rest)
   localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stored))
+}
+
+const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: string, onSelect: (name: string) => void, lang: 'he' | 'en' }) => {
+  const nav = LOOK_NAVIGATION[currentLookName]
+  if (!nav) return null
+
+  const suggestions = [
+    { label: lang === 'he' ? '🌿 יותר טבעי' : '🌿 More natural', lookName: nav.moreNatural },
+    { label: lang === 'he' ? '✨ יותר ערב' : '✨ More glam', lookName: nav.moreGlam },
+    { label: lang === 'he' ? '☀️ יותר חם' : '☀️ More warm', lookName: nav.moreWarm },
+    { label: lang === 'he' ? '❄️ יותר קריר' : '❄️ More cool', lookName: nav.moreCool },
+    { label: lang === 'he' ? '🕊️ יותר בטוח' : '🕊️ Safer option', lookName: nav.saferOption },
+    { label: lang === 'he' ? '🔥 יותר נועז' : '🔥 Bolder option', lookName: nav.bolderOption },
+  ].filter((s, i, arr) => s.lookName !== currentLookName && arr.findIndex(x => x.lookName === s.lookName) === i)
+
+  return (
+    <div className="mt-4">
+      <p
+        className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.15em]"
+        style={{ color: 'rgba(255,255,255,0.3)' }}
+      >
+        {lang === 'he' ? 'אפשר גם לנסות' : 'You might also try'}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((s) => {
+          const preset = BEAUTY_PRESETS.find(p => p.name === s.lookName)
+          if (!preset) return null
+          return (
+            <button
+              key={s.lookName}
+              type="button"
+              onClick={() => onSelect(s.lookName)}
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all hover:scale-[1.03] active:scale-95 focus:outline-none"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.09)',
+                color: 'rgba(255,255,255,0.6)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,107,71,0.1)'
+                ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,107,71,0.25)'
+                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.9)'
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'
+                ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.09)'
+                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.6)'
+              }}
+            >
+              <span>{s.label}</span>
+              <span style={{ color: 'rgba(255,107,71,0.7)' }}>→</span>
+              <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                {lang === 'he' ? (preset.nameHe ?? s.lookName) : s.lookName}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 // ─── App ─────────────────────────────────────────────────────────────────────
@@ -1204,6 +1294,18 @@ function App() {
                 </button>
               </div>
             </div>
+          )}
+
+          {recommendedPreset && (
+            <LookNavigator
+              currentLookName={recommendedPreset.name}
+              onSelect={(name) => {
+                setSelectedPreset(name)
+                setShowAnalysisPanel(false)
+                setAnalysisDismissed(true)
+              }}
+              lang={lang}
+            />
           )}
 
           {/* Analysis summary */}
@@ -1974,6 +2076,14 @@ function App() {
                     )
                   })()}
                 </section>
+
+                {selectedPreset && (
+                  <LookNavigator
+                    currentLookName={selectedPreset}
+                    onSelect={(name) => setSelectedPreset(name)}
+                    lang={lang}
+                  />
+                )}
 
                 {/* ── Product Category Filter ── */}
                 <section className="mt-6">
