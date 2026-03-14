@@ -1414,9 +1414,21 @@ const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: s
 }
 
 // ─── Beauty Advisor Chat (result screen) ──────────────────────────────────────
-type BeautyAdvisorChatProps = { lookName: string; lang: 'he' | 'en' }
+type BeautyAdvisorChatProduct = {
+  brand: string
+  productName: string
+  shadeName: string
+  category: string
+  shadeFamily: string
+  finish: string
+}
+type BeautyAdvisorChatProps = {
+  lookName: string
+  lang: 'he' | 'en'
+  products: BeautyAdvisorChatProduct[]
+}
 
-function BeautyAdvisorChat({ lookName, lang }: BeautyAdvisorChatProps) {
+function BeautyAdvisorChat({ lookName, lang, products }: BeautyAdvisorChatProps) {
   const initialMessage =
     lang === 'he'
       ? 'שאלי אותי כל שאלה על הלוק הזה — מוצרים, איך להרכיב, מה מתאים לאיזה אירוע 💄'
@@ -1446,6 +1458,7 @@ function BeautyAdvisorChat({ lookName, lang }: BeautyAdvisorChatProps) {
           mode: 'beauty-chat',
           lookName,
           lang,
+          products,
           messages: [...messages, userMessage],
         }),
       })
@@ -3634,12 +3647,24 @@ function App() {
 
                 {generatedImage && !isGenerating && (() => {
                   const chatEntry = history.find(h => h.id === activeHistoryId)
-                  return chatEntry ? (
+                  if (!chatEntry) return null
+                  const chatProducts = (LOOK_PRODUCTS[chatEntry.lookName] ?? []).map(p => {
+                    const catalogMatch = PRODUCT_CATALOG.find(
+                      c => c.brand === p.brand && c.productName === p.productName && c.shadeName === p.shadeName
+                    )
+                    return {
+                      ...p,
+                      shadeFamily: catalogMatch?.shadeFamily ?? '',
+                      finish: catalogMatch?.finish ?? '',
+                    }
+                  })
+                  return (
                     <BeautyAdvisorChat
                       lookName={chatEntry.lookName}
                       lang={lang}
+                      products={chatProducts}
                     />
-                  ) : null
+                  )
                 })()}
 
                 {generatedImage && !isGenerating && (() => {

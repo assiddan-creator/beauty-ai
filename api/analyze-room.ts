@@ -201,6 +201,7 @@ Keep the prompt under 80 words.`
     mode?: string
     lookName?: string
     lang?: 'he' | 'en'
+    products?: Array<{ brand: string; productName: string; shadeName: string; category: string; shadeFamily: string; finish: string }>
     messages?: Array<{ role: 'user' | 'assistant'; content: string }>
   }
   if (bodyChat.mode === 'beauty-chat' && bodyChat.lookName && Array.isArray(bodyChat.messages)) {
@@ -209,13 +210,23 @@ Keep the prompt under 80 words.`
       return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
     }
     const langChat = bodyChat.lang ?? 'en'
+    const products = Array.isArray(bodyChat.products) ? bodyChat.products : []
+    const productsContext =
+      products.length > 0
+        ? `\n\nThe products used in this look are:\n${products
+            .map(
+              (p) =>
+                `${p.category} — ${p.brand} ${p.productName} in ${p.shadeName}${p.shadeFamily || p.finish ? ` (${[p.shadeFamily, p.finish].filter(Boolean).join(', ')})` : ''}`
+            )
+            .join('\n')}`
+        : ''
     const systemPrompt = `You are a warm, expert beauty advisor inside a virtual makeup try-on app. The user has just tried on a makeup look. Answer questions about the look in a warm, premium, beauty-native tone. Keep answers short — 2 to 3 sentences maximum. Do not mention AI. Do not use technical language. Sound like a knowledgeable beauty advisor friend.
 
 If lang is 'he': respond in Hebrew only. Use correct, natural Israeli Hebrew. Always address the user in feminine form (את, שלך, תוכלי, תרכיבי). Never mix Hebrew and English in the same sentence. Product names and brand names may remain in English.
 
 If lang is 'en': respond in English only.
 
-The look currently applied is: ${bodyChat.lookName}.`
+The look currently applied is: ${bodyChat.lookName}.${productsContext}`
     try {
       const data = await callClaudeChat(systemPrompt, bodyChat.messages)
       const text = (data.content as Array<{ type: string; text?: string }>)
