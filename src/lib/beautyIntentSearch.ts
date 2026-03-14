@@ -99,7 +99,7 @@ function extractSignals(query: string): {
 }
 
 function scoreLook(
-  lookName: string,
+  _lookName: string,
   entry: LookMetadataEntry,
   signals: ReturnType<typeof extractSignals>
 ): number {
@@ -107,7 +107,6 @@ function scoreLook(
   const vibe = entry.vibe.toLowerCase()
   const category = entry.category.toLowerCase()
   const pl = entry.presenceLevel
-  const plIdx = presenceIndex(pl)
   const safety = entry.beginnerSafety
 
   // Occasion → presenceLevel
@@ -143,10 +142,10 @@ function scoreLook(
 
 function assignRole(
   index: number,
-  lookName: string,
+  _lookName: string,
   entry: LookMetadataEntry,
   bestEntry: LookMetadataEntry,
-  bestLookName: string
+  _bestLookName: string
 ): SearchResult['role'] {
   if (index === 0) return 'best'
   const bestPlIdx = presenceIndex(bestEntry.presenceLevel)
