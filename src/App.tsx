@@ -710,6 +710,175 @@ const LOOK_PRODUCTS: Record<string, Array<{ brand: string; productName: string; 
   ],
 }
 
+const LOOK_USAGE_TIPS: Record<string, {
+  overallTip: string
+  products: Array<{
+    category: 'lip' | 'blush' | 'gloss' | 'liner' | 'bronzer' | 'highlighter'
+    tip: string
+  }>
+}> = {
+  'Natural Everyday': {
+    overallTip: 'השאירי את המראה נקי ונושם — פחות זה יותר.',
+    products: [
+      { category: 'lip', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'עקבי קלות על קו השפה ומזגי פנימה' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Clean Glow': {
+    overallTip: 'שמרי על הזוהר עדין — בלי להכביד.',
+    products: [
+      { category: 'gloss', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'הגדרי בעדינות ומזגי עם הגלוס' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Office Polished': {
+    overallTip: 'לוק מסודר ומדויק — מושלם ליום עבודה.',
+    products: [
+      { category: 'lip', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'עקבי בצורה מסודרת לקו שפה ברור' },
+      { category: 'blush', tip: 'הנחי בגובה עצמות הלחיים למראה מוגבה ומסודר' },
+    ],
+  },
+  'Soft Glam': {
+    overallTip: 'בני את הלוק בהדרגה — גלאם רך ונשי.',
+    products: [
+      { category: 'lip', tip: 'בני שכבות בהדרגה לעומק צבע מלא' },
+      { category: 'liner', tip: 'הגדרי ומזגי לעבר השפתון' },
+      { category: 'blush', tip: 'בני את הסומק לאט עם מכחול גדול לאפקט מלא' },
+    ],
+  },
+  'Classic Red Lip': {
+    overallTip: 'שפתיים אדומות קלאסיות — ביטחון מלא.',
+    products: [
+      { category: 'lip', tip: 'מרחי בצורה מדויקת מהמרכז החוצה לנוכחות חזקה' },
+      { category: 'liner', tip: 'עקבי קודם לקו מושלם ואז מלאי' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Warm Bronze': {
+    overallTip: 'חום ושזוף — וייב קיצי מחמיא.',
+    products: [
+      { category: 'lip', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'מזגי עם השפתון לגוון חם אחיד' },
+      { category: 'blush', tip: 'מרחי על עצמות הלחיים בתנועה עגולה לחום טבעי' },
+    ],
+  },
+  'Cool Chic': {
+    overallTip: 'לוק קריר ומתוחכם — נקי ואופנתי.',
+    products: [
+      { category: 'lip', tip: 'מרחי בצורה מסודרת לאפקט מלוטש' },
+      { category: 'liner', tip: 'הגדרי בדיוק ומזגי ללא גבולות נוקשים' },
+      { category: 'blush', tip: 'הנחי בגובה עצמות הלחיים למראה מוגבה ומסודר' },
+    ],
+  },
+  'Minimal Grooming': {
+    overallTip: 'מינימום איפור — מקסימום סדר ונקיון.',
+    products: [
+      { category: 'gloss', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'עקבי בעדינות רבה רק להגדרה קלה' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Date Night Romantic': {
+    overallTip: 'רומנטי ורך — מושלם לערב מיוחד.',
+    products: [
+      { category: 'lip', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'מזגי היטב עם השפתון לרכות' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Evening Luxury': {
+    overallTip: 'יוקרתי ומבריק — לילה של זוהר.',
+    products: [
+      { category: 'gloss', tip: 'בני שכבות בהדרגה לעומק צבע מלא' },
+      { category: 'liner', tip: 'הגדרי ומזגי לעבר הגלוס המבריק' },
+      { category: 'blush', tip: 'בני את הסומק לאט עם מכחול גדול לאפקט מלא' },
+    ],
+  },
+  'Fresh Rosy': {
+    overallTip: 'ורוד רענן — מאיר את הפנים בלי להכביד.',
+    products: [
+      { category: 'gloss', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'מזגי עם הגלוס לרכות טבעית' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Nude Sculpt': {
+    overallTip: 'ניוד מפוסל — יקר, נקי ומדויק.',
+    products: [
+      { category: 'lip', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'עקבי בצורה מסודרת לקו שפה ברור' },
+      { category: 'blush', tip: 'הנחי בגובה עצמות הלחיים למראה מוגבה ומסודר' },
+    ],
+  },
+  'Peach Pop': {
+    overallTip: 'אפרסקי חי — אנרגיה וצבע רך.',
+    products: [
+      { category: 'gloss', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'מזגי עם הגלוס לגוון חם אחיד' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Rosewood Satin': {
+    overallTip: 'ורד-סאטן מאוזן — שקט ויקר.',
+    products: [
+      { category: 'lip', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'עקבי בעדינות ומזגי פנימה' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Berry Chic': {
+    overallTip: 'ברי קריר — חד, שיקי ומעודכן.',
+    products: [
+      { category: 'lip', tip: 'מרחי בצורה מדויקת מהמרכז החוצה לנוכחות חזקה' },
+      { category: 'liner', tip: 'הגדרי ומזגי לעבר השפתון' },
+      { category: 'blush', tip: 'הנחי בגובה עצמות הלחיים למראה מוגבה ומסודר' },
+    ],
+  },
+  'Terracotta Nude': {
+    overallTip: 'ניוד חם ועשיר — וייב שזוף ומתוחכם.',
+    products: [
+      { category: 'lip', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'מזגי עם השפתון לגוון חם אחיד' },
+      { category: 'blush', tip: 'מרחי על עצמות הלחיים בתנועה עגולה לחום טבעי' },
+    ],
+  },
+  'Glass Nude': {
+    overallTip: 'ניוד מבריק — קליל ויקר.',
+    products: [
+      { category: 'gloss', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'הגדרי בעדינות ומזגי עם הגלוס' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+  'Coral Breeze': {
+    overallTip: 'קורלי רענן — חם ומחייך.',
+    products: [
+      { category: 'gloss', tip: 'מרחי קלות ותני לשפתיים מראה שמנמן ורענן' },
+      { category: 'liner', tip: 'מזגי עם הגלוס לרכות' },
+      { category: 'blush', tip: 'מרחי על עצמות הלחיים בתנועה עגולה לחום טבעי' },
+    ],
+  },
+  'Power Nude': {
+    overallTip: 'ניוד חזק — מסודר ובטוח.',
+    products: [
+      { category: 'lip', tip: 'מרחי בצורה מסודרת לאפקט מלוטש' },
+      { category: 'liner', tip: 'עקבי בצורה מסודרת לקו שפה ברור' },
+      { category: 'blush', tip: 'הנחי בגובה עצמות הלחיים למראה מוגבה ומסודר' },
+    ],
+  },
+  'Local Chic': {
+    overallTip: 'לוק מסחרי נגיש — יפה וקל לאהוב.',
+    products: [
+      { category: 'gloss', tip: 'מרחי שכבה דקה אחת לאפקט טבעי ורך' },
+      { category: 'liner', tip: 'מזגי עם הגלוס לרכות טבעית' },
+      { category: 'blush', tip: 'הנחי קלות על גבעות הלחיים ומזגי כלפי מעלה' },
+    ],
+  },
+}
+
 const PRODUCT_CATALOG = [
   { id: 'mac-velvet-teddy', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', shadeFamily: 'warm nude', finish: 'matte', swatchColor: '#C4846A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Velvet Teddy — a warm nude beige matte lipstick — precisely on the lips with clean edges and natural elegant payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
   { id: 'mac-ruby-woo', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Ruby Woo', shadeFamily: 'classic red', finish: 'matte', swatchColor: '#C0182A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Ruby Woo — a vivid retro red matte lipstick — precisely on the lips with crisp clean edges and confident saturated payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
@@ -803,6 +972,42 @@ function BeautyIntentSearchBar(props: {
         </div>
       )}
     </section>
+  )
+}
+
+const USAGE_CATEGORY_ICON: Record<string, string> = {
+  lip: '💋',
+  liner: '✏️',
+  gloss: '✨',
+  blush: '🌸',
+  bronzer: '🌟',
+  highlighter: '✨',
+}
+
+function LookUsageTips({ lookName }: { lookName: string }) {
+  const data = LOOK_USAGE_TIPS[lookName]
+  if (!data) return null
+  return (
+    <div className="mb-6">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        איך ליצור את הלוק
+      </p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {data.products.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 rounded-xl px-3 py-2"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <span className="text-base leading-none">{USAGE_CATEGORY_ICON[item.category] ?? '•'}</span>
+            <p className="text-[11px] text-gray-300 leading-tight max-w-[200px]">{item.tip}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {data.overallTip}
+      </p>
+    </div>
   )
 }
 
@@ -1977,7 +2182,7 @@ function App() {
 
           {/* Blush products */}
           {blushProducts.length > 0 && (
-            <div className="mb-8">
+            <div className="mb-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(236,72,153,0.5)' }}>
                 🌸 {lang === 'he' ? 'סומק' : 'Blush'}
               </p>
@@ -2018,6 +2223,9 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* How to create this look */}
+          <LookUsageTips lookName={selectedPreset} />
 
           {/* Divider */}
           <div className="mb-7 h-px w-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
