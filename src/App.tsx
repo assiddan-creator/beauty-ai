@@ -24,7 +24,7 @@ import {
   Search,
   type LucideIcon,
 } from 'lucide-react'
-import { searchByIntent, type SearchResult, type LookMetadataRecord } from './lib/beautyIntentSearch'
+import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
 
 const ENGINES = [
   {
@@ -907,13 +907,14 @@ const BEAUTY_INTENT_ROLE_LABELS: Record<SearchResult['role'], string> = {
 function BeautyIntentSearchBar(props: {
   onSelectLook: (lookName: string) => void
   metadata: LookMetadataRecord
+  navigation: LookNavigationRecord
 }) {
-  const { onSelectLook, metadata } = props
+  const { onSelectLook, metadata, navigation } = props
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
 
   const handleSearch = () => {
-    setResults(searchByIntent(query, metadata))
+    setResults(searchByIntent(query, metadata, navigation))
   }
 
   return (
@@ -2613,6 +2614,7 @@ function App() {
               <BeautyIntentSearchBar
                 onSelectLook={handleIntentSelectLook}
                 metadata={LOOK_METADATA}
+                navigation={LOOK_NAVIGATION}
               />
             </div>
 
@@ -4106,6 +4108,7 @@ function App() {
                   <BeautyIntentSearchBar
                     onSelectLook={handleIntentSelectLook}
                     metadata={LOOK_METADATA}
+                    navigation={LOOK_NAVIGATION}
                   />
                 )}
 

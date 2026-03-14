@@ -24,6 +24,17 @@ export type LookMetadataEntry = {
 
 export type LookMetadataRecord = Record<string, LookMetadataEntry>
 
+export type LookNavigationEntry = {
+  moreNatural: string
+  moreGlam: string
+  moreWarm: string
+  moreCool: string
+  saferOption: string
+  bolderOption: string
+}
+
+export type LookNavigationRecord = Record<string, LookNavigationEntry>
+
 const PRESENCE_ORDER: LookMetadataEntry['presenceLevel'][] = ['low', 'low-medium', 'medium', 'medium-high', 'high']
 
 function presenceIndex(level: LookMetadataEntry['presenceLevel']): number {
@@ -167,11 +178,19 @@ const REASON_LINE_BY_ROLE: Record<SearchResult['role'], string> = {
   alternate: 'כיוון שיכול לעבוד יפה למה שחיפשת',
 }
 
+function findInRanked(entries: Array<{ lookName: string; entry: LookMetadataEntry; score: number }>, lookName: string) {
+  return entries.find(e => e.lookName === lookName)
+}
+
 /**
- * Search looks by user intent (occasion, vibe, intensity, safety).
- * Returns top 4 looks with role, matchReason (salesLine), and reasonLine.
+ * Search looks by user intent. Uses scoring then slot assignment (softer, evening, bolder) via navigation.
+ * Returns 2–4 results; never empty. Duplicate look names are never assigned to two slots.
  */
-export function searchByIntent(query: string, metadata: LookMetadataRecord): SearchResult[] {
+export function searchByIntent(
+  query: string,
+  metadata: LookMetadataRecord,
+  navigation: LookNavigationRecord
+): SearchResult[] {
   if (!query.trim()) return []
 
   const signals = extractSignals(query)
@@ -182,18 +201,92 @@ export function searchByIntent(query: string, metadata: LookMetadataRecord): Sea
   }))
 
   entries.sort((a, b) => b.score - a.score)
-  const top4 = entries.slice(0, 4)
-  const bestEntry = top4[0]?.entry
-  const bestLookName = top4[0]?.lookName ?? ''
+  if (entries.length === 0) return []
 
-  return top4.map(({ lookName, entry, score }, index) => {
-    const role = assignRole(index, lookName, entry, bestEntry ?? entry, bestLookName)
-    return {
-      lookName,
-      score,
-      matchReason: entry.salesLine,
-      reasonLine: REASON_LINE_BY_ROLE[role],
-      role,
+  const anchor = entries[0]
+  const anchorName = anchor.lookName
+  const anchorEntry = anchor.entry
+  const anchorPlIdx = presenceIndex(anchorEntry.presenceLevel)
+  const used = new Set<string>([anchorName])
+  const nav = navigation[anchorName]
+
+  const results: SearchResult[] = [
+    {
+      lookName: anchorName,
+      score: anchor.score,
+      matchReason: anchor.entry.salesLine,
+      reasonLine: REASON_LINE_BY_ROLE.best,
+      role: 'best',
+    },
+  ]
+
+  // SOFTER slot
+  let softerCandidate: string | null = null
+  if (nav?.saferOption && metadata[nav.saferOption] && nav.saferOption !== anchorName) {
+    softerCandidate = nav.saferOption
+  } else if (nav?.moreNatural && metadata[nav.moreNatural] && !used.has(nav.moreNatural) && nav.moreNatural !== anchorName) {
+    softerCandidate = nav.moreNatural
+  } else {
+    const found = entries.find(
+      e => e.lookName !== anchorName && !used.has(e.lookName) &&
+        presenceIndex(e.entry.presenceLevel) < anchorPlIdx &&
+        (e.entry.beginnerSafety === 'high' || e.entry.beginnerSafety === 'very-high')
+    )
+    softerCandidate = found ? found.lookName : null
+  }
+  if (softerCandidate) {
+    const f = findInRanked(entries, softerCandidate)
+    if (f) {
+      results.push({ lookName: softerCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.softer, role: 'softer' })
+      used.add(softerCandidate)
     }
-  })
+  }
+
+  // EVENING slot
+  let eveningCandidate: string | null = null
+  if (nav?.moreGlam && !used.has(nav.moreGlam) && metadata[nav.moreGlam]) {
+    eveningCandidate = nav.moreGlam
+  } else {
+    const catMatch = entries.find(
+      e => e.lookName !== anchorName && !used.has(e.lookName) &&
+        (e.entry.presenceLevel === 'medium-high' || e.entry.presenceLevel === 'high') &&
+        (e.entry.category.includes('ערב') || e.entry.category.includes('גלאם'))
+    )
+    if (catMatch) eveningCandidate = catMatch.lookName
+    else {
+      const higherPl = entries.find(
+        e => e.lookName !== anchorName && !used.has(e.lookName) &&
+          presenceIndex(e.entry.presenceLevel) > anchorPlIdx
+      )
+      eveningCandidate = higherPl ? higherPl.lookName : null
+    }
+  }
+  if (eveningCandidate) {
+    const f = findInRanked(entries, eveningCandidate)
+    if (f) {
+      results.push({ lookName: eveningCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.evening, role: 'evening' })
+      used.add(eveningCandidate)
+    }
+  }
+
+  // BOLDER slot
+  let bolderCandidate: string | null = null
+  if (nav?.bolderOption && !used.has(nav.bolderOption) && metadata[nav.bolderOption]) {
+    bolderCandidate = nav.bolderOption
+  } else {
+    const found = entries.find(
+      e => e.lookName !== anchorName && !used.has(e.lookName) &&
+        (e.entry.presenceLevel === 'high' || e.entry.presenceLevel === 'medium-high')
+    )
+    bolderCandidate = found ? found.lookName : null
+  }
+  if (bolderCandidate) {
+    const f = findInRanked(entries, bolderCandidate)
+    if (f) {
+      results.push({ lookName: bolderCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.bolder, role: 'bolder' })
+      used.add(bolderCandidate)
+    }
+  }
+
+  return results
 }
