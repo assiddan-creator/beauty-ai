@@ -1585,7 +1585,7 @@ function App() {
                   <img
                     src={originalImage}
                     alt="Your photo"
-                    className="h-full w-full object-cover object-top"
+                    className="h-full w-full object-cover object-center"
                   />
                   <div
                     className="absolute inset-0 rounded-full"
@@ -2204,7 +2204,7 @@ function App() {
 
                     {generatedImage && originalImage && !isGenerating ? (
                       <>
-                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover object-top" />
+                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover object-center" />
                         <img
                           src={generatedImage}
                           alt="After"
@@ -2260,7 +2260,7 @@ function App() {
                       <img
                         src={originalImage!}
                         alt="Original selfie"
-                        className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
+                        className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ${isGenerating ? 'opacity-30' : 'opacity-100'}`}
                       />
                     )}
                   </div>
