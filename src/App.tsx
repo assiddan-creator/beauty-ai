@@ -47,7 +47,38 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Natural-Everyday.jpg',
     icon: Sun,
     tags: ['everyday', 'natural', 'fresh'],
-    prompt: 'Beauty makeup try-on. Natural everyday look. Apply subtle nude-pink lip gloss, soft peachy blush on cheeks, minimal mascara. Skin looks fresh and dewy, not heavy. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: soft beauty ring light. Film: Kodak Portra 400. Natural editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Natural Everyday
+
+APPLY THESE EXACT PRODUCTS:
+1. MAC M·A·Cximal Silky Matte Lipstick in Velvet Teddy
+Apply on the lips as a clearly visible warm nude matte lip color with soft clean edges and natural elegant color payoff.
+
+2. MAC Lip Pencil in Spice
+Apply lightly around the natural lip border to create soft warm nude definition. Keep it blended, polished, and noticeable but not harsh.
+
+3. MAC Powder Blush in Melba
+Apply on the cheeks with a clearly visible soft peachy flush, blended upward slightly for a fresh natural lift.
+
+DESIRED RESULT:
+Create a polished everyday makeup transformation that is clearly visible, flattering, soft, natural, and premium.
+The makeup should be noticeable enough to read clearly as a preset, while still looking realistic and wearable.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clear, elegant, natural makeup visibility.`,
   },
   {
     id: 'clean-glow',
@@ -57,7 +88,39 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Clean-Glow.jpg',
     icon: Droplets,
     tags: ['glow', 'dewy', 'fresh'],
-    prompt: 'Beauty makeup try-on. Clean glow look. Apply luminous highlighter on cheekbones and brow bone, soft rose blush, clear glossy lip. Skin appears radiant and glowing. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: diffused window light. Film: Kodak Portra 400. Editorial beauty quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Clean Glow
+
+APPLY THESE EXACT PRODUCTS:
+1. Dior Addict Lip Maximizer in 001 Pink
+Apply on the lips as a clearly visible glossy pink finish with healthy reflective shine and hydrated freshness.
+
+2. MAC Lip Pencil in Spice
+Apply very softly around the natural lip border to create gentle warm nude definition under the gloss. Keep it blended, refined, and noticeable but not harsh.
+
+3. MAC Powder Blush in Melba
+Apply high on the cheeks with soft diffused edges for a clearly visible fresh peachy flush and a subtle lifted effect.
+
+DESIRED RESULT:
+Create a clean glow makeup transformation that is clearly visible, polished, fresh, luminous, and elegant.
+The makeup effect should be visually readable as a preset transformation while remaining realistic, photorealistic, and believable.
+Keep the glow refined and skin-like, not sweaty, greasy, metallic, glittery, or overdone.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clear but elegant glow visibility.`,
   },
   {
     id: 'office-polished',
@@ -67,7 +130,38 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Office-Polished.jpg',
     icon: Gem,
     tags: ['professional', 'polished', 'daytime'],
-    prompt: 'Beauty makeup try-on. Office polished look. Apply neutral mauve lipstick, subtle contour blush, defined but natural brows. Clean and professional. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: professional studio light. Film: Kodak Portra 400. Clean editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Office Polished
+
+APPLY THESE EXACT PRODUCTS:
+1. MAC M·A·Cximal Silky Matte Lipstick in Velvet Teddy
+Apply on the lips as a refined warm nude matte lip with clearly visible but controlled color payoff.
+
+2. MAC Lip Pencil in Whirl
+Apply softly around the lips for polished rosy-brown definition with smooth blended edges and a professional clean shape.
+
+3. MAC Powder Blush in Melba
+Apply on the cheeks with a clearly visible soft peachy-beige flush, blended neatly upward for a structured polished finish.
+
+DESIRED RESULT:
+Create a professional, neat, polished makeup transformation that looks composed, elegant, wearable, and clearly enhanced.
+The effect should feel office-appropriate, confident, modern, and visibly more put-together than bare skin.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clean, structured, polished makeup visibility.`,
   },
   {
     id: 'soft-glam',
@@ -77,7 +171,38 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Soft-Glam.jpg',
     icon: Star,
     tags: ['glam', 'evening', 'romantic'],
-    prompt: 'Beauty makeup try-on. Soft glam look. Apply warm rose-gold lip, soft smoky shadow in warm tones, peachy-pink blush, subtle highlight. Romantic and elevated. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: warm golden hour. Film: Kodak Portra 400. Glamorous editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Soft Glam
+
+APPLY THESE EXACT PRODUCTS:
+1. Kiko Milano 3D Hydra Lipgloss in 19
+Apply on the lips as a clearly visible fuller-looking glossy nude finish with smooth reflective shine and rich polished dimension.
+
+2. MAC Lip Pencil in Whirl
+Apply around the lips with softly sculpted rosy-brown definition, more noticeable than an everyday look, but still blended and elegant.
+
+3. MAC Powder Blush in Melba
+Apply on the cheeks with a lifted placement and a clearly visible soft peach flush, slightly richer than natural makeup while still refined.
+
+DESIRED RESULT:
+Create a soft glam makeup transformation that feels feminine, polished, sculpted, elevated, and evening-ready.
+The makeup should be visibly more glamorous than everyday makeup, but still tasteful, believable, and premium.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clearly visible soft glam definition.`,
   },
   {
     id: 'classic-red-lip',
@@ -87,7 +212,39 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Classic-Red-Lip.jpg',
     icon: Heart,
     tags: ['bold', 'classic', 'evening', 'red'],
-    prompt: 'Beauty makeup try-on. Classic red lip look. Apply bold classic red matte lipstick with precise lip liner, minimal eye makeup, soft blush. Timeless and confident. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: dramatic side light. Film: Cinestill 800T. Classic editorial beauty quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Classic Red Lip
+
+APPLY THESE EXACT PRODUCTS:
+1. NARS Powermatte Lipstick in Dragon Girl
+Apply on the lips as a clearly visible vivid cool red matte lipstick with crisp elegant edges and confident saturated color payoff.
+
+2. MAC Lip Pencil in Whirl
+Apply very lightly and precisely to refine the lip shape under the red lipstick while keeping the final result clean and sophisticated.
+
+3. MAC Powder Blush in Melba
+Apply softly on the cheeks with a controlled peachy flush that supports the red lip without competing with it.
+
+DESIRED RESULT:
+Create a classic red lip makeup transformation with a strong, clear focal point on the lips.
+The result should feel timeless, chic, elegant, powerful, and premium.
+The red lip must be clearly readable and visually striking while still photorealistic and believable.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Strong, elegant, clearly visible red lip effect.`,
   },
   {
     id: 'warm-bronze',
@@ -97,7 +254,39 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Warm-Bronze.jpg',
     icon: Sun,
     tags: ['bronze', 'warm', 'summer', 'glow'],
-    prompt: 'Beauty makeup try-on. Warm bronze look. Apply terracotta-bronze blush and contour, warm amber-nude lip, golden highlight on cheekbones. Sun-kissed and warm. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: warm golden sunlight. Film: Kodak Portra 400. Sun-drenched editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Warm Bronze
+
+APPLY THESE EXACT PRODUCTS:
+1. MAC Lip Pencil in Spice
+Apply around the lips to create warm nude-brown definition with a softly sculpted but clearly visible contour.
+
+2. Kiko Milano 3D Hydra Lipgloss in 19
+Apply over the lips for a warm glossy nude finish with visible reflective shine and sun-kissed polished richness.
+
+3. NARS Powder Blush in Taj Mahal
+Apply on the cheeks with a clearly visible warm terracotta-orange flush and soft golden radiance, blended upward for a lifted sun-warmed effect.
+
+DESIRED RESULT:
+Create a warm bronze makeup transformation with visible warmth, healthy radiance, and luxurious summer-like richness.
+The look should feel sun-kissed, flattering, glowing, and premium.
+Keep it elegant and cosmetic, not orange, muddy, glittery, or overdone.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clear warm bronze visibility with refined radiance.`,
   },
   {
     id: 'cool-chic',
@@ -107,7 +296,38 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Cool-Chic.jpg',
     icon: Moon,
     tags: ['cool', 'chic', 'editorial', 'berry'],
-    prompt: 'Beauty makeup try-on. Cool chic look. Apply deep berry-mauve lip with liner, cool-toned rosy blush, soft defined lashes. Modern and editorial. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: cool blue-tinted studio light. Film: Cinestill 800T. Fashion editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Cool Chic
+
+APPLY THESE EXACT PRODUCTS:
+1. MAC Lip Pencil in Whirl
+Apply around the lips with clearly visible cool rosy-brown definition and softly sculpted elegance.
+
+2. Dior Addict Lip Maximizer in 001 Pink
+Apply on the lips over the liner as a polished cool pink glossy finish with noticeable reflective shine and modern freshness.
+
+3. MAC Powder Blush in Melba
+Apply very softly and neatly on the cheeks with a balanced refined flush, keeping the overall look controlled, chic, and cooler in feeling rather than warm and sun-kissed.
+
+DESIRED RESULT:
+Create a cool chic makeup transformation that feels sleek, modern, elegant, refined, and fashion-aware.
+The result should be clearly visible and polished, with a cooler, cleaner, more sophisticated mood than warm or bronzed looks.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Clearly visible cool-toned polished effect.`,
   },
   {
     id: 'minimal-grooming',
@@ -117,7 +337,38 @@ const BEAUTY_PRESETS: Array<{
     image: '/looks/Minimal-Grooming.jpg',
     icon: Flower2,
     tags: ['minimal', 'clean', 'groomed', 'unisex'],
-    prompt: 'Beauty makeup try-on. Minimal grooming look. Apply skin-toned tinted balm on lips, very subtle definition and grooming, clear brow gel. Clean and effortless. Photorealistic, preserve face shape, skin texture, identity completely. Camera: Sony A7IV. Lighting: natural diffused daylight. Film: Kodak Portra 400. Minimal clean editorial quality.',
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply only the requested makeup products.
+
+LOOK:
+Minimal Grooming
+
+APPLY THESE EXACT PRODUCTS:
+1. Dior Addict Lip Maximizer in 001 Pink
+Apply very lightly on the lips as a subtle but visible healthy glossy finish with natural hydration.
+
+2. MAC Lip Pencil in Spice
+Apply extremely softly at the natural lip border only where needed for gentle structure and a cleaner lip shape. Keep it very blended and understated.
+
+3. MAC Powder Blush in Melba
+Apply very lightly and evenly on the cheeks for a subtle healthy flush that looks neat, fresh, and minimally enhanced.
+
+DESIRED RESULT:
+Create a minimal grooming makeup transformation that feels clean, fresh, healthy, understated, and slightly enhanced.
+The result should be clearly cleaner and more groomed than the original photo, while still looking extremely natural and low-effort.
+
+PRESERVE EXACTLY:
+Preserve the person's exact identity, facial structure, face shape, facial proportions, skin texture, hair, clothing, background, framing, lighting, camera angle, and facial expression.
+Keep the original photo composition unchanged so the transformed image aligns exactly with the original photo.
+
+DO NOT CHANGE:
+Do not reshape the face, eyes, nose, lips, jaw, eyebrows, or skin.
+Do not retouch or over-smooth the skin.
+Do not change the hairstyle, clothing, background, lighting, composition, or camera perspective.
+Do not add extra makeup products that were not requested.
+Do not make the image look like a beauty filter or AI-generated face.
+
+OUTPUT STYLE:
+Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Very clean, subtle, clearly groomed enhancement.`,
   },
 ]
 
