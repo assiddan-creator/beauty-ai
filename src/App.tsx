@@ -450,7 +450,11 @@ type FaceAnalysis = {
   skinTone: string
   undertone: string
   recommendedPreset: string
+  alternatePresets: string[]
   confidence: 'high' | 'medium' | 'low'
+  lipColorFamily: string
+  blushColorFamily: string
+  avoidPreset: string
   reasoning: string
   beautyTips: string[]
 }
@@ -1244,6 +1248,30 @@ function App() {
                                     {faceAnalysis.undertone}
                                   </span>
                                 </div>
+                                {faceAnalysis.lipColorFamily && (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] text-gray-500">Lips:</span>
+                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
+                                      {faceAnalysis.lipColorFamily}
+                                    </span>
+                                  </div>
+                                )}
+                                {faceAnalysis.blushColorFamily && (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] text-gray-500">Blush:</span>
+                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
+                                      {faceAnalysis.blushColorFamily}
+                                    </span>
+                                  </div>
+                                )}
+                                {faceAnalysis.avoidPreset && (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] text-gray-500">{lang === 'he' ? 'להמנע' : 'Avoid'}:</span>
+                                    <span className="rounded-lg bg-red-500/20 px-2 py-0.5 text-[11px] font-semibold text-red-400">
+                                      {faceAnalysis.avoidPreset}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                               <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
                                 {faceAnalysis.reasoning}

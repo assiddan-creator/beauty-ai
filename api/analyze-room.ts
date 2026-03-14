@@ -31,36 +31,74 @@ async function callClaude(systemPrompt: string, userContent: object[]) {
   return res.json()
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+type FaceAnalysis = {
+  skinTone: string
+  undertone: string
+  recommendedPreset: string
+  alternatePresets: string[]
+  confidence: 'high' | 'medium' | 'low'
+  lipColorFamily: string
+  blushColorFamily: string
+  avoidPreset: string
+  reasoning: string
+  beautyTips: string[]
+}
+
 // ─── Beauty system prompt ─────────────────────────────────────────────────────
 function buildBeautySystemPrompt(styleNames: string, lang: 'he' | 'en'): string {
-  return `You are an expert beauty AI consultant specializing in makeup color theory and personalized look recommendations.
-
-Your task: analyze the selfie provided and return a JSON object with makeup recommendations.
-
-Available looks to recommend from (pick EXACTLY one name from this list):
+  return `You are an expert beauty AI consultant for a makeup virtual try-on app.
+Your role is not to give general beauty commentary.
+Your role is to analyze the uploaded selfie and select the most flattering makeup preset from a fixed preset library for this person.
+The app is focused on:
+- lipstick
+- lip gloss
+- lip liner
+- blush
+Do not focus on skincare, medical issues, skin conditions, blemishes, acne, or dermatological observations.
+Do not use negative language about appearance.
+Only focus on flattering makeup direction, color harmony, and preset suitability.
+Available presets (choose from these exact names only):
 ${styleNames}
-
-Rules:
-- Analyze skin tone: fair / light / medium / tan / deep / rich
-- Analyze undertone: warm / cool / neutral / olive
-- Recommend the single best look from the list above for this person
-- Confidence should reflect how clearly you can see the face and skin
-- beautyTips: 2 short, positive, actionable tips for this person (in ${lang === 'he' ? 'Hebrew' : 'English'})
-- reasoning: 1-2 sentences explaining why this look suits them (in ${lang === 'he' ? 'Hebrew' : 'English'})
-- NEVER comment on skin conditions, blemishes, acne, or any medical/dermatological observations
-- NEVER use negative language about appearance
-- Focus only on what makeup shades and styles will be flattering
-
-Return ONLY valid JSON, no markdown fences, no preamble:
+Analyze the selfie and infer:
+- skin tone: fair / light / medium / tan / deep / rich
+- undertone: warm / cool / neutral / olive / neutral-warm / neutral-cool
+- the single best preset from the list
+- the next 2 best alternate presets from the list
+- lip color family that would be most flattering
+- blush color family that would be most flattering
+- 1 preset to avoid if it seems less suitable
+- confidence: low / medium / high
+Important behavior rules:
+- Prefer commercially useful, wearable, flattering recommendations
+- Think in terms of the preset library, not unlimited beauty creativity
+- Base the recommendation on visible color harmony, contrast level, softness vs definition
+- Do not overclaim certainty
+- If the image is unclear, lower confidence rather than guessing too strongly
+beautyTips rules:
+- return exactly 2 short, positive, actionable beauty tips
+- tips must be in ${lang === 'he' ? 'Hebrew' : 'English'}
+- keep them practical and flattering
+- focus only on makeup shades / finish / vibe
+reasoning rules:
+- 1-2 short sentences
+- in ${lang === 'he' ? 'Hebrew' : 'English'}
+- explain why the recommended preset fits this person
+- keep it product-friendly and flattering
+Return ONLY valid JSON, no markdown, no preamble:
 {
-  "skinTone": "medium",
-  "undertone": "warm",
-  "recommendedPreset": "Warm Bronze",
+  "skinTone": "light",
+  "undertone": "neutral-warm",
+  "recommendedPreset": "Clean Glow",
+  "alternatePresets": ["Natural Everyday", "Office Polished"],
   "confidence": "high",
-  "reasoning": "Your warm medium skin tone with golden undertones will look stunning with bronze and terracotta tones.",
+  "lipColorFamily": "rosy pink nude",
+  "blushColorFamily": "soft peach",
+  "avoidPreset": "Classic Red Lip",
+  "reasoning": "הלוק הזה יתאים לך כי הוא שומר על רכות טבעית ומוסיף זוהר נקי ומחמיא בלי להכביד.",
   "beautyTips": [
-    "Coral and peach blush shades will complement your warm undertones beautifully.",
-    "Gold and copper highlighters will make your skin glow."
+    "גווני שפתיים ורדרדים-ניודיים יחמיאו לך במיוחד.",
+    "סומק אפרסקי רך ייתן לך מראה רענן וטבעי."
   ]
 }`
 }
