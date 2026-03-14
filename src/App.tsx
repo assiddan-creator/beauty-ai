@@ -2106,6 +2106,21 @@ function App() {
 
     const paths = [
       {
+        id: 'remove',
+        emoji: '🧴',
+        titleHe: 'הסרת איפור',
+        titleEn: 'Remove makeup',
+        descHe: 'ראי איך את נראית עם פנים נקיות ללא איפור',
+        descEn: 'See how you look with a clean natural face',
+        accentColor: 'rgba(100,160,200,0.08)',
+        borderColor: 'rgba(100,160,200,0.15)',
+        glowColor: 'rgba(100,160,200,0.05)',
+        action: () => {
+          setShowPathScreen(false)
+          handleRefineOnly()
+        },
+      },
+      {
         id: 'ai',
         emoji: '✨',
         titleHe: 'קבלי המלצה אישית',
