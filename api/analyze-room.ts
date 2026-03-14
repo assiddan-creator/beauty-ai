@@ -148,6 +148,27 @@ Keep the prompt under 80 words.`
     }
   }
 
+  // ─── Result-description mode (after try-on) ──────────────────────────────────
+  const bodyDesc = req.body as { mode?: string; lookName?: string; imageUrl?: string }
+  if (bodyDesc.mode === 'result-description' && bodyDesc.lookName) {
+    const key = process.env.ANTHROPIC_API_KEY
+    if (!key) {
+      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
+    }
+    const systemPrompt = `You are a warm, premium beauty advisor writing short descriptions for a virtual makeup try-on app. You will receive a look name and a result image. Write ONE short sentence (maximum 18 words) describing how the look came out. Tone: warm, flattering, confidence-building, beauty-native. Do not mention AI. Do not say 'the image shows'. Speak directly to the user as 'you'. Return only the sentence, no punctuation at the end, no preamble.`
+    const userMessage = `Look applied: ${bodyDesc.lookName}. Please describe how this look came out on the user.`
+    const userContent = [{ type: 'text' as const, text: userMessage }]
+    try {
+      const data = await callClaude(systemPrompt, userContent)
+      const text = (data.content as Array<{ type: string; text?: string }>)
+        .find(b => b.type === 'text')?.text?.trim() ?? ''
+      return res.status(200).json({ description: text })
+    } catch (err) {
+      console.error('[analyze-room] result-description Error:', err)
+      return res.status(500).json({ error: { message: err instanceof Error ? err.message : 'Unknown error' } })
+    }
+  }
+
   const { imageDataUrl, styleNames, lang = 'en' } = req.body as {
     imageDataUrl: string
     styleNames: string

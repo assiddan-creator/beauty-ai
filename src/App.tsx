@@ -1245,6 +1245,26 @@ async function buildProductPromptWithClaude(product: ProductItem): Promise<strin
   return prompt
 }
 
+// ─── Claude — Result description (after try-on) ──────────────────────────────
+async function generateResultDescription(lookName: string, imageUrl: string): Promise<string> {
+  const response = await fetch('/api/analyze-room', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mode: 'result-description',
+      lookName,
+      imageUrl,
+    }),
+  })
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({})) as { error?: string }
+    throw new Error(typeof err?.error === 'string' ? err.error : 'Result description failed')
+  }
+  const data = (await response.json()) as { description?: string }
+  const description = data.description?.trim()
+  return description ?? ''
+}
+
 // ─── Claude Vision — Face / Beauty Analysis ──────────────────────────────────
 async function analyzeFaceWithClaude(imageDataUrl: string, lang: 'he' | 'en'): Promise<FaceAnalysis> {
   const response = await fetch('/api/analyze-room', {  // reuse same endpoint
@@ -1404,6 +1424,7 @@ function App() {
   const [isUploaded, setIsUploaded] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [resultDescription, setResultDescription] = useState<string | null>(null)
   const [sliderPosition, setSliderPosition] = useState(50)
   const [makeupOpacity, setMakeupOpacity] = useState(100)
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
@@ -1541,6 +1562,7 @@ function App() {
     }
 
     setError(null)
+    setResultDescription(null)
     setIsGenerating(true)
 
     try {
@@ -1565,6 +1587,7 @@ function App() {
 
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
+      generateResultDescription(presetName, outputUrl).then(setResultDescription).catch(() => {})
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -1597,6 +1620,7 @@ function App() {
     }
 
     setError(null)
+    setResultDescription(null)
     setIsGenerating(true)
 
     try {
@@ -1617,12 +1641,14 @@ function App() {
 
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
+      const removalLookName = lang === 'he' ? 'הסרת איפור' : 'Makeup Removed'
+      generateResultDescription(removalLookName, outputUrl).then(setResultDescription).catch(() => {})
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
         generatedUrl: outputUrl,
-        lookName: lang === 'he' ? 'הסרת איפור' : 'Makeup Removed',
+        lookName: removalLookName,
         timestamp: Date.now(),
       }
       setHistory((prev) => {
@@ -1644,6 +1670,7 @@ function App() {
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
     if (!token) { setError('Replicate API token not found.'); return }
     setError(null)
+    setResultDescription(null)
     setIsGenerating(true)
     try {
       let tryOnPrompt: string
@@ -1661,11 +1688,13 @@ function App() {
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
+      const productLookName = `${product.brand} ${product.shadeName}`
+      generateResultDescription(productLookName, outputUrl).then(setResultDescription).catch(() => {})
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
         generatedUrl: outputUrl,
-        lookName: `${product.brand} ${product.shadeName}`,
+        lookName: productLookName,
         timestamp: Date.now(),
       }
       setHistory((prev) => {
@@ -3460,6 +3489,12 @@ function App() {
                       : t.originalPhoto}
                   </p>
                 </div>
+
+                {resultDescription && (
+                  <p className="mt-3 text-center text-sm text-white/70 italic px-4">
+                    {resultDescription}
+                  </p>
+                )}
 
                 {/* ── Disclaimer ── */}
                 <p className="mt-3 text-center text-[11px] text-gray-600">
