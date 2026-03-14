@@ -633,6 +633,8 @@ type FaceAnalysis = {
   undertone: string
   recommendedPreset: string
   alternatePresets: string[]
+  saferOption: string
+  bolderOption: string
   confidence: 'high' | 'medium' | 'low'
   lipColorFamily: string
   blushColorFamily: string
@@ -1475,6 +1477,68 @@ function App() {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {(faceAnalysis.saferOption || faceAnalysis.bolderOption) && (
+            <div className="mb-4">
+              <p className="mb-3 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                {lang === 'he' ? 'כיוונים נוספים' : 'More directions'}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {faceAnalysis.saferOption && (() => {
+                  const saferPreset = BEAUTY_PRESETS.find(p => p.name === faceAnalysis.saferOption)
+                  if (!saferPreset) return null
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPreset(faceAnalysis.saferOption)
+                        setShowAnalysisPanel(false)
+                        setAnalysisDismissed(true)
+                      }}
+                      className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    >
+                      <span className="text-[9px] font-medium uppercase tracking-wide mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {lang === 'he' ? '🕊️ בטוח יותר' : '🕊️ Safer option'}
+                      </span>
+                      <span className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
+                        {lang === 'he' ? saferPreset.nameHe : saferPreset.name}
+                      </span>
+                      <span className="mt-0.5 text-[10px] line-clamp-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        {LOOK_METADATA[saferPreset.name]?.salesLine ?? ''}
+                      </span>
+                    </button>
+                  )
+                })()}
+                {faceAnalysis.bolderOption && (() => {
+                  const bolderPreset = BEAUTY_PRESETS.find(p => p.name === faceAnalysis.bolderOption)
+                  if (!bolderPreset) return null
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPreset(faceAnalysis.bolderOption)
+                        setShowAnalysisPanel(false)
+                        setAnalysisDismissed(true)
+                      }}
+                      className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    >
+                      <span className="text-[9px] font-medium uppercase tracking-wide mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {lang === 'he' ? '🔥 יותר נוכח' : '🔥 Bolder option'}
+                      </span>
+                      <span className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
+                        {lang === 'he' ? bolderPreset.nameHe : bolderPreset.name}
+                      </span>
+                      <span className="mt-0.5 text-[10px] line-clamp-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        {LOOK_METADATA[bolderPreset.name]?.salesLine ?? ''}
+                      </span>
+                    </button>
+                  )
+                })()}
               </div>
             </div>
           )}
