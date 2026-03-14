@@ -17,6 +17,7 @@ import {
   Flower2,
   Droplets,
   Gem,
+  ArrowLeftRight,
   Brain,
   CheckCircle2,
   ChevronRight,
@@ -599,6 +600,7 @@ function App() {
   const [isUploaded, setIsUploaded] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [sliderPosition, setSliderPosition] = useState(50)
   const [makeupOpacity, setMakeupOpacity] = useState(100)
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -662,6 +664,7 @@ function App() {
     setGeneratedImage(null)
     setIsGenerating(false)
     setMakeupOpacity(100)
+    setSliderPosition(50)
     setSelectedPreset(null)
     setSelectedCategory(null)
     setCustomInstructions('')
@@ -726,6 +729,7 @@ function App() {
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
       setGeneratedImage(outputUrl)
+      setSliderPosition(50)
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -774,6 +778,7 @@ function App() {
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
       setGeneratedImage(outputUrl)
+      setSliderPosition(50)
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -801,6 +806,7 @@ function App() {
     setGeneratedImage(entry.generatedUrl)
     setSelectedPreset(entry.lookName)
     setIsUploaded(true)
+    setSliderPosition(50)
     setActiveHistoryId(entry.id)
     setError(null)
   }
@@ -1078,18 +1084,42 @@ function App() {
                       </div>
                     )}
 
-                    {generatedImage && !isGenerating ? (
-                      <div className="relative w-full h-full">
-                        <img src={originalImage!} alt="Original" className="absolute inset-0 h-full w-full object-cover object-top" />
+                    {generatedImage && originalImage && !isGenerating ? (
+                      <>
+                        <img src={originalImage} alt="Before" className="absolute inset-0 h-full w-full object-cover object-top" />
                         <img
                           src={generatedImage}
-                          alt="With makeup"
+                          alt="After"
                           className="absolute inset-0 h-full w-full object-cover object-top"
                           style={{
+                            clipPath: `inset(0 0 0 ${sliderPosition}%)`,
                             opacity: makeupOpacity / 100,
-                            transform: 'scaleX(0.965) scaleY(0.93)',
-                            transformOrigin: 'top center',
                           }}
+                        />
+                        <div
+                          className="pointer-events-none absolute inset-y-0 w-0.5 bg-coral"
+                          style={{ left: `${sliderPosition}%`, boxShadow: '0 0 12px rgba(255,107,71,0.9)' }}
+                        />
+                        <div
+                          className="pointer-events-none absolute top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-coral bg-black/70 shadow-xl backdrop-blur-sm"
+                          style={{ left: `${sliderPosition}%` }}
+                        >
+                          <ArrowLeftRight className="h-4 w-4 text-coral" />
+                        </div>
+                        <span className="pointer-events-none absolute bottom-4 left-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+                          {lang === 'he' ? 'לפני' : 'Before'}
+                        </span>
+                        <span className="pointer-events-none absolute bottom-4 right-4 rounded-lg bg-black/55 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+                          {lang === 'he' ? 'אחרי' : 'After'}
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={sliderPosition}
+                          onChange={(e) => setSliderPosition(Number(e.target.value))}
+                          className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
+                          aria-label="Compare before and after"
                         />
                         <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
                           <span className="text-[11px] font-semibold text-white/70">Intensity</span>
@@ -1104,7 +1134,9 @@ function App() {
                           />
                           <span className="text-[11px] font-semibold text-coral w-8 text-center">{makeupOpacity}%</span>
                         </div>
-                      </div>
+                      </>
+                    ) : generatedImage && !originalImage && !isGenerating ? (
+                      <img src={generatedImage} alt="Generated look" className="absolute inset-0 h-full w-full object-cover object-top" />
                     ) : (
                       <img
                         src={originalImage!}
@@ -1115,7 +1147,11 @@ function App() {
                   </div>
 
                   <p className="border-t border-white/5 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-widest text-gray-500">
-                    {isGenerating ? t.generating : t.originalPhoto}
+                    {isGenerating
+                      ? t.generating
+                      : generatedImage
+                      ? (lang === 'he' ? 'לפני ← גרור → אחרי' : 'Before ← Drag → After')
+                      : t.originalPhoto}
                   </p>
                 </div>
 
