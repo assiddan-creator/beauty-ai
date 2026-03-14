@@ -1246,7 +1246,7 @@ async function buildProductPromptWithClaude(product: ProductItem): Promise<strin
 }
 
 // ─── Claude — Result description (after try-on) ──────────────────────────────
-async function generateResultDescription(lookName: string, imageUrl: string): Promise<string> {
+async function generateResultDescription(lookName: string, imageUrl: string, lang: 'he' | 'en'): Promise<string> {
   const response = await fetch('/api/analyze-room', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1254,6 +1254,7 @@ async function generateResultDescription(lookName: string, imageUrl: string): Pr
       mode: 'result-description',
       lookName,
       imageUrl,
+      lang,
     }),
   })
   if (!response.ok) {
@@ -1587,7 +1588,7 @@ function App() {
 
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
-      generateResultDescription(presetName, outputUrl).then(setResultDescription).catch(() => {})
+      generateResultDescription(presetName, outputUrl, lang).then(setResultDescription).catch(() => {})
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -1642,7 +1643,7 @@ function App() {
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
       const removalLookName = lang === 'he' ? 'הסרת איפור' : 'Makeup Removed'
-      generateResultDescription(removalLookName, outputUrl).then(setResultDescription).catch(() => {})
+      generateResultDescription(removalLookName, outputUrl, lang).then(setResultDescription).catch(() => {})
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -1689,7 +1690,7 @@ function App() {
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
       const productLookName = `${product.brand} ${product.shadeName}`
-      generateResultDescription(productLookName, outputUrl).then(setResultDescription).catch(() => {})
+      generateResultDescription(productLookName, outputUrl, lang).then(setResultDescription).catch(() => {})
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
