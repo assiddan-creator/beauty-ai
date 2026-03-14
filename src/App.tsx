@@ -998,6 +998,7 @@ const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: s
 // ─── App ─────────────────────────────────────────────────────────────────────
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const [lang, setLang] = useState<'he' | 'en'>('he')
   const t = T[lang]
@@ -1022,6 +1023,8 @@ function App() {
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
   const [looksCarouselCategory, setLooksCarouselCategory] = useState('all')
   const [showPathScreen, setShowPathScreen] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
+  const [showUploadChoice, setShowUploadChoice] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
@@ -1092,6 +1095,8 @@ function App() {
     setAnalysisDismissed(false)
     setShowAnalysisPanel(false)
     setIsAnalyzing(false)
+    setShowSplash(true)
+    setShowUploadChoice(false)
     setShowPathScreen(false)
     setAppMode('looks')
     setProductStep('category')
@@ -1482,6 +1487,199 @@ function App() {
             </div>
           </div>
         )}
+      </div>
+    )
+  }
+
+  const SplashScreen = () => {
+    const [pulse, setPulse] = React.useState(false)
+    React.useEffect(() => {
+      const t = setInterval(() => setPulse(p => !p), 2000)
+      return () => clearInterval(t)
+    }, [])
+
+    const floatingItems = [
+      { emoji: '💋', top: '8%', left: '6%', size: 44, delay: '0s', brand: 'MAC' },
+      { emoji: '🌸', top: '12%', right: '8%', size: 38, delay: '0.4s', brand: 'NARS' },
+      { emoji: '✨', top: '28%', left: '3%', size: 32, delay: '0.8s', brand: 'Dior' },
+      { emoji: '💄', top: '22%', right: '5%', size: 42, delay: '0.3s', brand: 'Charlotte Tilbury' },
+      { emoji: '🌹', top: '55%', left: '4%', size: 36, delay: '1s', brand: 'Fenty' },
+      { emoji: '💅', top: '60%', right: '6%', size: 40, delay: '0.6s', brand: 'YSL' },
+      { emoji: '✨', top: '75%', left: '8%', size: 28, delay: '1.2s', brand: 'Rare Beauty' },
+      { emoji: '🌷', top: '78%', right: '9%', size: 34, delay: '0.9s', brand: 'Bobbi Brown' },
+    ]
+
+    return (
+      <div
+        className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden cursor-pointer select-none"
+        style={{ background: 'linear-gradient(160deg, #0a0408 0%, #0d0610 40%, #080410 100%)' }}
+        onClick={() => setShowUploadChoice(true)}
+      >
+        <div className="pointer-events-none absolute" style={{ top: '15%', left: '20%', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,107,71,0.06)', filter: 'blur(80px)' }} />
+        <div className="pointer-events-none absolute" style={{ bottom: '20%', right: '15%', width: 250, height: 250, borderRadius: '50%', background: 'rgba(180,80,180,0.05)', filter: 'blur(80px)' }} />
+
+        {floatingItems.map((item, i) => (
+          <div
+            key={i}
+            className="pointer-events-none absolute flex flex-col items-center gap-1"
+            style={{
+              top: item.top,
+              left: (item as { left?: string }).left,
+              right: (item as { right?: string }).right,
+              animation: `float ${3 + i * 0.4}s ease-in-out infinite alternate`,
+              animationDelay: item.delay,
+            }}
+          >
+            <div
+              className="flex items-center justify-center rounded-2xl"
+              style={{ width: item.size, height: item.size, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontSize: item.size * 0.5 }}
+            >
+              {item.emoji}
+            </div>
+            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', fontWeight: 600, letterSpacing: '0.05em' }}>
+              {item.brand}
+            </span>
+          </div>
+        ))}
+
+        <div className="relative z-10 flex flex-col items-center text-center px-8">
+          <div
+            className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
+            style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 40px rgba(255,107,71,0.4), 0 0 80px rgba(255,107,71,0.15)' }}
+          >
+            <span style={{ fontSize: 36 }}>✨</span>
+          </div>
+          <p className="text-4xl font-extrabold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
+            Beauty AI
+          </p>
+          <p className="text-sm mb-12" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>
+            VIRTUAL MAKEUP TRY-ON
+          </p>
+          <div className="flex flex-col items-center gap-3" style={{ opacity: pulse ? 1 : 0.4, transition: 'opacity 0.8s ease' }}>
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ border: '1.5px solid rgba(255,107,71,0.5)', boxShadow: '0 0 20px rgba(255,107,71,0.2)' }}
+            >
+              <span style={{ fontSize: 28 }}>👆</span>
+            </div>
+            <p className="text-base font-semibold" style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em' }}>
+              {lang === 'he' ? 'לחצי להתחיל' : 'TAP TO BEGIN'}
+            </p>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 flex items-center gap-6" style={{ opacity: 0.18 }}>
+          {['MAC', 'Dior', 'NARS', 'Charlotte Tilbury', 'Fenty Beauty', 'YSL', 'Rare Beauty', 'Bobbi Brown'].map(b => (
+            <span key={b} className="shrink-0 text-xs font-bold text-white tracking-widest uppercase">{b}</span>
+          ))}
+        </div>
+
+        <style>{`
+          @keyframes float {
+            from { transform: translateY(0px) rotate(-2deg); }
+            to { transform: translateY(-12px) rotate(2deg); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  const UploadChoiceModal = () => {
+    const [visible, setVisible] = React.useState(false)
+    React.useEffect(() => {
+      const t = setTimeout(() => setVisible(true), 30)
+      return () => clearTimeout(t)
+    }, [])
+
+    return (
+      <div
+        className="fixed inset-0 z-[110] flex items-center justify-center px-6"
+        style={{
+          background: 'rgba(4,2,6,0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+        }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowUploadChoice(false) }}
+      >
+        <div
+          className="w-full max-w-sm overflow-hidden rounded-3xl"
+          style={{
+            background: 'linear-gradient(180deg, #0e0810 0%, #080508 100%)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 30px 80px rgba(0,0,0,0.7)',
+            transform: visible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(16px)',
+            transition: 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+          }}
+        >
+          <div className="px-6 pb-8 pt-6">
+            <p className="mb-1.5 text-center text-xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>
+              {lang === 'he' ? 'איך תרצי להתחיל?' : 'How would you like to start?'}
+            </p>
+            <p className="mb-7 text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              {lang === 'he' ? 'בחרי תמונה שלך להמשיך' : 'Choose your photo to continue'}
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.2)' }}
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl" style={{ background: 'rgba(255,107,71,0.12)' }}>
+                  📸
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-white">{lang === 'he' ? 'צלמי עכשיו' : 'Take a photo'}</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{lang === 'he' ? 'פתחי את המצלמה לסלפי' : 'Open camera for a selfie'}</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  🖼️
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-white">{lang === 'he' ? 'העלי תמונה' : 'Upload a photo'}</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{lang === 'he' ? 'בחרי תמונה מהגלריה' : 'Choose from your gallery'}</p>
+                </div>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowUploadChoice(false)}
+              className="mt-4 flex w-full items-center justify-center py-2 text-xs focus:outline-none"
+              style={{ color: 'rgba(255,255,255,0.18)' }}
+            >
+              {lang === 'he' ? 'ביטול' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="user"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) {
+              handleFileSelect(file)
+              setShowUploadChoice(false)
+              setShowSplash(false)
+            }
+            e.target.value = ''
+          }}
+          className="sr-only"
+        />
       </div>
     )
   }
@@ -1958,6 +2156,8 @@ function App() {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+      {showSplash && <SplashScreen />}
+      {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
       <AnalysisPanel />
 
@@ -2024,7 +2224,11 @@ function App() {
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) handleFileSelect(file)
+                    if (file) {
+                      handleFileSelect(file)
+                      setShowSplash(false)
+                      setShowUploadChoice(false)
+                    }
                     e.target.value = ''
                   }}
                   className="sr-only"
