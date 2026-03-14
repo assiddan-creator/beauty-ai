@@ -488,6 +488,38 @@ Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Very
   },
 ]
 
+const LOOK_METADATA: Record<string, {
+  category: string
+  vibe: string
+  whenToChoose: string
+  bestFor: string
+  presenceLevel: 'low' | 'low-medium' | 'medium' | 'medium-high' | 'high'
+  beginnerSafety: 'very-high' | 'high' | 'medium' | 'low-medium' | 'low'
+  adjacentLook: string
+  salesLine: string
+}> = {
+  'Natural Everyday': { category: 'טבעי וקל', vibe: 'טבעי, רך, יומיומי', whenToChoose: 'כשאת רוצה משהו בטוח, מחמיא ולא מתאמץ', bestFor: 'מי שאוהבת מראה טבעי ונעים', presenceLevel: 'low', beginnerSafety: 'high', adjacentLook: 'Clean Glow', salesLine: 'מראה יומיומי רך שמחמיא כמעט תמיד' },
+  'Clean Glow': { category: 'טבעי וקל', vibe: 'נקי, זוהר, רענן', whenToChoose: 'כשאת רוצה להיראות fresh, נקייה ומלוטשת', bestFor: 'מי שאוהבת glow עדין ולא כבד', presenceLevel: 'low-medium', beginnerSafety: 'high', adjacentLook: 'Fresh Rosy', salesLine: 'זוהר נקי ומחמיא שמרגיש יקר אבל קל' },
+  'Office Polished': { category: 'מסודר ויוקרתי', vibe: 'מסודר, אלגנטי, מקצועי', whenToChoose: 'לעבודה, פגישות, ימים שאת רוצה להיראות מסודרת', bestFor: 'מי שרוצה לוק בטוח אבל יותר אסוף', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Power Nude', salesLine: 'לוק מסודר ואלגנטי שנראה מדויק בלי להיות כבד' },
+  'Soft Glam': { category: 'ערב ודומיננטי', vibe: 'נשי, מלוטש, ערב רך', whenToChoose: 'לערב, יציאה, אירוע קליל', bestFor: 'מי שרוצה יותר נוכחות בלי full glam', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Date Night Romantic', salesLine: 'גלאם רך שמרגיש נשי ומלוטש בלי להגזים' },
+  'Classic Red Lip': { category: 'ערב ודומיננטי', vibe: 'קלאסי, חד, בטוח בעצמו', whenToChoose: 'כשאת רוצה statement ברור', bestFor: 'מי שאוהבת שפתיים דומיננטיות', presenceLevel: 'high', beginnerSafety: 'low-medium', adjacentLook: 'Berry Chic', salesLine: 'שפה אדומה קלאסית שעושה את כל הלוק' },
+  'Warm Bronze': { category: 'חם וקייצי', vibe: 'חם, שזוף, קייצי', whenToChoose: 'לקיץ, חופשה, וייב שמשי', bestFor: 'מי שמחמיאים לה גוונים חמים', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Terracotta Nude', salesLine: 'לוק חם ושזוף שמוסיף זוהר קיצי ומחמיא' },
+  'Cool Chic': { category: 'מסודר ויוקרתי', vibe: 'קריר, חד, אופנתי', whenToChoose: 'כשאת רוצה מראה יותר sleek ומתוחכם', bestFor: 'מי שאוהבת גוונים קרירים ומלוטשים', presenceLevel: 'medium', beginnerSafety: 'medium', adjacentLook: 'Berry Chic', salesLine: 'לוק קריר ומתוחכם עם וייב אופנתי ונקי' },
+  'Minimal Grooming': { category: 'טבעי וקל', vibe: 'נקי, מינימלי, מסודר', whenToChoose: 'כשאת רוצה כמעט בלי איפור אבל כן להיראות יותר מסודרת', bestFor: 'מי שמפחדת מאיפור מורגש', presenceLevel: 'low', beginnerSafety: 'very-high', adjacentLook: 'Glass Nude', salesLine: 'שדרוג עדין מאוד שנראה נקי ומסודר' },
+  'Date Night Romantic': { category: 'ערב ודומיננטי', vibe: 'רומנטי, רך, נשי', whenToChoose: 'לדייט, ערב, או כשאת רוצה משהו מחמיא ורך', bestFor: 'מי שאוהבת ורוד-רוזי מחמיא', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Soft Glam', salesLine: 'לוק רומנטי ורך שמחמיא ונותן תחושת ערב יפה' },
+  'Evening Luxury': { category: 'מסודר ויוקרתי', vibe: 'יוקרתי, מבריק, עשיר', whenToChoose: 'לאירוע, ערב, או כשאת רוצה להיראות expensive', bestFor: 'מי שאוהבת תחושת luxury gloss', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Nude Sculpt', salesLine: 'לוק ערב יוקרתי ומלוטש עם תחושת מותג יוקרה' },
+  'Fresh Rosy': { category: 'זוהר ורענן', vibe: 'רענן, ורוד, צעיר', whenToChoose: 'כשאת רוצה משהו חי, ורוד ומחמיא', bestFor: 'מי שנראית טוב בגוונים ורדרדים רכים', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Clean Glow', salesLine: 'ורוד רענן שמאיר את הפנים בלי להכביד' },
+  'Nude Sculpt': { category: 'מסודר ויוקרתי', vibe: 'מפוסל, refined, expensive', whenToChoose: 'כשאת רוצה nude שנראה יקר ומדויק', bestFor: 'מי שאוהבת לוקים מסודרים ומחוטבים', presenceLevel: 'medium', beginnerSafety: 'medium', adjacentLook: 'Office Polished', salesLine: 'ניוד מפוסל שנראה יקר, נקי ומדויק' },
+  'Peach Pop': { category: 'זוהר ורענן', vibe: 'אפרסקי, חי, שמח', whenToChoose: 'כשאת רוצה צבע חם, צעיר וקצת playful', bestFor: 'מי שאוהבת peach/coral מחמיא', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Coral Breeze', salesLine: 'לוק אפרסקי חי ושמח שנותן אנרגיה לפנים' },
+  'Rosewood Satin': { category: 'זוהר ורענן', vibe: 'רך, בוגר, מאוזן', whenToChoose: 'כשאת רוצה משהו בין יום לערב', bestFor: 'מי שאוהבת ורד-חום אלגנטי', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Nude Sculpt', salesLine: 'לוק ורד-סאטן מאוזן שמרגיש שקט אבל יקר' },
+  'Berry Chic': { category: 'ערב ודומיננטי', vibe: 'ברי, קריר, אופנתי', whenToChoose: 'כשאת רוצה משהו יותר חד ומודגש אבל לא אדום', bestFor: 'מי שאוהבת ורודים-ברי ותחושת fashion', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Cool Chic', salesLine: 'לוק ברי קריר שמרגיש חד, שיקי ומעודכן' },
+  'Terracotta Nude': { category: 'חם וקייצי', vibe: 'אדמתי, חם, עשיר', whenToChoose: 'כשאת רוצה nude חם עם עומק', bestFor: 'מי שמחמיאים לה גוונים טרקוטה וחום-חם', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Warm Bronze', salesLine: 'ניוד חם ועשיר עם וייב שזוף ומתוחכם' },
+  'Glass Nude': { category: 'טבעי וקל', vibe: 'מבריק, שקוף, יקר', whenToChoose: 'כשאת רוצה מראה נקי, glossy וקל', bestFor: 'מי שאוהבת לוקים מבריקים ולא כבדים', presenceLevel: 'low-medium', beginnerSafety: 'high', adjacentLook: 'Minimal Grooming', salesLine: 'ניוד מבריק ונקי שמרגיש יקר וקליל' },
+  'Coral Breeze': { category: 'חם וקייצי', vibe: 'קורלי, חמים, חופשי', whenToChoose: 'לקיץ, יום שמש, או כשאת רוצה לוק מחייך', bestFor: 'מי שאוהבת גווני coral-peach', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Peach Pop', salesLine: 'לוק קורלי רענן וחם שמוסיף חיים לפנים' },
+  'Power Nude': { category: 'מסודר ויוקרתי', vibe: 'חזק, בטוח, מסודר', whenToChoose: 'לעבודה, פגישות, או כשאת רוצה להיראות sharp בלי צבע בולט', bestFor: 'מי שאוהבת ניוד עם יותר נוכחות', presenceLevel: 'medium-high', beginnerSafety: 'medium', adjacentLook: 'Office Polished', salesLine: 'ניוד חזק ובטוח שנראה מסודר ומדויק' },
+  'Local Chic': { category: 'מסודר ויוקרתי', vibe: 'נגיש, יפה, מסחרי', whenToChoose: 'כשאת רוצה לוק יפה, קל להבנה וקל לאהוב', bestFor: 'מי שאוהבת יופי יומיומי עם gloss וניקיון', presenceLevel: 'medium', beginnerSafety: 'high', adjacentLook: 'Glass Nude', salesLine: 'לוק מסחרי, נגיש ומחמיא שקל להתאהב בו' },
+}
+
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const T = {
   he: {
@@ -1034,29 +1066,6 @@ function App() {
       .map(name => BEAUTY_PRESETS.find(p => p.name === name))
       .filter(Boolean) as typeof BEAUTY_PRESETS
 
-    const vibeMap: Record<string, string> = {
-      'Natural Everyday': lang === 'he' ? 'יומיומי, רך וטבעי' : 'Everyday, soft and natural',
-      'Clean Glow': lang === 'he' ? 'נקי, זוהר ורענן' : 'Clean, glowing and fresh',
-      'Office Polished': lang === 'he' ? 'מסודר, נקי ואלגנטי' : 'Polished, clean and elegant',
-      'Soft Glam': lang === 'he' ? 'זוהר רך לערב' : 'Soft evening glamour',
-      'Classic Red Lip': lang === 'he' ? 'קלאסי, נועז וחזק' : 'Classic, bold and powerful',
-      'Warm Bronze': lang === 'he' ? 'חם, זוהר וקייצי' : 'Warm, glowing and summery',
-      'Cool Chic': lang === 'he' ? 'קריר, אלגנטי ומודרני' : 'Cool, chic and modern',
-      'Minimal Grooming': lang === 'he' ? 'נקי, עדין ומינימלי' : 'Clean, subtle and minimal',
-      'Date Night Romantic': lang === 'he' ? 'רומנטי, ורדרד ועדין' : 'Romantic, rosy and soft',
-      'Evening Luxury': lang === 'he' ? 'יוקרתי, מבריק ומשוכלל' : 'Luxurious, glossy and refined',
-      'Fresh Rosy': lang === 'he' ? 'ורדרד, צעיר ורענן' : 'Rosy, youthful and fresh',
-      'Nude Sculpt': lang === 'he' ? 'מפוסל, אלגנטי ופרימיום' : 'Sculpted, elegant and premium',
-      'Peach Pop': lang === 'he' ? 'אפרסקי, שמח ומודרני' : 'Peachy, cheerful and modern',
-      'Rosewood Satin': lang === 'he' ? 'סאטן, מעודן ויוקרתי' : 'Satin, refined and luxurious',
-      'Berry Chic': lang === 'he' ? 'קריר, חד ואופנתי' : 'Cool, sharp and fashion-forward',
-      'Terracotta Nude': lang === 'he' ? 'חם, אדמתי ועשיר' : 'Warm, earthy and rich',
-      'Glass Nude': lang === 'he' ? 'שקוף, מבריק ורך' : 'Sheer, glossy and soft',
-      'Coral Breeze': lang === 'he' ? 'קורל, רענן וים-תיכוני' : 'Coral, fresh and breezy',
-      'Power Nude': lang === 'he' ? 'חזק, בטוח ומודרני' : 'Strong, confident and modern',
-      'Local Chic': lang === 'he' ? 'נגיש, מבריק ומחמיא' : 'Approachable, glossy and flattering',
-    }
-
     return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center"
@@ -1164,7 +1173,7 @@ function App() {
                       {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
                     </p>
                     <p className="mt-0.5 text-[11px] text-gray-500 tracking-wide">
-                      {vibeMap[recommendedPreset.name] ?? ''}
+                      {LOOK_METADATA[recommendedPreset.name]?.salesLine ?? ''}
                     </p>
                     <p className="mt-2 text-[11px] leading-relaxed text-gray-400 line-clamp-2">
                       {faceAnalysis.reasoning}
@@ -1302,7 +1311,13 @@ function App() {
                       <p className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
                         {lang === 'he' ? preset.nameHe : preset.name}
                       </p>
-                      <p className="text-[10px] text-gray-600">{vibeMap[preset.name] ?? ''}</p>
+                      <p className="text-[10px] text-gray-600">{LOOK_METADATA[preset.name]?.salesLine ?? ''}</p>
+                      {LOOK_METADATA[preset.name]?.adjacentLook && (
+                        <p className="mt-0.5 text-[9px] text-gray-700">
+                          {lang === 'he' ? 'נסי גם: ' : 'Also try: '}
+                          {LOOK_METADATA[preset.name]?.adjacentLook}
+                        </p>
+                      )}
                     </div>
                     <button
                       type="button"
@@ -1839,12 +1854,16 @@ function App() {
                               <span className="block max-w-[90%] text-xs font-bold leading-tight text-white drop-shadow">
                                 {lang === 'he' ? preset.nameHe : preset.name}
                               </span>
-                              {/* Tags */}
-                              <div className="mt-1 flex gap-1 flex-wrap">
-                                {preset.tags.slice(0, 2).map(tag => (
-                                  <span key={tag} className="rounded-full bg-white/15 px-1.5 py-0.5 text-[9px] text-white/60">{tag}</span>
-                                ))}
-                              </div>
+                              {LOOK_METADATA[preset.name]?.salesLine && (
+                                <span className="mt-0.5 block text-[9px] text-white/70 line-clamp-2">
+                                  {LOOK_METADATA[preset.name].salesLine}
+                                </span>
+                              )}
+                              {LOOK_METADATA[preset.name]?.vibe && (
+                                <span className="mt-0.5 block text-[8px] text-white/50">
+                                  {LOOK_METADATA[preset.name].vibe}
+                                </span>
+                              )}
                             </div>
                             <div
                               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
