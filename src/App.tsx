@@ -3650,7 +3650,7 @@ function App() {
                   if (!chatEntry) return null
                   const chatProducts = (LOOK_PRODUCTS[chatEntry.lookName] ?? []).map(p => {
                     const catalogMatch = PRODUCT_CATALOG.find(
-                      c => c.brand === p.brand && c.productName === p.productName && c.shadeName === p.shadeName
+                      c => c.brand === p.brand && c.productName.replace(/·/g, '').toLowerCase() === p.productName.replace(/·/g, '').toLowerCase() && c.shadeName === p.shadeName
                     )
                     return {
                       ...p,
