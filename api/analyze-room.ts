@@ -112,6 +112,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  // ─── Prompt-builder mode (product try-on) ───────────────────────────────────
+  const body = req.body as { mode?: string; product?: Record<string, unknown> }
+  if (body.mode === 'prompt-builder' && body.product) {
+    const key = process.env.ANTHROPIC_API_KEY
+    if (!key) {
+      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
+    }
+    const systemPrompt = `You are an expert makeup prompt engineer for a virtual try-on app powered by an AI image editing model called Nano Banana. Your job is to write precise, photorealistic editing prompts that apply makeup products to selfies with maximum accuracy and minimum identity distortion.
+
+You will receive product details and return ONLY a single editing prompt string. No explanation. No preamble. No markdown.
+
+The prompt must:
+- Start with: Beauty makeup virtual try-on.
+- Name the exact brand, product name, shade name
+- Describe the shade color accurately based on shadeFamily and swatchColor
+- Describe the finish (matte, satin, glossy, etc.)
+- Describe precise application placement
+- Describe the desired visible result
+- End with: Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.
+
+For lips products: describe application from center outward, clean edges, natural payoff.
+For blush products: describe placement on apples of cheeks, blended upward, natural flush.
+
+Keep the prompt under 80 words.`
+    const userContent = [{ type: 'text' as const, text: JSON.stringify(body.product) }]
+    try {
+      const data = await callClaude(systemPrompt, userContent)
+      const text = (data.content as Array<{ type: string; text?: string }>)
+        .find(b => b.type === 'text')?.text?.trim() ?? ''
+      return res.status(200).json({ prompt: text })
+    } catch (err) {
+      console.error('[analyze-room] prompt-builder Error:', err)
+      return res.status(500).json({ error: { message: err instanceof Error ? err.message : 'Unknown error' } })
+    }
+  }
+
   const { imageDataUrl, styleNames, lang = 'en' } = req.body as {
     imageDataUrl: string
     styleNames: string

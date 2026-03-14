@@ -1215,6 +1215,36 @@ async function runReplicatePrediction(
   return url
 }
 
+// ─── Claude — Product try-on prompt builder ──────────────────────────────────
+async function buildProductPromptWithClaude(product: ProductItem): Promise<string> {
+  const response = await fetch('/api/analyze-room', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mode: 'prompt-builder',
+      product: {
+        brand: product.brand,
+        productName: product.productName,
+        shadeName: product.shadeName,
+        shadeFamily: product.shadeFamily,
+        finish: product.finish,
+        category: product.category,
+        productType: product.productType,
+        swatchColor: product.swatchColor,
+      },
+    }),
+  })
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({})) as { error?: string | { message?: string } }
+    const msg = typeof err?.error === 'string' ? err.error : err?.error?.message
+    throw new Error(msg ?? `Prompt builder error: ${response.status}`)
+  }
+  const data = (await response.json()) as { prompt?: string }
+  const prompt = data.prompt?.trim()
+  if (!prompt) throw new Error('Empty prompt from Claude')
+  return prompt
+}
+
 // ─── Claude Vision — Face / Beauty Analysis ──────────────────────────────────
 async function analyzeFaceWithClaude(imageDataUrl: string, lang: 'he' | 'en'): Promise<FaceAnalysis> {
   const response = await fetch('/api/analyze-room', {  // reuse same endpoint
@@ -1615,9 +1645,15 @@ function App() {
     setError(null)
     setIsGenerating(true)
     try {
+      let tryOnPrompt: string
+      try {
+        tryOnPrompt = await buildProductPromptWithClaude(product)
+      } catch {
+        tryOnPrompt = product.tryOnPrompt
+      }
       const prompt = [
         'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo.',
-        product.tryOnPrompt,
+        tryOnPrompt,
       ].join('\n\n')
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
