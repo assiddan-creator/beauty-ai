@@ -617,6 +617,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [faceAnalysis, setFaceAnalysis] = useState<FaceAnalysis | null>(null)
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
+  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
@@ -648,6 +649,7 @@ function App() {
       const dataUrl = await blobUrlToDataUrl(originalImage)
       const analysis = await analyzeFaceWithClaude(dataUrl, lang)
       setFaceAnalysis(analysis)
+      setShowAnalysisPanel(true)
       setSelectedPreset(analysis.recommendedPreset)
       console.log('[Claude Vision] Beauty analysis complete:', analysis)
     } catch (err) {
@@ -676,6 +678,7 @@ function App() {
     setError(null)
     setFaceAnalysis(null)
     setAnalysisDismissed(false)
+    setShowAnalysisPanel(false)
     setIsAnalyzing(false)
   }
 
@@ -903,9 +906,202 @@ function App() {
   const activeBgPreset = (BEAUTY_PRESETS.find(p => p.name === selectedPreset) ?? BEAUTY_PRESETS[0])
   const activeBgImage = activeBgPreset.image
 
+  const AnalysisPanel = () => {
+    if (!faceAnalysis || !showAnalysisPanel) return null
+
+    const recommendedPreset = BEAUTY_PRESETS.find(p => p.name === faceAnalysis.recommendedPreset)
+    const alternatePresets = (faceAnalysis.alternatePresets ?? [])
+      .map(name => BEAUTY_PRESETS.find(p => p.name === name))
+      .filter(Boolean) as typeof BEAUTY_PRESETS
+
+    const vibeMap: Record<string, string> = {
+      'Natural Everyday': lang === 'he' ? 'יומיומי, רך וטבעי' : 'Everyday, soft and natural',
+      'Clean Glow': lang === 'he' ? 'נקי, זוהר ורענן' : 'Clean, glowing and fresh',
+      'Office Polished': lang === 'he' ? 'מסודר, נקי ואלגנטי' : 'Polished, clean and elegant',
+      'Soft Glam': lang === 'he' ? 'זוהר רך לערב' : 'Soft evening glamour',
+      'Classic Red Lip': lang === 'he' ? 'קלאסי, נועז וחזק' : 'Classic, bold and powerful',
+      'Warm Bronze': lang === 'he' ? 'חם, זוהר וקייצי' : 'Warm, glowing and summery',
+      'Cool Chic': lang === 'he' ? 'קריר, אלגנטי ומודרני' : 'Cool, chic and modern',
+      'Minimal Grooming': lang === 'he' ? 'נקי, עדין ומינימלי' : 'Clean, subtle and minimal',
+      'Date Night Romantic': lang === 'he' ? 'רומנטי, ורדרד ועדין' : 'Romantic, rosy and soft',
+      'Evening Luxury': lang === 'he' ? 'יוקרתי, מבריק ומשוכלל' : 'Luxurious, glossy and refined',
+      'Fresh Rosy': lang === 'he' ? 'ורדרד, צעיר ורענן' : 'Rosy, youthful and fresh',
+      'Nude Sculpt': lang === 'he' ? 'מפוסל, אלגנטי ופרימיום' : 'Sculpted, elegant and premium',
+      'Peach Pop': lang === 'he' ? 'אפרסקי, שמח ומודרני' : 'Peachy, cheerful and modern',
+      'Rosewood Satin': lang === 'he' ? 'סאטן, מעודן ויוקרתי' : 'Satin, refined and luxurious',
+      'Berry Chic': lang === 'he' ? 'קריר, חד ואופנתי' : 'Cool, sharp and fashion-forward',
+      'Terracotta Nude': lang === 'he' ? 'חם, אדמתי ועשיר' : 'Warm, earthy and rich',
+      'Glass Nude': lang === 'he' ? 'שקוף, מבריק ורך' : 'Sheer, glossy and soft',
+      'Coral Breeze': lang === 'he' ? 'קורל, רענן וים-תיכוני' : 'Coral, fresh and breezy',
+      'Power Nude': lang === 'he' ? 'חזק, בטוח ומודרני' : 'Strong, confident and modern',
+      'Local Chic': lang === 'he' ? 'נגיש, מבריק ומחמיא' : 'Approachable, glossy and flattering',
+    }
+
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
+        <div
+          className="mt-auto w-full overflow-y-auto rounded-t-3xl border-t border-white/10"
+          style={{ background: 'linear-gradient(180deg, #0f0f0f 0%, #1a1010 100%)', maxHeight: '92vh' }}
+        >
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="h-1 w-10 rounded-full bg-white/20" />
+          </div>
+
+          <div className="px-5 pb-10 pt-2">
+
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-xl font-extrabold text-white">
+                  {lang === 'he' ? 'הניתוח שלך מוכן ✨' : 'Your analysis is ready ✨'}
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {lang === 'he' ? 'מצאנו את הלוקים שהכי יכולים להתאים לך' : 'We found the looks that suit you best'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAnalysisPanel(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white focus:outline-none"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {recommendedPreset && (
+              <div
+                className="relative mb-5 overflow-hidden rounded-3xl border border-coral/30"
+                style={{ background: 'linear-gradient(135deg, rgba(255,107,71,0.12) 0%, rgba(139,92,246,0.08) 100%)', boxShadow: '0 0 40px rgba(255,107,71,0.15)' }}
+              >
+                <div className="relative h-48 w-full overflow-hidden">
+                  <img
+                    src={recommendedPreset.image}
+                    alt={recommendedPreset.name}
+                    className="h-full w-full object-cover object-top"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-3 py-1">
+                    <Brain className="h-3 w-3 text-white" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white">AI Pick</span>
+                  </div>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xl font-extrabold text-white">
+                    {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-400">{vibeMap[recommendedPreset.name] ?? ''}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-gray-300">{faceAnalysis.reasoning}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(recommendedPreset.name)
+                      setShowAnalysisPanel(false)
+                      setAnalysisDismissed(true)
+                    }}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
+                    style={{ boxShadow: '0 0 24px rgba(255,107,71,0.4)' }}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    {lang === 'he' ? 'המשיכי עם הלוק הזה' : 'Continue with this look'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mb-5 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500">
+                {lang === 'he' ? 'הניתוח שלך' : 'Your analysis'}
+              </p>
+              <div className="mb-4 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-gray-200">
+                  {lang === 'he' ? 'גוון עור: ' : 'Skin: '}{faceAnalysis.skinTone}
+                </span>
+                <span className="rounded-full bg-coral/15 px-3 py-1 text-xs font-semibold text-coral">
+                  {lang === 'he' ? 'אנדרטון: ' : 'Undertone: '}{faceAnalysis.undertone}
+                </span>
+                {faceAnalysis.lipColorFamily && (
+                  <span className="rounded-full bg-pink-500/15 px-3 py-1 text-xs font-semibold text-pink-300">
+                    {lang === 'he' ? 'שפתיים: ' : 'Lips: '}{faceAnalysis.lipColorFamily}
+                  </span>
+                )}
+                {faceAnalysis.blushColorFamily && (
+                  <span className="rounded-full bg-orange-500/15 px-3 py-1 text-xs font-semibold text-orange-300">
+                    {lang === 'he' ? 'סומק: ' : 'Blush: '}{faceAnalysis.blushColorFamily}
+                  </span>
+                )}
+              </div>
+              {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
+                <div className="space-y-2">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+                    {lang === 'he' ? 'טיפים בשבילך' : 'Tips for you'}
+                  </p>
+                  {faceAnalysis.beautyTips.map((tip, i) => (
+                    <div key={i} className="flex gap-2 text-xs text-gray-300">
+                      <span className="mt-0.5 text-coral">✦</span>
+                      <span>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {alternatePresets.length > 0 && (
+              <div className="mb-5">
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-500">
+                  {lang === 'he' ? 'לוקים נוספים שיכולים להתאים לך' : 'More looks for you'}
+                </p>
+                <div className="flex flex-col gap-3">
+                  {alternatePresets.map((preset) => (
+                    <div key={preset.id} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-white/5">
+                        <img
+                          src={preset.image}
+                          alt={preset.name}
+                          className="h-full w-full object-cover object-top"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-white">
+                          {lang === 'he' ? preset.nameHe : preset.name}
+                        </p>
+                        <p className="text-[11px] text-gray-500">{vibeMap[preset.name] ?? ''}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPreset(preset.name)
+                          setShowAnalysisPanel(false)
+                          setAnalysisDismissed(true)
+                        }}
+                        className="shrink-0 rounded-xl border border-coral/30 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
+                      >
+                        {lang === 'he' ? 'נסי' : 'Try'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowAnalysisPanel(false)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-3.5 text-sm font-semibold text-gray-400 transition-all hover:bg-white/10 hover:text-white focus:outline-none"
+            >
+              {lang === 'he' ? 'בחרי לוק בעצמי' : 'Choose a look myself'}
+            </button>
+
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+      <AnalysisPanel />
 
       {/* ── Cinematic dynamic background ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
