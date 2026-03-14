@@ -1639,6 +1639,7 @@ function App() {
   }
 
   const handleProductTryOn = async (product: ProductItem) => {
+    console.log('[handleProductTryOn called]', product.brand, product.shadeName)
     if (!originalImage) return
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
     if (!token) { setError('Replicate API token not found.'); return }
@@ -1648,6 +1649,7 @@ function App() {
       let tryOnPrompt: string
       try {
         tryOnPrompt = await buildProductPromptWithClaude(product)
+        console.log('[Claude prompt]', tryOnPrompt)
       } catch {
         tryOnPrompt = product.tryOnPrompt
       }
@@ -1776,7 +1778,6 @@ function App() {
   )
 
   const activeBgPreset = (BEAUTY_PRESETS.find(p => p.name === selectedPreset) ?? BEAUTY_PRESETS[0])
-  const activeBgImage = activeBgPreset.image
 
   const ProductTryOnMode = () => {
     const categories = [
@@ -2303,15 +2304,11 @@ function App() {
                     style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
                   >
                     <div
-                      className="h-14 w-12 shrink-0 overflow-hidden rounded-xl"
-                      style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                      className="h-14 w-12 shrink-0 overflow-hidden rounded-xl flex items-center justify-center"
+                      style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(160deg, rgba(255,107,71,0.12) 0%, rgba(20,10,20,0.9) 100%)' }}
+                      aria-hidden
                     >
-                      <img
-                        src={p.image}
-                        alt={p.name}
-                        className="h-full w-full object-cover object-top"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
+                      <span className="text-[10px] font-bold text-white/80 text-center leading-tight px-1 line-clamp-3">{lang === 'he' ? p.nameHe : p.name}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-extrabold text-white" style={{ letterSpacing: '-0.01em' }}>
@@ -2863,15 +2860,11 @@ function App() {
                 <div className="flex items-start gap-4">
                   {/* Preset preview */}
                   <div
-                    className="h-20 w-16 shrink-0 overflow-hidden rounded-xl"
-                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="h-20 w-16 shrink-0 overflow-hidden rounded-xl flex items-center justify-center"
+                    style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(160deg, rgba(255,107,71,0.12) 0%, rgba(20,10,20,0.9) 100%)' }}
+                    aria-hidden
                   >
-                    <img
-                      src={recommendedPreset.image}
-                      alt={recommendedPreset.name}
-                      className="h-full w-full object-cover object-top"
-                      onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.06)' }}
-                    />
+                    <span className="text-[10px] font-bold text-white/80 text-center leading-tight px-1 line-clamp-4">{lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}</span>
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -2992,8 +2985,8 @@ function App() {
                     style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
                     onClick={() => { setSelectedPreset(preset.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
                   >
-                    <div className="h-11 w-9 shrink-0 overflow-hidden rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <img src={preset.image} alt={preset.name} className="h-full w-full object-cover object-top" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    <div className="h-11 w-9 shrink-0 overflow-hidden rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'linear-gradient(160deg, rgba(255,107,71,0.1) 0%, rgba(20,10,20,0.85) 100%)' }} aria-hidden>
+                      <span className="text-[8px] font-bold text-white/70 text-center leading-tight px-0.5 line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-white">{lang === 'he' ? preset.nameHe : preset.name}</p>
@@ -3179,12 +3172,12 @@ function App() {
       {showPathScreen && <PathScreen />}
       <AnalysisPanel />
 
-      {/* ── Cinematic dynamic background ── */}
+      {/* ── Cinematic dynamic background (no /looks/ images to avoid 404) ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div
           key={selectedPreset ?? 'default'}
-          className="bg-cinematic absolute bg-cover bg-center"
-          style={{ inset: '-8%', backgroundImage: `url(${activeBgImage})` }}
+          className="absolute bg-cover bg-center"
+          style={{ inset: '-8%', background: 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)' }}
         />
       </div>
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />
@@ -3877,23 +3870,16 @@ function App() {
                                             : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
                                         }}
                                       >
-                                        {brokenImgs.has(`preset-${preset.id}`) ? (
-                                          <div
-                                            className="absolute inset-0"
-                                            style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
-                                          >
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                              <ImageIcon className="h-6 w-6 text-gray-800" />
-                                            </div>
+                                        {/* Placeholder only: no /looks/ image to avoid 404 */}
+                                        <div
+                                          className="absolute inset-0"
+                                          style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
+                                        >
+                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
+                                            <ImageIcon className="h-6 w-6 text-gray-800 mb-1" />
+                                            <span className="text-[10px] font-bold text-white/70 text-center leading-tight line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
                                           </div>
-                                        ) : (
-                                          <img
-                                            src={preset.image}
-                                            alt={preset.name}
-                                            className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
-                                            onError={() => markBroken(`preset-${preset.id}`)}
-                                          />
-                                        )}
+                                        </div>
                                         <div
                                           className="absolute inset-0"
                                           style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
@@ -3980,23 +3966,16 @@ function App() {
                                       : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
                                   }}
                                 >
-                                  {brokenImgs.has(`preset-${preset.id}`) ? (
-                                    <div
-                                      className="absolute inset-0"
-                                      style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
-                                    >
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <ImageIcon className="h-6 w-6 text-gray-800" />
-                                      </div>
+                                  {/* Placeholder only: no /looks/ image to avoid 404 */}
+                                  <div
+                                    className="absolute inset-0"
+                                    style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
+                                  >
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
+                                      <ImageIcon className="h-6 w-6 text-gray-800 mb-1" />
+                                      <span className="text-[10px] font-bold text-white/70 text-center leading-tight line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
                                     </div>
-                                  ) : (
-                                    <img
-                                      src={preset.image}
-                                      alt={preset.name}
-                                      className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-110"
-                                      onError={() => markBroken(`preset-${preset.id}`)}
-                                    />
-                                  )}
+                                  </div>
                                   <div
                                     className="absolute inset-0"
                                     style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
