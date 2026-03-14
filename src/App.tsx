@@ -550,6 +550,23 @@ const LOOK_NAVIGATION: Record<string, {
   'Local Chic': { moreNatural: 'Glass Nude', moreGlam: 'Power Nude', moreWarm: 'Peach Pop', moreCool: 'Office Polished', saferOption: 'Glass Nude', bolderOption: 'Power Nude' },
 }
 
+const PRODUCT_CATALOG = [
+  { id: 'mac-velvet-teddy', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', shadeFamily: 'warm nude', finish: 'matte', swatchColor: '#C4846A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Velvet Teddy — a warm nude beige matte lipstick — precisely on the lips with clean edges and natural elegant payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'mac-ruby-woo', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Ruby Woo', shadeFamily: 'classic red', finish: 'matte', swatchColor: '#C0182A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Ruby Woo — a vivid retro red matte lipstick — precisely on the lips with crisp clean edges and confident saturated payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'mac-mehr', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Mehr', shadeFamily: 'dusty rose', finish: 'matte', swatchColor: '#B5707A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Mehr — a muted dusty rose matte lipstick — precisely on the lips with soft blended edges and feminine elegant payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'dior-lip-maximizer-001', category: 'lips', productType: 'gloss', brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '001 Pink', shadeFamily: 'cool pink', finish: 'glossy', swatchColor: '#E8A0B0', tryOnPrompt: 'Beauty makeup virtual try-on. Apply Dior Addict Lip Maximizer in shade 001 Pink — a fresh cool pink glossy plumping lip gloss — on the lips with reflective shine and hydrated glossy finish. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'dior-lip-maximizer-018', category: 'lips', productType: 'gloss', brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '018 Intense Spice', shadeFamily: 'warm coral', finish: 'glossy', swatchColor: '#C96A4A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply Dior Addict Lip Maximizer in shade 018 Intense Spice — a warm spiced coral glossy lip plumper — on the lips with juicy reflective shine and warm rich dimension. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'nars-dragon-girl', category: 'lips', productType: 'lipstick', brand: 'NARS', productName: 'Powermatte Lipstick', shadeName: 'Dragon Girl', shadeFamily: 'classic red', finish: 'matte', swatchColor: '#B81C2E', tryOnPrompt: 'Beauty makeup virtual try-on. Apply NARS Powermatte Lipstick in Dragon Girl — a vivid cool red matte lipstick — precisely on the lips with crisp elegant edges and confident saturated color payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'charlotte-pillow-talk', category: 'lips', productType: 'lipstick', brand: 'Charlotte Tilbury', productName: 'Matte Revolution Lipstick', shadeName: 'Pillow Talk', shadeFamily: 'rosy nude', finish: 'satin-matte', swatchColor: '#C48A8A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply Charlotte Tilbury Matte Revolution Lipstick in Pillow Talk — a rosy nude satin-matte lipstick — on the lips with soft romantic color payoff and elegant blended edges. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'mac-spice-liner', category: 'lips', productType: 'liner', brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', shadeFamily: 'warm nude', finish: 'matte', swatchColor: '#A0614A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC Lip Pencil in Spice — a warm nude-brown lip liner — around the natural lip border with soft blended definition creating a flattering warm nude lip shape. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'nars-blush-taj-mahal', category: 'blush', productType: 'blush', brand: 'NARS', productName: 'Powder Blush', shadeName: 'Taj Mahal', shadeFamily: 'terracotta', finish: 'satin', swatchColor: '#C8724A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply NARS Powder Blush in Taj Mahal — a warm terracotta-orange blush with golden satin finish — on the cheeks with soft diffused edges blended upward for a sun-warmed lifted effect. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'nars-blush-dolce-vita', category: 'blush', productType: 'blush', brand: 'NARS', productName: 'Powder Blush', shadeName: 'Dolce Vita', shadeFamily: 'dusty rose', finish: 'matte', swatchColor: '#C07880', tryOnPrompt: 'Beauty makeup virtual try-on. Apply NARS Powder Blush in Dolce Vita — a dusty muted rose blush — high on the cheeks with softly diffused edges for a romantic lifted flush. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'mac-blush-melba', category: 'blush', productType: 'blush', brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', shadeFamily: 'peachy pink', finish: 'matte', swatchColor: '#E09880', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC Powder Blush in Melba — a soft peachy-pink blush — on the cheeks with a clearly visible peachy flush, blended upward for a fresh natural lift. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+  { id: 'rare-beauty-joy', category: 'blush', productType: 'blush', brand: 'Rare Beauty', productName: 'Soft Pinch Liquid Blush', shadeName: 'Joy', shadeFamily: 'peach coral', finish: 'dewy', swatchColor: '#E8805A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply Rare Beauty Soft Pinch Liquid Blush in Joy — a fresh peach-coral liquid blush — high on the cheeks with softly diffused lifted placement for a breezy warm flush. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
+]
+
+type ProductItem = (typeof PRODUCT_CATALOG)[0]
+
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const T = {
   he: {
@@ -902,6 +919,13 @@ function App() {
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
   const [looksCarouselCategory, setLooksCarouselCategory] = useState('all')
 
+  const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
+  const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
+  const [selectedProductCategory, setSelectedProductCategory] = useState<string | null>(null)
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
+  const [selectedProductName, setSelectedProductName] = useState<string | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null)
+
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
 
@@ -963,6 +987,12 @@ function App() {
     setAnalysisDismissed(false)
     setShowAnalysisPanel(false)
     setIsAnalyzing(false)
+    setAppMode('looks')
+    setProductStep('category')
+    setSelectedProductCategory(null)
+    setSelectedBrand(null)
+    setSelectedProductName(null)
+    setSelectedProduct(null)
   }
 
   // ── Download ─────────────────────────────────────────────────────────────────
@@ -1090,6 +1120,41 @@ function App() {
     }
   }
 
+  const handleProductTryOn = async (product: ProductItem) => {
+    if (!originalImage) return
+    const token = import.meta.env.VITE_REPLICATE_API_TOKEN
+    if (!token) { setError('Replicate API token not found.'); return }
+    setError(null)
+    setIsGenerating(true)
+    try {
+      const prompt = [
+        'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo.',
+        product.tryOnPrompt,
+      ].join('\n\n')
+      const imageDataUrl = await blobUrlToDataUrl(originalImage)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
+      setGeneratedImage(outputUrl)
+      setSliderPosition(50)
+      const entry: HistoryEntry = {
+        id: crypto.randomUUID(),
+        originalUrl: originalImage,
+        generatedUrl: outputUrl,
+        lookName: `${product.brand} ${product.shadeName}`,
+        timestamp: Date.now(),
+      }
+      setHistory((prev) => {
+        const updated = [entry, ...prev].slice(0, MAX_HISTORY)
+        saveHistoryToStorage(updated)
+        return updated
+      })
+      setActiveHistoryId(entry.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Product try-on failed.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   // ── Load history card ────────────────────────────────────────────────────────
   const handleLoadHistory = (entry: HistoryEntry) => {
     setOriginalImage(entry.originalUrl)
@@ -1188,6 +1253,132 @@ function App() {
 
   const activeBgPreset = (BEAUTY_PRESETS.find(p => p.name === selectedPreset) ?? BEAUTY_PRESETS[0])
   const activeBgImage = activeBgPreset.image
+
+  const ProductTryOnMode = () => {
+    const categories = [
+      { id: 'lips', labelHe: 'שפתיים', labelEn: 'Lips', emoji: '💋' },
+      { id: 'blush', labelHe: 'סומק', labelEn: 'Blush', emoji: '🌸' },
+    ]
+    const filteredByCategory = PRODUCT_CATALOG.filter(p => p.category === selectedProductCategory)
+    const brands = [...new Set(filteredByCategory.map(p => p.brand))]
+    const filteredByBrand = filteredByCategory.filter(p => p.brand === selectedBrand)
+    const productNames = [...new Set(filteredByBrand.map(p => p.productName))]
+    const filteredByProductName = selectedProductName
+      ? filteredByBrand.filter(p => p.productName === selectedProductName)
+      : []
+
+    return (
+      <div className="mt-6">
+        {productStep === 'category' && (
+          <div>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {lang === 'he' ? 'בחרי קטגוריה' : 'Choose a category'}
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => { setSelectedProductCategory(cat.id); setProductStep('brand') }}
+                  className="flex flex-col items-center justify-center gap-2 rounded-2xl py-8 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-3xl">{cat.emoji}</span>
+                  <span className="text-sm font-bold text-white">{lang === 'he' ? cat.labelHe : cat.labelEn}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {productStep === 'brand' && (
+          <div>
+            <button type="button" onClick={() => setProductStep('category')} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
+              <ChevronRight className="h-3 w-3 rotate-180" />
+              {lang === 'he' ? 'חזרה' : 'Back'}
+            </button>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {lang === 'he' ? 'בחרי מותג' : 'Choose a brand'}
+            </p>
+            <div className="flex flex-col gap-2">
+              {brands.map(brand => (
+                <button
+                  key={brand}
+                  type="button"
+                  onClick={() => { setSelectedBrand(brand); setProductStep('product') }}
+                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all hover:opacity-80 focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-sm font-semibold text-white">{brand}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {productStep === 'product' && (
+          <div>
+            <button type="button" onClick={() => { setSelectedBrand(null); setProductStep('brand') }} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
+              <ChevronRight className="h-3 w-3 rotate-180" />
+              {lang === 'he' ? 'חזרה' : 'Back'}
+            </button>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {lang === 'he' ? 'בחרי מוצר' : 'Choose a product'}
+            </p>
+            <div className="flex flex-col gap-2">
+              {productNames.map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => { setSelectedProductName(name); setProductStep('shade') }}
+                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all hover:opacity-80 focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="text-sm font-semibold text-white">{name}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {productStep === 'shade' && (
+          <div>
+            <button type="button" onClick={() => { setSelectedProductName(null); setProductStep('product') }} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
+              <ChevronRight className="h-3 w-3 rotate-180" />
+              {lang === 'he' ? 'חזרה' : 'Back'}
+            </button>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              {lang === 'he' ? 'בחרי גוון' : 'Choose a shade'}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredByProductName.map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleProductTryOn(item)}
+                  disabled={isGenerating}
+                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 focus:outline-none"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <div
+                    className="h-10 w-10 shrink-0 rounded-lg"
+                    style={{ background: item.swatchColor, border: '1px solid rgba(255,255,255,0.15)' }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-white truncate">{item.shadeName}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{item.shadeFamily} · {item.finish}</p>
+                  </div>
+                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-coral" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const AnalysisPanel = () => {
     if (!faceAnalysis || !showAnalysisPanel) return null
@@ -1730,6 +1921,28 @@ function App() {
                   ✦ {t.disclaimer}
                 </p>
 
+                {/* ── Mode: Looks | Product ── */}
+                <div className="mt-4 flex gap-2 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAppMode('looks')}
+                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
+                    style={appMode === 'looks' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                  >
+                    {lang === 'he' ? 'לוקים' : 'Looks'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAppMode('product')}
+                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
+                    style={appMode === 'product' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                  >
+                    {lang === 'he' ? 'מוצר' : 'Product'}
+                  </button>
+                </div>
+
+                {appMode === 'looks' && (
+                <>
                 {/* ── Manual Claude Vision trigger ── */}
                 {originalImage && !isGenerating && (
                   <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
@@ -2245,6 +2458,10 @@ function App() {
                     </div>
                   </button>
                 </section>
+
+                </>
+                )}
+                {appMode === 'product' && <ProductTryOnMode />}
 
                 {/* ── Custom Instructions ── */}
                 <section className="mt-7">
