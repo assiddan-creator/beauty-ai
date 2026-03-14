@@ -2108,10 +2108,10 @@ function App() {
       {
         id: 'remove',
         emoji: '🧴',
-        titleHe: 'הסרת איפור',
-        titleEn: 'Remove makeup',
-        descHe: 'ראי איך את נראית עם פנים נקיות ללא איפור',
-        descEn: 'See how you look with a clean natural face',
+        titleHe: 'התחילי עם פנים נקיות',
+        titleEn: 'Start fresh',
+        descHe: 'מסירים את האיפור הקיים ומתחילים מבסיס נקי',
+        descEn: 'Remove existing makeup and start with a clean base',
         accentColor: 'rgba(100,160,200,0.08)',
         borderColor: 'rgba(100,160,200,0.15)',
         glowColor: 'rgba(100,160,200,0.05)',
@@ -2123,10 +2123,10 @@ function App() {
       {
         id: 'ai',
         emoji: '✨',
-        titleHe: 'קבלי המלצה אישית',
-        titleEn: 'Get a personal recommendation',
-        descHe: 'ניתוח AI ימצא לוקים שמתאימים במיוחד לך',
-        descEn: 'AI analysis finds looks suited specifically to you',
+        titleHe: 'תמצאי לי לוק שמתאים לי',
+        titleEn: 'Find a look for me',
+        descHe: 'ניתוח קצר — ואנחנו מציעות לך מה שהכי יחמיא לך',
+        descEn: 'Quick analysis — we suggest what flatters you most',
         accentColor: 'rgba(255,107,71,0.12)',
         borderColor: 'rgba(255,107,71,0.2)',
         glowColor: 'rgba(255,107,71,0.08)',
@@ -2138,10 +2138,10 @@ function App() {
       {
         id: 'looks',
         emoji: '💄',
-        titleHe: 'בחרי לוק',
-        titleEn: 'Discover looks',
-        descHe: 'דפדפי בין לוקים מוכנים ובחרי את מה שאת אוהבת',
-        descEn: 'Browse curated looks and choose what you love',
+        titleHe: 'אני רוצה לבחור בעצמי',
+        titleEn: 'I want to choose myself',
+        descHe: 'דפדפי בין לוקים לפי מצב רוח, סגנון, או הזדמנות',
+        descEn: 'Browse looks by mood, style, or occasion',
         accentColor: 'rgba(180,100,200,0.08)',
         borderColor: 'rgba(180,100,200,0.15)',
         glowColor: 'rgba(180,100,200,0.05)',
@@ -2153,10 +2153,10 @@ function App() {
       {
         id: 'product',
         emoji: '🌸',
-        titleHe: 'נסי מוצר',
-        titleEn: 'Try a product',
-        descHe: 'בחרי מוצר וגוון וראי איך הוא נראה עלייך',
-        descEn: 'Choose a product and shade and see it on you',
+        titleHe: 'יש לי מוצר ספציפי שאני רוצה לנסות',
+        titleEn: 'I want to try a specific product',
+        descHe: 'בחרי מותג, מוצר וגוון — וראי אותו עלייך',
+        descEn: 'Choose a brand, product and shade — and see it on you',
         accentColor: 'rgba(100,180,160,0.08)',
         borderColor: 'rgba(100,180,160,0.15)',
         glowColor: 'rgba(100,180,160,0.05)',
@@ -2226,13 +2226,13 @@ function App() {
                 className="text-xl font-extrabold text-white"
                 style={{ letterSpacing: '-0.02em' }}
               >
-                {lang === 'he' ? 'התמונה שלך מוכנה' : 'Your photo is ready'}
+                {lang === 'he' ? 'מה בא לך לעשות?' : 'What would you like to do?'}
               </p>
               <p
                 className="mt-1.5 text-xs"
                 style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}
               >
-                {lang === 'he' ? 'איך תרצי להמשיך?' : 'How would you like to continue?'}
+                {lang === 'he' ? 'בחרי את הכיוון שמתאים לך עכשיו' : 'Choose the direction that suits you now'}
               </p>
             </div>
 
@@ -2355,13 +2355,13 @@ function App() {
               style={{ letterSpacing: '-0.02em' }}
             >
               {lang === 'he'
-                ? 'הסתכלנו על התמונה שלך —'
-                : 'We looked at your photo —'}
+                ? 'מצאנו את הלוק שיכול להחמיא לך ✨'
+                : 'We found a look that could flatter you ✨'}
             </p>
             <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
               {lang === 'he'
-                ? 'ניתחנו את גוון העור שלך, האנדרטון, והוייב הכללי. הנה מה שראינו:'
-                : 'We analyzed your skin tone, undertone, and overall vibe. Here\'s what we found:'}
+                ? 'לפי הגוונים הטבעיים שלך — הנה הכיוון שיכול לשבת עלייך הכי יפה:'
+                : 'Based on your natural tones — here\'s the direction that could suit you best:'}
             </p>
           </div>
 
@@ -2371,7 +2371,7 @@ function App() {
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              {lang === 'he' ? 'מה ראינו' : 'What we saw'}
+              {lang === 'he' ? 'הגוונים שלך' : 'Your tones'}
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -2427,8 +2427,8 @@ function App() {
             <div className="mb-8">
               <p className="text-lg font-extrabold text-white mb-2 leading-snug" style={{ letterSpacing: '-0.02em' }}>
                 {lang === 'he'
-                  ? 'והכיוון שהכי מחמיא לך כרגע —'
-                  : 'And the look that flatters you most right now —'}
+                  ? 'הלוק שהכי מתאים לך —'
+                  : 'The look that suits you most —'}
               </p>
 
               {/* Look name — hero */}
@@ -2484,14 +2484,12 @@ function App() {
                 {faceAnalysis.reasoning && (
                   <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                      {lang === 'he'
-                        ? `לפי הגוונים והוייב הכללי שלך, ${faceAnalysis.reasoning.split('.')[0].toLowerCase()}.`
-                        : `Based on your tones and overall vibe, ${faceAnalysis.reasoning.split('.')[0].toLowerCase()}.`}
+                      {faceAnalysis.reasoning.split('.')[0] + '.'}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
                       {lang === 'he'
-                        ? 'אם בא לך להתחיל בבטוח — זה המקום הנכון להתחיל ממנו.'
-                        : 'If you want to start safe — this is the right place to begin.'}
+                        ? 'זה לוק שיכול לשבת עלייך בצורה טבעית וקלה.'
+                        : 'This look can sit on you naturally and effortlessly.'}
                     </p>
                   </div>
                 )}
@@ -2566,7 +2564,7 @@ function App() {
           {alternatePresets.length > 0 && (
             <div className="mb-6">
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                {lang === 'he' ? 'עוד לוקים שיכולים להתאים לך' : 'More looks that suit you'}
+                {lang === 'he' ? 'כיוונים נוספים לגלות' : 'More directions to explore'}
               </p>
               <div className="flex flex-col gap-2">
                 {alternatePresets.map((preset) => (
@@ -2597,7 +2595,7 @@ function App() {
             className="flex w-full items-center justify-center rounded-xl py-3 text-xs transition-all hover:opacity-60 focus:outline-none"
             style={{ color: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            {lang === 'he' ? 'אני רוצה לבחור בעצמי' : 'Let me choose myself'}
+            {lang === 'he' ? 'אני מעדיפה לבחור בעצמי' : 'I prefer to choose myself'}
           </button>
 
         </div>
@@ -2777,6 +2775,12 @@ function App() {
                             </div>
                           </div>
 
+                          <p className="text-sm font-semibold text-white mb-4" style={{ letterSpacing: '-0.02em' }}>
+                            {lang === 'he'
+                              ? 'מיישמים את הלוק על התמונה שלך...'
+                              : 'Applying the look to your photo...'}
+                          </p>
+
                           {/* Look name */}
                           {selectedPreset && (
                             <p className="text-base font-extrabold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>
@@ -2800,7 +2804,7 @@ function App() {
                               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                             >
                               <p className="text-[9px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                                {lang === 'he' ? 'מוצרים בלוק הזה' : 'Products in this look'}
+                                {lang === 'he' ? 'הלוק מורכב מ' : 'This look uses'}
                               </p>
                               <div className="space-y-1.5">
                                 {LOOK_PRODUCTS[selectedPreset].map((p, i) => (
@@ -2908,7 +2912,24 @@ function App() {
 
                 {generatedImage && !isGenerating && (
                   <div className="mt-4 grid grid-cols-3 gap-2">
-                    {/* Button 1 - Download */}
+                    {/* Button 1 - Try another look */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGeneratedImage(null)
+                        setSelectedPreset(null)
+                        document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                      style={{ background: 'rgba(255,107,71,0.08)', border: '1px solid rgba(255,107,71,0.18)' }}
+                    >
+                      <ArrowLeftRight className="h-4 w-4" style={{ color: 'rgba(255,107,71,0.8)' }} />
+                      <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,107,71,0.7)' }}>
+                        {lang === 'he' ? 'לוק אחר' : 'Try another'}
+                      </span>
+                    </button>
+
+                    {/* Button 2 - Download */}
                     <button
                       type="button"
                       onClick={handleDownload}
@@ -2921,7 +2942,7 @@ function App() {
                       </span>
                     </button>
 
-                    {/* Button 2 - View products */}
+                    {/* Button 3 - Shop look */}
                     <button
                       type="button"
                       onClick={() => {
@@ -2930,31 +2951,11 @@ function App() {
                         }
                       }}
                       className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
-                      style={{
-                        background: 'rgba(255,107,71,0.08)',
-                        border: '1px solid rgba(255,107,71,0.18)',
-                      }}
-                    >
-                      <Sparkles className="h-4 w-4" style={{ color: 'rgba(255,107,71,0.8)' }} />
-                      <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,107,71,0.7)' }}>
-                        {lang === 'he' ? 'מוצרי הלוק' : 'Shop look'}
-                      </span>
-                    </button>
-
-                    {/* Button 3 - Try another look */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setGeneratedImage(null)
-                        setSelectedPreset(null)
-                        document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
-                      }}
-                      className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
                       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                     >
-                      <ArrowLeftRight className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      <Sparkles className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
                       <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                        {lang === 'he' ? 'לוק אחר' : 'Try another'}
+                        {lang === 'he' ? 'מוצרי הלוק' : 'Shop look'}
                       </span>
                     </button>
                   </div>
