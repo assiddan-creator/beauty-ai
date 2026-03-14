@@ -2910,6 +2910,86 @@ function App() {
                   ✦ {t.disclaimer}
                 </p>
 
+                {generatedImage && !isGenerating && (() => {
+                  const activeEntry = history.find(h => h.id === activeHistoryId)
+                  const isRemoval = activeEntry?.lookName === 'הסרת איפור' || activeEntry?.lookName === 'Makeup Removed'
+                  if (!isRemoval) return null
+                  return (
+                    <div
+                      className="relative mt-4 mb-2 overflow-hidden rounded-2xl p-4"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,107,71,0.1) 0%, rgba(80,20,60,0.12) 100%)',
+                        border: '1px solid rgba(255,107,71,0.2)',
+                      }}
+                    >
+                      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.4), transparent)' }} />
+                      <p className="text-sm font-extrabold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>
+                        {lang === 'he' ? 'הפנים שלך נקיות ומוכנות ✨' : 'Your face is clean and ready ✨'}
+                      </p>
+                      <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                        {lang === 'he'
+                          ? 'עכשיו אפשר לנסות לוק חדש על בסיס נקי — מה בא לך לעשות?'
+                          : 'Now try a new look on your clean base — what would you like to do?'}
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAnalyzingScreen(true)
+                            handleAnalyzeWithAI()
+                          }}
+                          className="flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                          style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.2)' }}
+                        >
+                          <span className="text-lg">✨</span>
+                          <div>
+                            <p className="text-xs font-bold text-white">
+                              {lang === 'he' ? 'תמצאי לי לוק שמתאים לי' : 'Find a look for me'}
+                            </p>
+                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                              {lang === 'he' ? 'ניתוח קצר עם המלצה אישית' : 'Quick analysis with a personal recommendation'}
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAppMode('looks')
+                            document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                          }}
+                          className="flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <span className="text-lg">💄</span>
+                          <div>
+                            <p className="text-xs font-bold text-white">
+                              {lang === 'he' ? 'אני רוצה לבחור לוק בעצמי' : 'I want to choose a look myself'}
+                            </p>
+                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                              {lang === 'he' ? 'דפדפי בין לוקים ובחרי מה שאת אוהבת' : 'Browse looks and choose what you love'}
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAppMode('product')}
+                          className="flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                          <span className="text-lg">🌸</span>
+                          <div>
+                            <p className="text-xs font-bold text-white">
+                              {lang === 'he' ? 'אני רוצה לנסות מוצר ספציפי' : 'I want to try a specific product'}
+                            </p>
+                            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                              {lang === 'he' ? 'בחרי מותג, מוצר וגוון' : 'Choose brand, product and shade'}
+                            </p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })()}
                 {generatedImage && !isGenerating && (
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {/* Button 1 - Try another look */}
