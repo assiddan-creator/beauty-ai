@@ -24,7 +24,7 @@ import {
   Search,
   type LucideIcon,
 } from 'lucide-react'
-import { searchByIntent, type SearchResult } from './lib/beautyIntentSearch'
+import { searchByIntent, type SearchResult, type LookMetadataRecord } from './lib/beautyIntentSearch'
 
 const ENGINES = [
   {
@@ -726,6 +726,82 @@ const PRODUCT_CATALOG = [
 ]
 
 type ProductItem = (typeof PRODUCT_CATALOG)[0]
+
+const BEAUTY_INTENT_ROLE_LABELS: Record<SearchResult['role'], string> = {
+  best: 'מומלץ',
+  softer: 'עדין יותר',
+  bolder: 'נועז יותר',
+  evening: 'ערבי',
+  alternate: 'אלטרנטיבה',
+}
+
+function BeautyIntentSearchBar(props: {
+  query: string
+  onQueryChange: (q: string) => void
+  results: SearchResult[]
+  onSearch: () => void
+  onSelectLook: (lookName: string) => void
+  metadata: LookMetadataRecord
+}) {
+  const { query, onQueryChange, results, onSearch, onSelectLook, metadata } = props
+  return (
+    <section className="mt-7">
+      <h2 className="text-sm font-bold text-white mb-2">
+        חפשי לפי מצב רוח או אירוע
+      </h2>
+      <p className="text-[11px] text-gray-500 mb-3">
+        ספרי לאן את הולכת או איזה מראה את מחפשת — נציע לך לוקים מתאימים
+      </p>
+      <div className="flex gap-2 mb-3">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+          placeholder="ספרי לי לאן את הולכת או איזה מראה מחפשת..."
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          className="flex-1 min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-3xl transition-all focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
+        />
+        <button
+          type="button"
+          onClick={onSearch}
+          className="shrink-0 flex items-center gap-2 rounded-2xl border border-coral/30 bg-coral/15 px-4 py-3 text-sm font-semibold text-coral transition-all hover:bg-coral/25 focus:outline-none"
+        >
+          <Search className="h-4 w-4" />
+          חפשי
+        </button>
+      </div>
+      {results.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {results.map((r) => (
+            <div
+              key={r.lookName}
+              className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-3xl transition-all hover:border-white/15 min-w-[200px] max-w-[260px]"
+            >
+              <p className="text-xs font-bold text-coral mb-0.5">
+                {BEAUTY_INTENT_ROLE_LABELS[r.role]}
+              </p>
+              <p className="text-sm font-bold text-white mb-1">{r.lookName}</p>
+              <p className="text-[11px] text-gray-400 mb-3 line-clamp-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {r.matchReason}
+              </p>
+              <button
+                type="button"
+                onClick={() => onSelectLook(r.lookName)}
+                className="mt-auto rounded-xl border border-coral/30 bg-coral/10 py-2 px-3 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
+              >
+                נסי את המראה הזה
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const T = {
@@ -2320,7 +2396,14 @@ function App() {
 
             {/* Beauty intent search */}
             <div className="mb-6">
-              <BeautyIntentSearchBar />
+              <BeautyIntentSearchBar
+                query={intentSearchQuery}
+                onQueryChange={setIntentSearchQuery}
+                results={intentSearchResults}
+                onSearch={handleIntentSearch}
+                onSelectLook={handleIntentSelectLook}
+                metadata={LOOK_METADATA}
+              />
             </div>
 
             {/* Path cards */}
@@ -2831,76 +2914,12 @@ function App() {
     )
   }
 
-  const ROLE_LABELS: Record<SearchResult['role'], string> = {
-    best: 'מומלץ',
-    softer: 'עדין יותר',
-    bolder: 'נועז יותר',
-    evening: 'ערבי',
-    alternate: 'אלטרנטיבה',
+  const handleIntentSearch = () => {
+    setIntentSearchResults(searchByIntent(intentSearchQuery, LOOK_METADATA))
   }
-
-  const BeautyIntentSearchBar = () => {
-    const handleSearch = () => {
-      const results = searchByIntent(intentSearchQuery, LOOK_METADATA)
-      setIntentSearchResults(results)
-    }
-    const handleSelectLook = (lookName: string) => {
-      setSelectedPreset(lookName)
-      document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
-    }
-    return (
-      <section className="mt-7">
-        <h2 className="text-sm font-bold text-white mb-2">
-          חפשי לפי מצב רוח או אירוע
-        </h2>
-        <p className="text-[11px] text-gray-500 mb-3">
-          ספרי לאן את הולכת או איזה מראה את מחפשת — נציע לך לוקים מתאימים
-        </p>
-        <div className="flex gap-2 mb-3">
-          <input
-            type="text"
-            value={intentSearchQuery}
-            onChange={(e) => setIntentSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="ספרי לי לאן את הולכת או איזה מראה מחפשת..."
-            className="flex-1 min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-3xl transition-all focus:border-coral/40 focus:outline-none focus:ring-2 focus:ring-coral/20"
-          />
-          <button
-            type="button"
-            onClick={handleSearch}
-            className="shrink-0 flex items-center gap-2 rounded-2xl border border-coral/30 bg-coral/15 px-4 py-3 text-sm font-semibold text-coral transition-all hover:bg-coral/25 focus:outline-none"
-          >
-            <Search className="h-4 w-4" />
-            חפשי
-          </button>
-        </div>
-        {intentSearchResults.length > 0 && (
-          <div className="flex flex-wrap gap-3">
-            {intentSearchResults.map((r) => (
-              <div
-                key={r.lookName}
-                className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-3xl transition-all hover:border-white/15 min-w-[200px] max-w-[260px]"
-              >
-                <p className="text-xs font-bold text-coral mb-0.5">
-                  {ROLE_LABELS[r.role]}
-                </p>
-                <p className="text-sm font-bold text-white mb-1">{r.lookName}</p>
-                <p className="text-[11px] text-gray-400 mb-3 line-clamp-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  {r.matchReason}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => handleSelectLook(r.lookName)}
-                  className="mt-auto rounded-xl border border-coral/30 bg-coral/10 py-2 px-3 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
-                >
-                  נסי את המראה הזה
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    )
+  const handleIntentSelectLook = (lookName: string) => {
+    setSelectedPreset(lookName)
+    document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -3875,7 +3894,16 @@ function App() {
                 {appMode === 'product' && <ProductTryOnMode />}
 
                 {/* ── Beauty intent search (mood/occasion) ── */}
-                {appMode === 'looks' && <BeautyIntentSearchBar />}
+                {appMode === 'looks' && (
+                  <BeautyIntentSearchBar
+                    query={intentSearchQuery}
+                    onQueryChange={setIntentSearchQuery}
+                    results={intentSearchResults}
+                    onSearch={handleIntentSearch}
+                    onSelectLook={handleIntentSelectLook}
+                    metadata={LOOK_METADATA}
+                  />
+                )}
 
                 {/* ── Custom Instructions ── */}
                 <section className="mt-7">
