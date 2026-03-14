@@ -743,7 +743,7 @@ function BeautyIntentSearchBar(props: {
   onSelectLook: (lookName: string) => void
   metadata: LookMetadataRecord
 }) {
-  const { query, onQueryChange, results, onSearch, onSelectLook, metadata } = props
+  const { query, onQueryChange, results, onSearch, onSelectLook } = props
   return (
     <section className="mt-7">
       <h2 className="text-sm font-bold text-white mb-2">
