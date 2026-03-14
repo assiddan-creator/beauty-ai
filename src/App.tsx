@@ -780,52 +780,90 @@ const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: s
   if (!nav) return null
 
   const suggestions = [
-    { label: lang === 'he' ? '🌿 יותר טבעי' : '🌿 More natural', lookName: nav.moreNatural },
-    { label: lang === 'he' ? '✨ יותר ערב' : '✨ More glam', lookName: nav.moreGlam },
-    { label: lang === 'he' ? '☀️ יותר חם' : '☀️ More warm', lookName: nav.moreWarm },
-    { label: lang === 'he' ? '❄️ יותר קריר' : '❄️ More cool', lookName: nav.moreCool },
-    { label: lang === 'he' ? '🕊️ יותר בטוח' : '🕊️ Safer option', lookName: nav.saferOption },
-    { label: lang === 'he' ? '🔥 יותר נועז' : '🔥 Bolder option', lookName: nav.bolderOption },
-  ].filter((s, i, arr) => s.lookName !== currentLookName && arr.findIndex(x => x.lookName === s.lookName) === i)
+    {
+      lookName: nav.moreNatural,
+      labelHe: 'יותר טבעי',
+      labelEn: 'More natural',
+    },
+    {
+      lookName: nav.moreGlam,
+      labelHe: 'יותר ערב',
+      labelEn: 'More evening',
+    },
+    {
+      lookName: nav.moreWarm,
+      labelHe: 'גוונים חמים',
+      labelEn: 'Warmer tones',
+    },
+    {
+      lookName: nav.moreCool,
+      labelHe: 'גוונים קרירים',
+      labelEn: 'Cooler tones',
+    },
+    {
+      lookName: nav.saferOption,
+      labelHe: 'בטוח יותר',
+      labelEn: 'Safer option',
+    },
+    {
+      lookName: nav.bolderOption,
+      labelHe: 'יותר נוכח',
+      labelEn: 'More statement',
+    },
+  ].filter((s, i, arr) =>
+    s.lookName !== currentLookName &&
+    arr.findIndex(x => x.lookName === s.lookName) === i
+  )
 
   return (
-    <div className="mt-4">
+    <div className="mt-5">
       <p
-        className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.15em]"
-        style={{ color: 'rgba(255,255,255,0.3)' }}
+        className="mb-3 text-[10px] font-medium tracking-[0.12em] uppercase"
+        style={{ color: 'rgba(255,255,255,0.22)' }}
       >
-        {lang === 'he' ? 'אפשר גם לנסות' : 'You might also try'}
+        {lang === 'he' ? 'רוצה לנסות כיוון אחר?' : 'Want to try a different direction?'}
       </p>
+
       <div className="flex flex-wrap gap-2">
         {suggestions.map((s) => {
           const preset = BEAUTY_PRESETS.find(p => p.name === s.lookName)
           if (!preset) return null
+          const displayName = lang === 'he' ? preset.nameHe : preset.name
+          const label = lang === 'he' ? s.labelHe : s.labelEn
+
           return (
             <button
               key={s.lookName}
               type="button"
               onClick={() => onSelect(s.lookName)}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all hover:scale-[1.03] active:scale-95 focus:outline-none"
+              className="group flex flex-col items-start rounded-xl px-3 py-2 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.09)',
-                color: 'rgba(255,255,255,0.6)',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                minWidth: 90,
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,107,71,0.1)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,107,71,0.25)'
-                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.9)'
+                const el = e.currentTarget
+                el.style.background = 'rgba(255,107,71,0.08)'
+                el.style.borderColor = 'rgba(255,107,71,0.2)'
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'
-                ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.09)'
-                ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.6)'
+                const el = e.currentTarget
+                el.style.background = 'rgba(255,255,255,0.04)'
+                el.style.borderColor = 'rgba(255,255,255,0.08)'
               }}
             >
-              <span>{s.label}</span>
-              <span style={{ color: 'rgba(255,107,71,0.7)' }}>→</span>
-              <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                {lang === 'he' ? (preset.nameHe ?? s.lookName) : s.lookName}
+              <span
+                className="text-[9px] font-medium tracking-wide"
+                style={{ color: 'rgba(255,255,255,0.28)' }}
+              >
+                {label}
+              </span>
+              <span
+                className="mt-0.5 text-[11px] font-bold leading-tight text-white"
+                style={{ letterSpacing: '-0.01em' }}
+              >
+                {displayName}
               </span>
             </button>
           )
