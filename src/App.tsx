@@ -9,7 +9,6 @@ import {
   Send,
   X,
   Clock,
-  Palette,
   Heart,
   Sun,
   Moon,
@@ -1204,11 +1203,14 @@ function App() {
       const customNote = customInstructions.trim()
 
       const prompt = [
-        'Beauty photo enhancement. Refine existing makeup colors — improve color vibrancy, blend edges, enhance skin glow.',
-        'Do NOT change the makeup look or add new products. Preserve face shape, identity, and all existing features completely.',
-        'Camera: Sony A7IV. Lighting: beauty ring light. Film: Kodak Portra 400. Photorealistic editorial quality.',
+        'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo. Output dimensions and framing must be identical to the input.',
+        'Beauty makeup removal edit. Edit the uploaded selfie and remove existing visible makeup from the face while preserving the person exactly.',
+        'TASK: Remove visible cosmetic makeup from the face only. Remove lipstick, lip gloss, lip liner, blush, contour, bronzer, highlighter, visible foundation effect, concealer effect, eyebrow makeup, eyeliner, eyeshadow, and mascara effect if present. Return the face to a clean, natural, makeup-free appearance.',
+        'IMPORTANT: Preserve the person\'s exact identity, face shape, facial proportions, skin texture, natural features, hair, clothing, background, framing, lighting, camera angle, and facial expression. Keep the original photo composition unchanged so the edited image aligns exactly with the original photo.',
+        'DO NOT CHANGE: Do not beautify the face. Do not retouch or over-smooth the skin. Do not remove natural skin texture. Do not reshape the eyes, lips, nose, jaw, eyebrows, or skin. Do not change hairstyle, clothing, background, lighting, composition, or camera perspective. Do not add new makeup. Do not make the result look airbrushed, filtered, or AI-generated.',
+        'DESIRED RESULT: A photorealistic clean-face result with natural bare skin, natural lips, and natural cheeks, as if the makeup has been gently removed while preserving the real person exactly.',
         customNote ? `Additional request: ${customNote}` : null,
-      ].filter(Boolean).join(' ')
+      ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
@@ -1220,7 +1222,7 @@ function App() {
         id: crypto.randomUUID(),
         originalUrl: originalImage,
         generatedUrl: outputUrl,
-        lookName: 'Refined Look',
+        lookName: lang === 'he' ? 'הסרת איפור' : 'Makeup Removed',
         timestamp: Date.now(),
       }
       setHistory((prev) => {
@@ -3460,10 +3462,10 @@ function App() {
                       style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
                     />
                     <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40">
-                      <Palette className="h-4 w-4 text-coral" />
+                      <Trash2 className="h-4 w-4 text-coral" />
                     </div>
                     <div className="relative">
-                      <p className="text-sm font-semibold text-white">{t.refineOnly}</p>
+                      <p className="text-sm font-semibold text-white">{lang === 'he' ? 'הסרת איפור' : 'Remove Makeup'}</p>
                       <p className="mt-0.5 text-[11px] text-gray-500">{t.refineOnlySub}</p>
                     </div>
                     <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
