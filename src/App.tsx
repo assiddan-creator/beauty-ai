@@ -550,6 +550,109 @@ const LOOK_NAVIGATION: Record<string, {
   'Local Chic': { moreNatural: 'Glass Nude', moreGlam: 'Power Nude', moreWarm: 'Peach Pop', moreCool: 'Office Polished', saferOption: 'Glass Nude', bolderOption: 'Power Nude' },
 }
 
+const LOOK_PRODUCTS: Record<string, Array<{ brand: string; productName: string; shadeName: string; category: string }>> = {
+  'Natural Everyday': [
+    { brand: 'MAC', productName: 'M·A·Cximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Clean Glow': [
+    { brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '001 Pink', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Office Polished': [
+    { brand: 'MAC', productName: 'M·A·Cximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Soft Glam': [
+    { brand: 'Kiko Milano', productName: '3D Hydra Lipgloss', shadeName: '19', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Classic Red Lip': [
+    { brand: 'NARS', productName: 'Powermatte Lipstick', shadeName: 'Dragon Girl', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Warm Bronze': [
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'Kiko Milano', productName: '3D Hydra Lipgloss', shadeName: '19', category: 'lips' },
+    { brand: 'NARS', productName: 'Powder Blush', shadeName: 'Taj Mahal', category: 'blush' },
+  ],
+  'Cool Chic': [
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '001 Pink', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Minimal Grooming': [
+    { brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '001 Pink', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'MAC', productName: 'Powder Blush', shadeName: 'Melba', category: 'blush' },
+  ],
+  'Date Night Romantic': [
+    { brand: 'Charlotte Tilbury', productName: 'Matte Revolution Lipstick', shadeName: 'Pillow Talk', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'NARS', productName: 'Blush', shadeName: 'Dolce Vita', category: 'blush' },
+  ],
+  'Evening Luxury': [
+    { brand: 'YSL', productName: 'Loveshine Lip Oil Stick', shadeName: '44 Nude Lavalliere', category: 'lips' },
+    { brand: 'NARS', productName: 'Precision Lip Liner', shadeName: 'Halong Bay', category: 'lips' },
+    { brand: 'Dior', productName: 'Backstage Rosy Glow', shadeName: '001 Pink', category: 'blush' },
+  ],
+  'Fresh Rosy': [
+    { brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '001 Pink', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'Dior', productName: 'Backstage Rosy Glow', shadeName: '001 Pink', category: 'blush' },
+  ],
+  'Nude Sculpt': [
+    { brand: 'Charlotte Tilbury', productName: 'Matte Revolution Lipstick', shadeName: 'Pillow Talk', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'NARS', productName: 'Blush', shadeName: 'Dolce Vita', category: 'blush' },
+  ],
+  'Peach Pop': [
+    { brand: 'Fenty Beauty', productName: 'Gloss Bomb', shadeName: 'Fenty Glow', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'Rare Beauty', productName: 'Soft Pinch Liquid Blush', shadeName: 'Joy', category: 'blush' },
+  ],
+  'Rosewood Satin': [
+    { brand: 'Bobbi Brown', productName: 'Crushed Lip Color', shadeName: 'Babe', category: 'lips' },
+    { brand: 'NARS', productName: 'Precision Lip Liner', shadeName: 'Halong Bay', category: 'lips' },
+    { brand: 'Ga-De', productName: 'Idyllic Soft Satin Blush', shadeName: '46 Pacific Pink', category: 'blush' },
+  ],
+  'Berry Chic': [
+    { brand: 'Maybelline', productName: 'SuperStay Matte Ink', shadeName: '15 Lover', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'Dior', productName: 'Backstage Rosy Glow', shadeName: '001 Pink', category: 'blush' },
+  ],
+  'Terracotta Nude': [
+    { brand: 'MAC', productName: 'M·A·Cximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', category: 'lips' },
+    { brand: 'NARS', productName: 'Precision Lip Liner', shadeName: 'Vence', category: 'lips' },
+    { brand: 'NARS', productName: 'Powder Blush', shadeName: 'Taj Mahal', category: 'blush' },
+  ],
+  'Glass Nude': [
+    { brand: 'MAC', productName: 'Lustreglass Sheer-Shine Lipstick', shadeName: 'Hug Me', category: 'lips' },
+    { brand: 'NARS', productName: 'Precision Lip Liner', shadeName: 'Halong Bay', category: 'lips' },
+    { brand: 'Bobbi Brown', productName: 'Blush', shadeName: 'Nude Peach', category: 'blush' },
+  ],
+  'Coral Breeze': [
+    { brand: 'Dior', productName: 'Addict Lip Maximizer', shadeName: '018 Intense Spice', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Spice', category: 'lips' },
+    { brand: 'Rare Beauty', productName: 'Soft Pinch Liquid Blush', shadeName: 'Joy', category: 'blush' },
+  ],
+  'Power Nude': [
+    { brand: 'Careline', productName: 'Everlast Liquid Lipstick', shadeName: '703 Pinkish Brown', category: 'lips' },
+    { brand: 'MAC', productName: 'Lip Pencil', shadeName: 'Whirl', category: 'lips' },
+    { brand: 'Ga-De', productName: 'Idyllic Soft Satin Blush', shadeName: '46 Pacific Pink', category: 'blush' },
+  ],
+  'Local Chic': [
+    { brand: 'Ga-De', productName: 'Crystal Lights Lip Gloss', shadeName: 'Sunstone', category: 'lips' },
+    { brand: 'Maybelline', productName: 'Lifter Liner', shadeName: 'Big Lift', category: 'lips' },
+    { brand: 'Ga-De', productName: 'Idyllic Soft Satin Blush', shadeName: '46 Pacific Pink', category: 'blush' },
+  ],
+}
+
 const PRODUCT_CATALOG = [
   { id: 'mac-velvet-teddy', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Velvet Teddy', shadeFamily: 'warm nude', finish: 'matte', swatchColor: '#C4846A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Velvet Teddy — a warm nude beige matte lipstick — precisely on the lips with clean edges and natural elegant payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
   { id: 'mac-ruby-woo', category: 'lips', productType: 'lipstick', brand: 'MAC', productName: 'MACximal Silky Matte Lipstick', shadeName: 'Ruby Woo', shadeFamily: 'classic red', finish: 'matte', swatchColor: '#C0182A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply MAC MACximal Silky Matte Lipstick in shade Ruby Woo — a vivid retro red matte lipstick — precisely on the lips with crisp clean edges and confident saturated payoff. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
@@ -2010,6 +2113,24 @@ function App() {
                       {t.downloadBtn}
                     </button>
                   )}
+                  {generatedImage && selectedPreset && LOOK_PRODUCTS[selectedPreset] && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppMode('product')
+                        setShowPathScreen(false)
+                      }}
+                      className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-80 active:scale-95 focus:outline-none"
+                      style={{
+                        background: 'rgba(255,107,71,0.1)',
+                        border: '1px solid rgba(255,107,71,0.25)',
+                        color: 'rgba(255,107,71,0.9)',
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      {lang === 'he' ? 'קני את המוצרים' : 'Shop the look'}
+                    </button>
+                  )}
                 </div>
 
                 {/* ── Image Viewer ── */}
@@ -2018,23 +2139,65 @@ function App() {
 
                     {/* Generating Overlay */}
                     {isGenerating && (
-                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-md">
-                        <div className="relative flex h-16 w-16 items-center justify-center">
-                          <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
-                          <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-coral/15">
-                            <Loader2 className="h-6 w-6 animate-spin text-coral" />
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md">
+                        <div className="w-full max-w-xs px-6 text-center">
+
+                          {/* Spinner */}
+                          <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+                            <div className="absolute inset-0 animate-ping rounded-full" style={{ background: 'rgba(255,107,71,0.15)' }} />
+                            <div className="relative flex h-10 w-10 items-center justify-center rounded-full" style={{ background: 'rgba(255,107,71,0.12)' }}>
+                              <Loader2 className="h-5 w-5 animate-spin text-coral" />
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-semibold text-white">
-                            {lang === 'he' ? 'מייצר את הלוק שלך...' : 'Applying your look...'}
+
+                          {/* Look name */}
+                          {selectedPreset && (
+                            <p className="text-base font-extrabold text-white mb-1" style={{ letterSpacing: '-0.02em' }}>
+                              {lang === 'he'
+                                ? (BEAUTY_PRESETS.find(p => p.name === selectedPreset)?.nameHe ?? selectedPreset)
+                                : selectedPreset}
+                            </p>
+                          )}
+
+                          {/* Sales line */}
+                          {selectedPreset && LOOK_METADATA[selectedPreset]?.salesLine && (
+                            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                              {LOOK_METADATA[selectedPreset].salesLine}
+                            </p>
+                          )}
+
+                          {/* Products list */}
+                          {selectedPreset && LOOK_PRODUCTS[selectedPreset] && (
+                            <div
+                              className="rounded-xl p-3 text-left mb-4"
+                              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                            >
+                              <p className="text-[9px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                                {lang === 'he' ? 'מוצרים בלוק הזה' : 'Products in this look'}
+                              </p>
+                              <div className="space-y-1.5">
+                                {LOOK_PRODUCTS[selectedPreset].map((p, i) => (
+                                  <div key={i} className="flex items-center gap-2">
+                                    <div
+                                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                                      style={{ background: p.category === 'lips' ? 'rgba(255,107,71,0.7)' : 'rgba(236,72,153,0.7)' }}
+                                    />
+                                    <span className="text-[10px] text-white font-medium">{p.brand}</span>
+                                    <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{p.productName} · {p.shadeName}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Progress bar */}
+                          <div className="h-0.5 w-full overflow-hidden rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                            <div className="h-full animate-pulse rounded-full" style={{ width: '65%', background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)' }} />
+                          </div>
+                          <p className="mt-2 text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                            {lang === 'he' ? 'בדרך כלל 30–60 שניות' : 'typically 30–60 sec'}
                           </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            {selectedPreset ?? BEAUTY_PRESETS[0].name} · {lang === 'he' ? 'בדרך כלל 30–60 שניות' : 'typically 30–60 sec'}
-                          </p>
-                        </div>
-                        <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
-                          <div className="h-full animate-pulse rounded-full bg-coral" style={{ width: '65%' }} />
+
                         </div>
                       </div>
                     )}
