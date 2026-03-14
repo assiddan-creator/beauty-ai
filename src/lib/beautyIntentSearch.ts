@@ -182,6 +182,51 @@ function findInRanked(entries: Array<{ lookName: string; entry: LookMetadataEntr
   return entries.find(e => e.lookName === lookName)
 }
 
+type QueryMode = 'bold' | 'evening' | 'date' | 'work' | 'soft' | 'default'
+
+function getQueryMode(query: string): QueryMode {
+  const q = query.toLowerCase()
+  const softWords = ['natural', 'טבעי', 'soft', 'רך', 'everyday', 'יומיומי', 'light', 'קל', 'subtle', 'עדין', 'clean', 'נקי', 'not heavy', 'לא כבד']
+  const eveningWords = ['party', 'מסיבה', 'night', 'ערב', 'glam', 'גלאם', 'dinner', 'ארוחה', 'event', 'אירוע', 'evening']
+  const workWords = ['work', 'עבודה', 'office', 'משרד', 'polished', 'מסודר', 'elegant', 'אלגנטי', 'restaurant', 'מסעדה', 'chic', 'שיק']
+  const dateWords = ['date', 'דייט', 'romantic', 'רומנטי', 'soft glam']
+  const boldWords = ['bold', 'נועז', 'dramatic', 'דרמטי', 'statement', 'strong', 'חזק', 'noticeable', 'full glam']
+
+  if (boldWords.some(w => q.includes(w))) return 'bold'
+  if (eveningWords.some(w => q.includes(w))) return 'evening'
+  if (dateWords.some(w => q.includes(w))) return 'date'
+  if (workWords.some(w => q.includes(w))) return 'work'
+  if (softWords.some(w => q.includes(w))) return 'soft'
+  return 'default'
+}
+
+function isFromNavigation(
+  lookName: string,
+  nav: LookNavigationEntry | undefined
+): boolean {
+  if (!nav) return false
+  return (
+    nav.saferOption === lookName ||
+    nav.bolderOption === lookName ||
+    nav.moreNatural === lookName ||
+    nav.moreGlam === lookName
+  )
+}
+
+function hasMeaningfulDifference(
+  anchorEntry: LookMetadataEntry,
+  candidateEntry: LookMetadataEntry,
+  candidateName: string,
+  nav: LookNavigationEntry | undefined
+): boolean {
+  if (anchorEntry.presenceLevel !== candidateEntry.presenceLevel) return true
+  if (isFromNavigation(candidateName, nav)) return true
+  const a = (anchorEntry.vibe ?? '').trim().toLowerCase()
+  const b = (candidateEntry.vibe ?? '').trim().toLowerCase()
+  if (a !== b) return true
+  return false
+}
+
 /**
  * Search looks by user intent. Uses scoring then slot assignment (softer, evening, bolder) via navigation.
  * Returns 2–4 results; never empty. Duplicate look names are never assigned to two slots.
@@ -194,6 +239,15 @@ export function searchByIntent(
   if (!query.trim()) return []
 
   const signals = extractSignals(query)
+  const mode = getQueryMode(query)
+  const prefs = {
+    preferSofter: true,
+    preferEvening: true,
+    preferBolder: mode === 'bold' || mode === 'evening',
+    suppressAggressiveBold: mode === 'soft' || mode === 'work',
+    suppressWeakEvening: mode === 'soft',
+  }
+
   const entries = Object.entries(metadata).map(([lookName, entry]) => ({
     lookName,
     entry,
@@ -222,69 +276,81 @@ export function searchByIntent(
 
   // SOFTER slot
   let softerCandidate: string | null = null
-  if (nav?.saferOption && metadata[nav.saferOption] && nav.saferOption !== anchorName) {
-    softerCandidate = nav.saferOption
-  } else if (nav?.moreNatural && metadata[nav.moreNatural] && !used.has(nav.moreNatural) && nav.moreNatural !== anchorName) {
-    softerCandidate = nav.moreNatural
-  } else {
-    const found = entries.find(
-      e => e.lookName !== anchorName && !used.has(e.lookName) &&
-        presenceIndex(e.entry.presenceLevel) < anchorPlIdx &&
-        (e.entry.beginnerSafety === 'high' || e.entry.beginnerSafety === 'very-high')
-    )
-    softerCandidate = found ? found.lookName : null
-  }
-  if (softerCandidate) {
-    const f = findInRanked(entries, softerCandidate)
-    if (f) {
-      results.push({ lookName: softerCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.softer, role: 'softer' })
-      used.add(softerCandidate)
+  if (prefs.preferSofter) {
+    if (nav?.saferOption && metadata[nav.saferOption] && nav.saferOption !== anchorName) {
+      softerCandidate = nav.saferOption
+    } else if (nav?.moreNatural && metadata[nav.moreNatural] && !used.has(nav.moreNatural) && nav.moreNatural !== anchorName) {
+      softerCandidate = nav.moreNatural
+    } else {
+      const found = entries.find(
+        e => e.lookName !== anchorName && !used.has(e.lookName) &&
+          presenceIndex(e.entry.presenceLevel) < anchorPlIdx &&
+          (e.entry.beginnerSafety === 'high' || e.entry.beginnerSafety === 'very-high')
+      )
+      softerCandidate = found ? found.lookName : null
+    }
+    if (softerCandidate) {
+      const f = findInRanked(entries, softerCandidate)
+      if (f && hasMeaningfulDifference(anchorEntry, f.entry, softerCandidate, nav)) {
+        results.push({ lookName: softerCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.softer, role: 'softer' })
+        used.add(softerCandidate)
+      }
     }
   }
 
   // EVENING slot
   let eveningCandidate: string | null = null
-  if (nav?.moreGlam && !used.has(nav.moreGlam) && metadata[nav.moreGlam]) {
-    eveningCandidate = nav.moreGlam
-  } else {
-    const catMatch = entries.find(
-      e => e.lookName !== anchorName && !used.has(e.lookName) &&
-        (e.entry.presenceLevel === 'medium-high' || e.entry.presenceLevel === 'high') &&
-        (e.entry.category.includes('ערב') || e.entry.category.includes('גלאם'))
-    )
-    if (catMatch) eveningCandidate = catMatch.lookName
-    else {
-      const higherPl = entries.find(
+  if (prefs.preferEvening) {
+    if (nav?.moreGlam && !used.has(nav.moreGlam) && metadata[nav.moreGlam]) {
+      eveningCandidate = nav.moreGlam
+    } else {
+      const catMatch = entries.find(
         e => e.lookName !== anchorName && !used.has(e.lookName) &&
-          presenceIndex(e.entry.presenceLevel) > anchorPlIdx
+          (e.entry.presenceLevel === 'medium-high' || e.entry.presenceLevel === 'high') &&
+          (e.entry.category.includes('ערב') || e.entry.category.includes('גלאם'))
       )
-      eveningCandidate = higherPl ? higherPl.lookName : null
+      if (catMatch) eveningCandidate = catMatch.lookName
+      else {
+        const higherPl = entries.find(
+          e => e.lookName !== anchorName && !used.has(e.lookName) &&
+            presenceIndex(e.entry.presenceLevel) > anchorPlIdx
+        )
+        eveningCandidate = higherPl ? higherPl.lookName : null
+      }
     }
-  }
-  if (eveningCandidate) {
-    const f = findInRanked(entries, eveningCandidate)
-    if (f) {
-      results.push({ lookName: eveningCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.evening, role: 'evening' })
-      used.add(eveningCandidate)
+    if (eveningCandidate) {
+      const f = findInRanked(entries, eveningCandidate)
+      if (f && hasMeaningfulDifference(anchorEntry, f.entry, eveningCandidate, nav)) {
+        const weakEvening = prefs.suppressWeakEvening && (f.entry.presenceLevel === 'low' || f.entry.presenceLevel === 'low-medium')
+        if (!weakEvening) {
+          results.push({ lookName: eveningCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.evening, role: 'evening' })
+          used.add(eveningCandidate)
+        }
+      }
     }
   }
 
   // BOLDER slot
   let bolderCandidate: string | null = null
-  if (nav?.bolderOption && !used.has(nav.bolderOption) && metadata[nav.bolderOption]) {
-    bolderCandidate = nav.bolderOption
-  } else {
-    const found = entries.find(
-      e => e.lookName !== anchorName && !used.has(e.lookName) &&
-        (e.entry.presenceLevel === 'high' || e.entry.presenceLevel === 'medium-high')
-    )
-    bolderCandidate = found ? found.lookName : null
-  }
-  if (bolderCandidate) {
-    const f = findInRanked(entries, bolderCandidate)
-    if (f) {
-      results.push({ lookName: bolderCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.bolder, role: 'bolder' })
-      used.add(bolderCandidate)
+  if (prefs.preferBolder) {
+    if (nav?.bolderOption && !used.has(nav.bolderOption) && metadata[nav.bolderOption]) {
+      bolderCandidate = nav.bolderOption
+    } else {
+      const found = entries.find(
+        e => e.lookName !== anchorName && !used.has(e.lookName) &&
+          (e.entry.presenceLevel === 'high' || e.entry.presenceLevel === 'medium-high')
+      )
+      bolderCandidate = found ? found.lookName : null
+    }
+    if (bolderCandidate) {
+      const f = findInRanked(entries, bolderCandidate)
+      if (f && hasMeaningfulDifference(anchorEntry, f.entry, bolderCandidate, nav)) {
+        const tooAggressive = prefs.suppressAggressiveBold && f.entry.presenceLevel === 'high'
+        if (!tooAggressive) {
+          results.push({ lookName: bolderCandidate, score: f.score, matchReason: f.entry.salesLine, reasonLine: REASON_LINE_BY_ROLE.bolder, role: 'bolder' })
+          used.add(bolderCandidate)
+        }
+      }
     }
   }
 
