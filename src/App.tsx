@@ -2318,6 +2318,11 @@ function App() {
               </p>
             </div>
 
+            {/* Beauty intent search */}
+            <div className="mb-6">
+              <BeautyIntentSearchBar />
+            </div>
+
             {/* Path cards */}
             <div className="flex flex-col gap-3 mb-6">
               {paths.map((path, i) => (
