@@ -1119,6 +1119,7 @@ function App() {
                           value={sliderPosition}
                           onChange={(e) => setSliderPosition(Number(e.target.value))}
                           className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
+                          style={{ direction: 'ltr' }}
                           aria-label="Compare before and after"
                         />
                         <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
