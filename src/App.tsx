@@ -918,6 +918,7 @@ function App() {
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
   const [looksCarouselCategory, setLooksCarouselCategory] = useState('all')
+  const [showPathScreen, setShowPathScreen] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
@@ -937,6 +938,7 @@ function App() {
     const blobUrl = URL.createObjectURL(file)
     setOriginalImage(blobUrl)
     setIsUploaded(true)
+    setShowPathScreen(true)
     setGeneratedImage(null)
     setActiveHistoryId(null)
     setError(null)
@@ -987,6 +989,7 @@ function App() {
     setAnalysisDismissed(false)
     setShowAnalysisPanel(false)
     setIsAnalyzing(false)
+    setShowPathScreen(false)
     setAppMode('looks')
     setProductStep('category')
     setSelectedProductCategory(null)
@@ -1380,6 +1383,197 @@ function App() {
     )
   }
 
+  const PathScreen = () => {
+    const [visible, setVisible] = React.useState(false)
+
+    React.useEffect(() => {
+      const timer = setTimeout(() => setVisible(true), 50)
+      return () => clearTimeout(timer)
+    }, [])
+
+    const paths = [
+      {
+        id: 'ai',
+        emoji: '✨',
+        titleHe: 'קבלי המלצה אישית',
+        titleEn: 'Get a personal recommendation',
+        descHe: 'ניתוח AI ימצא לוקים שמתאימים במיוחד לך',
+        descEn: 'AI analysis finds looks suited specifically to you',
+        accentColor: 'rgba(255,107,71,0.12)',
+        borderColor: 'rgba(255,107,71,0.2)',
+        glowColor: 'rgba(255,107,71,0.08)',
+        action: () => {
+          setShowPathScreen(false)
+          handleAnalyzeWithAI()
+        },
+      },
+      {
+        id: 'looks',
+        emoji: '💄',
+        titleHe: 'בחרי לוק',
+        titleEn: 'Discover looks',
+        descHe: 'דפדפי בין לוקים מוכנים ובחרי את מה שאת אוהבת',
+        descEn: 'Browse curated looks and choose what you love',
+        accentColor: 'rgba(180,100,200,0.08)',
+        borderColor: 'rgba(180,100,200,0.15)',
+        glowColor: 'rgba(180,100,200,0.05)',
+        action: () => {
+          setShowPathScreen(false)
+          setAppMode('looks')
+        },
+      },
+      {
+        id: 'product',
+        emoji: '🌸',
+        titleHe: 'נסי מוצר',
+        titleEn: 'Try a product',
+        descHe: 'בחרי מוצר וגוון וראי איך הוא נראה עלייך',
+        descEn: 'Choose a product and shade and see it on you',
+        accentColor: 'rgba(100,180,160,0.08)',
+        borderColor: 'rgba(100,180,160,0.15)',
+        glowColor: 'rgba(100,180,160,0.05)',
+        action: () => {
+          setShowPathScreen(false)
+          setAppMode('product')
+        },
+      },
+    ]
+
+    return (
+      <div
+        className="fixed inset-0 z-40 flex items-end justify-center"
+        style={{
+          background: 'rgba(4,2,6,0.75)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.35s ease',
+        }}
+      >
+        <div
+          className="w-full max-w-3xl overflow-y-auto"
+          style={{
+            background: 'linear-gradient(180deg, #0e0810 0%, #080508 70%, #060306 100%)',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: '28px 28px 0 0',
+            maxHeight: '88vh',
+            boxShadow: '0 -30px 80px rgba(0,0,0,0.7)',
+            transform: visible ? 'translateY(0)' : 'translateY(32px)',
+            transition: 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.35s ease',
+          }}
+        >
+          {/* Handle */}
+          <div className="flex justify-center pt-3.5 pb-1">
+            <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.12)' }} />
+          </div>
+
+          <div className="px-5 pb-12 pt-4">
+
+            {/* Selfie thumbnail */}
+            {originalImage && (
+              <div className="mb-6 flex justify-center">
+                <div
+                  className="relative h-20 w-20 overflow-hidden rounded-full"
+                  style={{
+                    border: '2px solid rgba(255,107,71,0.3)',
+                    boxShadow: '0 0 24px rgba(255,107,71,0.2)',
+                  }}
+                >
+                  <img
+                    src={originalImage}
+                    alt="Your photo"
+                    className="h-full w-full object-cover object-top"
+                  />
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.3) 100%)' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="mb-7 text-center">
+              <p
+                className="text-xl font-extrabold text-white"
+                style={{ letterSpacing: '-0.02em' }}
+              >
+                {lang === 'he' ? 'התמונה שלך מוכנה' : 'Your photo is ready'}
+              </p>
+              <p
+                className="mt-1.5 text-xs"
+                style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}
+              >
+                {lang === 'he' ? 'איך תרצי להמשיך?' : 'How would you like to continue?'}
+              </p>
+            </div>
+
+            {/* Path cards */}
+            <div className="flex flex-col gap-3 mb-6">
+              {paths.map((path, i) => (
+                <button
+                  key={path.id}
+                  type="button"
+                  onClick={path.action}
+                  className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] focus:outline-none"
+                  style={{
+                    background: path.accentColor,
+                    border: `1px solid ${path.borderColor}`,
+                    boxShadow: `0 4px 24px ${path.glowColor}`,
+                    opacity: visible ? 1 : 0,
+                    transform: visible ? 'translateY(0)' : 'translateY(12px)',
+                    transition: `opacity 0.4s ease ${0.1 + i * 0.08}s, transform 0.4s cubic-bezier(0.32, 0.72, 0, 1) ${0.1 + i * 0.08}s, background 0.2s ease, box-shadow 0.2s ease`,
+                  }}
+                >
+                  {/* Emoji icon */}
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl"
+                    style={{ background: 'rgba(255,255,255,0.05)' }}
+                  >
+                    {path.emoji}
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-extrabold text-white leading-tight"
+                      style={{ letterSpacing: '-0.01em' }}
+                    >
+                      {lang === 'he' ? path.titleHe : path.titleEn}
+                    </p>
+                    <p
+                      className="mt-0.5 text-[11px] leading-relaxed"
+                      style={{ color: 'rgba(255,255,255,0.38)' }}
+                    >
+                      {lang === 'he' ? path.descHe : path.descEn}
+                    </p>
+                  </div>
+
+                  {/* Arrow */}
+                  <ChevronRight
+                    className="h-4 w-4 shrink-0"
+                    style={{ color: 'rgba(255,255,255,0.2)' }}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Skip link */}
+            <button
+              type="button"
+              onClick={() => setShowPathScreen(false)}
+              className="flex w-full items-center justify-center py-2 text-xs transition-all hover:opacity-60 focus:outline-none"
+              style={{ color: 'rgba(255,255,255,0.18)' }}
+            >
+              {lang === 'he' ? 'סגרי וגלשי בעצמי' : 'Close and explore myself'}
+            </button>
+
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const AnalysisPanel = () => {
     if (!faceAnalysis || !showAnalysisPanel) return null
 
@@ -1661,6 +1855,7 @@ function App() {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+      {showPathScreen && <PathScreen />}
       <AnalysisPanel />
 
       {/* ── Cinematic dynamic background ── */}
@@ -1946,15 +2141,6 @@ function App() {
                 {/* ── Manual Claude Vision trigger ── */}
                 {originalImage && !isGenerating && (
                   <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={handleAnalyzeWithAI}
-                      disabled={isAnalyzing}
-                      className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-2 text-xs font-semibold text-white shadow-coral-sm transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
-                    >
-                      <Brain className="h-4 w-4" />
-                      {isAnalyzing ? t.generating : t.analyzeBtn}
-                    </button>
                     {faceAnalysis && !showAnalysisPanel && (
                       <button
                         type="button"
