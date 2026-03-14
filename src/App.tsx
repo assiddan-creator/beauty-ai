@@ -1026,6 +1026,7 @@ function App() {
   const [showSplash, setShowSplash] = useState(true)
   const [showUploadChoice, setShowUploadChoice] = useState(false)
   const [showAnalyzingScreen, setShowAnalyzingScreen] = useState(false)
+  const [showLookProducts, setShowLookProducts] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
@@ -1100,6 +1101,7 @@ function App() {
     setShowSplash(true)
     setShowUploadChoice(false)
     setShowAnalyzingScreen(false)
+    setShowLookProducts(false)
     setShowPathScreen(false)
     setAppMode('looks')
     setProductStep('category')
@@ -1683,6 +1685,246 @@ function App() {
           }}
           className="sr-only"
         />
+      </div>
+    )
+  }
+
+  const LookProductsScreen = () => {
+    const [visible, setVisible] = React.useState(false)
+
+    React.useEffect(() => {
+      const t = setTimeout(() => setVisible(true), 30)
+      return () => clearTimeout(t)
+    }, [])
+
+    if (!selectedPreset) return null
+
+    const products = LOOK_PRODUCTS[selectedPreset] ?? []
+    const preset = BEAUTY_PRESETS.find(p => p.name === selectedPreset)
+    const meta = LOOK_METADATA[selectedPreset]
+
+    const adjacentLookName = meta?.adjacentLook ?? null
+    const adjacentPreset = adjacentLookName ? BEAUTY_PRESETS.find(p => p.name === adjacentLookName) : null
+    const saferPreset = faceAnalysis?.saferOption ? BEAUTY_PRESETS.find(p => p.name === faceAnalysis.saferOption) : null
+    const bolderPreset = faceAnalysis?.bolderOption ? BEAUTY_PRESETS.find(p => p.name === faceAnalysis.bolderOption) : null
+
+    const lipProducts = products.filter(p => p.category === 'lips')
+    const blushProducts = products.filter(p => p.category === 'blush')
+
+    return (
+      <div
+        className="fixed inset-0 z-[80] flex flex-col overflow-y-auto"
+        style={{
+          background: 'linear-gradient(160deg, #0a0408 0%, #080408 60%, #060306 100%)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.35s ease',
+        }}
+      >
+        <div className="w-full max-w-3xl mx-auto px-5 pb-16 pt-6">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-7">
+            <button
+              type="button"
+              onClick={() => setShowLookProducts(false)}
+              className="flex items-center gap-1.5 text-xs focus:outline-none transition-opacity hover:opacity-70"
+              style={{ color: 'rgba(255,107,71,0.7)' }}
+            >
+              <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+              {lang === 'he' ? 'חזרה לתוצאה' : 'Back to result'}
+            </button>
+          </div>
+
+          {/* Look title */}
+          <div className="mb-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-2" style={{ color: 'rgba(255,255,255,0.22)' }}>
+              {lang === 'he' ? 'המוצרים שהרכיבו את הלוק שלך' : 'Products that made your look'}
+            </p>
+            <p className="text-2xl font-extrabold text-white leading-tight" style={{ letterSpacing: '-0.02em' }}>
+              {lang === 'he' ? preset?.nameHe : preset?.name}
+            </p>
+            {meta?.salesLine && (
+              <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                {meta.salesLine}
+              </p>
+            )}
+          </div>
+
+          {/* Result preview */}
+          {generatedImage && (
+            <div
+              className="relative mb-7 overflow-hidden rounded-2xl"
+              style={{ border: '1px solid rgba(255,255,255,0.07)', maxHeight: 260 }}
+            >
+              <img
+                src={generatedImage}
+                alt="Your look"
+                className="w-full object-contain"
+              />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%)' }} />
+              <div className="absolute bottom-3 left-4">
+                <span className="text-[10px] font-semibold text-white/60 uppercase tracking-wider">
+                  {lang === 'he' ? 'הלוק שלך' : 'Your look'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Lips products */}
+          {lipProducts.length > 0 && (
+            <div className="mb-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,107,71,0.5)' }}>
+                💋 {lang === 'he' ? 'שפתיים' : 'Lips'}
+              </p>
+              <div className="flex flex-col gap-2">
+                {lipProducts.map((product, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 rounded-2xl p-4"
+                    style={{ background: 'rgba(255,107,71,0.05)', border: '1px solid rgba(255,107,71,0.12)' }}
+                  >
+                    <div
+                      className="h-11 w-11 shrink-0 rounded-full"
+                      style={{
+                        background: 'rgba(255,107,71,0.15)',
+                        border: '1px solid rgba(255,107,71,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 20,
+                      }}
+                    >
+                      💋
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white">{product.brand}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        {product.productName}
+                      </p>
+                      <p
+                        className="text-[10px] mt-0.5 font-semibold"
+                        style={{ color: 'rgba(255,107,71,0.7)' }}
+                      >
+                        {product.shadeName}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Blush products */}
+          {blushProducts.length > 0 && (
+            <div className="mb-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(236,72,153,0.5)' }}>
+                🌸 {lang === 'he' ? 'סומק' : 'Blush'}
+              </p>
+              <div className="flex flex-col gap-2">
+                {blushProducts.map((product, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 rounded-2xl p-4"
+                    style={{ background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.12)' }}
+                  >
+                    <div
+                      className="h-11 w-11 shrink-0 rounded-full"
+                      style={{
+                        background: 'rgba(236,72,153,0.1)',
+                        border: '1px solid rgba(236,72,153,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 20,
+                      }}
+                    >
+                      🌸
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white">{product.brand}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        {product.productName}
+                      </p>
+                      <p
+                        className="text-[10px] mt-0.5 font-semibold"
+                        style={{ color: 'rgba(236,72,153,0.7)' }}
+                      >
+                        {product.shadeName}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="mb-7 h-px w-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+          {/* Also try section */}
+          <div>
+            <p className="text-base font-extrabold text-white mb-1" style={{ letterSpacing: '-0.01em' }}>
+              {lang === 'he' ? 'רוצה לנסות גם —' : 'You might also love —'}
+            </p>
+            <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.28)' }}>
+              {lang === 'he'
+                ? 'לוקים נוספים שיכולים לשבת עלייך יפה'
+                : 'More looks that could suit you beautifully'}
+            </p>
+
+            <div className="flex flex-col gap-3">
+              {[adjacentPreset, saferPreset, bolderPreset].filter(Boolean).filter((p, i, arr) =>
+                p && p.name !== selectedPreset && arr.findIndex(x => x?.name === p?.name) === i
+              ).slice(0, 3).map((p) => {
+                if (!p) return null
+                const pMeta = LOOK_METADATA[p.name]
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(p.name)
+                      setGeneratedImage(null)
+                      setShowLookProducts(false)
+                      document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                    className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.99] focus:outline-none"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                  >
+                    <div
+                      className="h-14 w-12 shrink-0 overflow-hidden rounded-xl"
+                      style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="h-full w-full object-cover object-top"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-extrabold text-white" style={{ letterSpacing: '-0.01em' }}>
+                        {lang === 'he' ? p.nameHe : p.name}
+                      </p>
+                      {pMeta?.salesLine && (
+                        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          {pMeta.salesLine}
+                        </p>
+                      )}
+                    </div>
+                    <div
+                      className="shrink-0 rounded-xl px-3 py-2 text-[11px] font-bold"
+                      style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.18)', color: 'rgba(255,107,71,0.8)' }}
+                    >
+                      {lang === 'he' ? 'נסי' : 'Try'}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+        </div>
       </div>
     )
   }
@@ -2352,6 +2594,7 @@ function App() {
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
       {showSplash && <SplashScreen />}
       {showAnalyzingScreen && <AnalyzingScreen />}
+      {showLookProducts && <LookProductsScreen />}
       {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
       <AnalysisPanel />
@@ -2666,8 +2909,7 @@ function App() {
                       type="button"
                       onClick={() => {
                         if (selectedPreset && LOOK_PRODUCTS[selectedPreset]) {
-                          setAppMode('product')
-                          setShowPathScreen(false)
+                          setShowLookProducts(true)
                         }
                       }}
                       className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
