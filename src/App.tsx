@@ -1085,7 +1085,11 @@ function App() {
                           src={generatedImage}
                           alt="With makeup"
                           className="absolute inset-0 h-full w-full object-cover object-top"
-                          style={{ opacity: makeupOpacity / 100 }}
+                          style={{
+                            opacity: makeupOpacity / 100,
+                            transform: 'scale(0.96)',
+                            transformOrigin: 'top center',
+                          }}
                         />
                         <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
                           <span className="text-[11px] font-semibold text-white/70">Intensity</span>
