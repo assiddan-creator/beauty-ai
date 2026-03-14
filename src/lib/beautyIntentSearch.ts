@@ -7,6 +7,7 @@ export type SearchResult = {
   lookName: string
   score: number
   matchReason: string
+  reasonLine: string
   role: 'best' | 'softer' | 'bolder' | 'evening' | 'alternate'
 }
 
@@ -158,9 +159,17 @@ function assignRole(
   return 'alternate'
 }
 
+const REASON_LINE_BY_ROLE: Record<SearchResult['role'], string> = {
+  best: 'זה כיוון שמרגיש נכון למה שתיארת',
+  softer: 'אותה תחושה, אבל בצורה רכה יותר',
+  evening: 'אותה משפחה, אבל עם יותר עומק לערב',
+  bolder: 'כיוון עם יותר נוכחות ויותר ביטחון',
+  alternate: 'כיוון שיכול לעבוד יפה למה שחיפשת',
+}
+
 /**
  * Search looks by user intent (occasion, vibe, intensity, safety).
- * Returns top 4 looks with role and matchReason (salesLine).
+ * Returns top 4 looks with role, matchReason (salesLine), and reasonLine.
  */
 export function searchByIntent(query: string, metadata: LookMetadataRecord): SearchResult[] {
   if (!query.trim()) return []
@@ -177,10 +186,14 @@ export function searchByIntent(query: string, metadata: LookMetadataRecord): Sea
   const bestEntry = top4[0]?.entry
   const bestLookName = top4[0]?.lookName ?? ''
 
-  return top4.map(({ lookName, entry, score }, index) => ({
-    lookName,
-    score,
-    matchReason: entry.salesLine,
-    role: assignRole(index, lookName, entry, bestEntry ?? entry, bestLookName),
-  }))
+  return top4.map(({ lookName, entry, score }, index) => {
+    const role = assignRole(index, lookName, entry, bestEntry ?? entry, bestLookName)
+    return {
+      lookName,
+      score,
+      matchReason: entry.salesLine,
+      reasonLine: REASON_LINE_BY_ROLE[role],
+      role,
+    }
+  })
 }

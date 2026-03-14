@@ -897,11 +897,11 @@ const PRODUCT_CATALOG = [
 type ProductItem = (typeof PRODUCT_CATALOG)[0]
 
 const BEAUTY_INTENT_ROLE_LABELS: Record<SearchResult['role'], string> = {
-  best: 'מומלץ',
-  softer: 'עדין יותר',
-  bolder: 'נועז יותר',
-  evening: 'ערבי',
-  alternate: 'אלטרנטיבה',
+  best: 'הכי מתאים למה שחיפשת',
+  softer: 'אם בא לך משהו עדין יותר',
+  bolder: 'אם בא לך משהו נועז יותר',
+  evening: 'אם בא לך משהו ערב יותר',
+  alternate: 'כיוון נוסף שיכול להתאים',
 }
 
 function BeautyIntentSearchBar(props: {
@@ -947,29 +947,34 @@ function BeautyIntentSearchBar(props: {
         </button>
       </div>
       {results.length > 0 && (
-        <div className="flex flex-wrap gap-3">
-          {results.map((r) => (
-            <div
-              key={r.lookName}
-              className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-3xl transition-all hover:border-white/15 min-w-[200px] max-w-[260px]"
-            >
-              <p className="text-xs font-bold text-coral mb-0.5">
-                {BEAUTY_INTENT_ROLE_LABELS[r.role]}
-              </p>
-              <p className="text-sm font-bold text-white mb-1">{r.lookName}</p>
-              <p className="text-[11px] text-gray-400 mb-3 line-clamp-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {r.matchReason}
-              </p>
-              <button
-                type="button"
-                onClick={() => onSelectLook(r.lookName)}
-                className="mt-auto rounded-xl border border-coral/30 bg-coral/10 py-2 px-3 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
+        <>
+          <p className="text-[11px] mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            לפי מה שכתבת, הנה כמה כיוונים שיכולים להתאים לך
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {results.map((r) => (
+              <div
+                key={r.lookName}
+                className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-3xl transition-all hover:border-white/15 min-w-[200px] max-w-[260px]"
               >
-                נסי את המראה הזה
-              </button>
-            </div>
-          ))}
-        </div>
+                <p className="text-xs font-bold mb-0.5" style={{ color: 'rgba(255,107,71,0.9)' }}>
+                  {BEAUTY_INTENT_ROLE_LABELS[r.role]}
+                </p>
+                <p className="text-sm font-bold text-white mb-1">{r.lookName}</p>
+                <p className="text-[11px] mb-3 leading-snug" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  {r.reasonLine}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onSelectLook(r.lookName)}
+                  className="mt-auto rounded-xl border border-coral/30 bg-coral/10 py-2 px-3 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
+                >
+                  נסי עליי
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </section>
   )
