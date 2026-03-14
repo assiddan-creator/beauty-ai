@@ -3090,7 +3090,7 @@ function App() {
                           style={{ direction: 'ltr' }}
                           aria-label="Compare before and after"
                         />
-                        <div className="hidden absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
+                        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
                           <span className="text-[11px] font-semibold text-white/70">Intensity</span>
                           <input
                             type="range"
