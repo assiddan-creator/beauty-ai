@@ -20,8 +20,44 @@ import {
   Brain,
   CheckCircle2,
   ChevronRight,
+  Palette,
   type LucideIcon,
 } from 'lucide-react'
+
+const ENGINES = [
+  {
+    id: 'nano-banana-2',
+    name: 'Nano Banana 2',
+    model: 'google/nano-banana-2',
+    description: 'המנוע הנוכחי — עריכת תמונה קיימת',
+    inputKey: 'image_input',
+    isArray: true,
+    supportsEdit: true,
+    badge: 'פעיל',
+  },
+  {
+    id: 'seedream-5-lite',
+    name: 'Seedream 5 Lite',
+    model: 'bytedance/seedream-5-lite',
+    description: 'מנוע מתקדם של ByteDance — עריכה עם הבנת הוראות',
+    inputKey: 'image_input',
+    isArray: true,
+    supportsEdit: true,
+    badge: 'לניסיון',
+  },
+  {
+    id: 'reve-edit',
+    name: 'Reve Edit',
+    model: 'reve/edit',
+    description: 'מנוע עריכה ממוקד — שומר על פריים מקורי',
+    inputKey: 'image',
+    isArray: false,
+    supportsEdit: true,
+    badge: 'לניסיון',
+  },
+] as const
+
+type Engine = (typeof ENGINES)[number]
 
 // ─── Beauty Presets ──────────────────────────────────────────────────────────
 const BEAUTY_PRESETS: Array<{
@@ -787,20 +823,32 @@ type ReplicatePrediction = {
 async function runReplicatePrediction(
   prompt: string,
   imageDataUrl: string,
+  engine: Engine,
 ): Promise<string> {
   const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string
 
-  const payload = {
-    version: undefined,
-    input: {
-      prompt,
-      image_input: [imageDataUrl],
-      aspect_ratio: 'match_input_image',
-      output_format: 'jpg',
-    },
-  }
+  const payload = engine.isArray
+    ? {
+        input: {
+          prompt,
+          [engine.inputKey]: [imageDataUrl],
+          aspect_ratio: 'match_input_image',
+          output_format: 'jpg',
+        },
+      }
+    : {
+        input: {
+          prompt,
+          [engine.inputKey]: imageDataUrl,
+          output_format: 'jpg',
+        },
+      }
 
-  const submitRes = await fetch('/api/replicate/v1/predictions', {
+  const endpoint = engine.model.includes('/')
+    ? `/api/replicate/v1/models/${engine.model}/predictions`
+    : '/api/replicate/v1/predictions'
+
+  const submitRes = await fetch(endpoint, {
     method: 'POST',
     headers: {
       Authorization: `Token ${token}`,
@@ -1026,6 +1074,8 @@ function App() {
   const [showUploadChoice, setShowUploadChoice] = useState(false)
   const [showAnalyzingScreen, setShowAnalyzingScreen] = useState(false)
   const [showLookProducts, setShowLookProducts] = useState(false)
+  const [activeEngine, setActiveEngine] = useState<Engine>(ENGINES[0])
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
@@ -1161,7 +1211,7 @@ function App() {
       ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
-      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
 
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
@@ -1213,7 +1263,7 @@ function App() {
       ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
-      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
 
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
@@ -1250,7 +1300,7 @@ function App() {
         product.tryOnPrompt,
       ].join('\n\n')
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
-      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
       setGeneratedImage(outputUrl)
       setSliderPosition(50)
       const entry: HistoryEntry = {
@@ -2604,12 +2654,153 @@ function App() {
   )
   }
 
+  const AdminPanel = () => {
+    const [visible, setVisible] = React.useState(false)
+
+    React.useEffect(() => {
+      const t = setTimeout(() => setVisible(true), 30)
+      return () => clearTimeout(t)
+    }, [])
+
+    return (
+      <div
+        className="fixed inset-0 z-[200] flex items-end justify-center"
+        onClick={(e) => { if (e.target === e.currentTarget) setShowAdminPanel(false) }}
+        style={{
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(8px)',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+        }}
+      >
+        <div
+          className="w-full max-w-3xl overflow-y-auto"
+          style={{
+            background: 'linear-gradient(180deg, #0e0810 0%, #080508 100%)',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '24px 24px 0 0',
+            maxHeight: '80vh',
+            boxShadow: '0 -20px 60px rgba(0,0,0,0.7)',
+            transform: visible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+          }}
+        >
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+          </div>
+
+          <div className="px-5 pb-10 pt-3">
+
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-lg font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>
+                  ניהול מנוע
+                </p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  החלפת מנוע עריכת התמונה
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdminPanel(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full focus:outline-none"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                <X className="h-3.5 w-3.5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Current engine indicator */}
+            <div
+              className="mb-5 rounded-xl p-3 flex items-center gap-3"
+              style={{ background: 'rgba(255,107,71,0.08)', border: '1px solid rgba(255,107,71,0.15)' }}
+            >
+              <div className="h-2 w-2 rounded-full" style={{ background: '#FF6B47', boxShadow: '0 0 6px rgba(255,107,71,0.8)' }} />
+              <div>
+                <p className="text-xs font-bold text-white">מנוע פעיל: {activeEngine.name}</p>
+                <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{activeEngine.model}</p>
+              </div>
+            </div>
+
+            {/* Engine buttons */}
+            <div className="flex flex-col gap-3">
+              {ENGINES.map(engine => {
+                const isActive = activeEngine.id === engine.id
+                return (
+                  <button
+                    key={engine.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveEngine(engine)
+                      setGeneratedImage(null)
+                    }}
+                    className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.99] focus:outline-none"
+                    style={{
+                      background: isActive ? 'rgba(255,107,71,0.1)' : 'rgba(255,255,255,0.03)',
+                      border: isActive ? '1.5px solid rgba(255,107,71,0.3)' : '1px solid rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    {/* Status dot */}
+                    <div
+                      className="h-3 w-3 shrink-0 rounded-full"
+                      style={{
+                        background: isActive ? '#FF6B47' : 'rgba(255,255,255,0.15)',
+                        boxShadow: isActive ? '0 0 8px rgba(255,107,71,0.6)' : 'none',
+                      }}
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-sm font-extrabold text-white">{engine.name}</p>
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                          style={{
+                            background: isActive ? 'rgba(255,107,71,0.2)' : 'rgba(255,255,255,0.07)',
+                            color: isActive ? 'rgba(255,107,71,0.9)' : 'rgba(255,255,255,0.35)',
+                          }}
+                        >
+                          {engine.badge}
+                        </span>
+                      </div>
+                      <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {engine.description}
+                      </p>
+                      <p className="text-[9px] mt-0.5 font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        {engine.model}
+                      </p>
+                    </div>
+
+                    {isActive && (
+                      <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: 'rgba(255,107,71,0.8)' }} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Warning */}
+            <div
+              className="mt-5 rounded-xl p-3"
+              style={{ background: 'rgba(255,200,50,0.05)', border: '1px solid rgba(255,200,50,0.12)' }}
+            >
+              <p className="text-[10px] leading-relaxed" style={{ color: 'rgba(255,200,50,0.6)' }}>
+                ⚠️ החלפת מנוע תנקה את התמונה הנוכחית. כל מנוע עשוי להחזיר פריימינג שונה — תוצאות יכולות להשתנות.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
       {showSplash && <SplashScreen />}
       {showAnalyzingScreen && <AnalyzingScreen />}
       {showLookProducts && <LookProductsScreen />}
+      {showAdminPanel && <AdminPanel />}
       {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
       <AnalysisPanel />
@@ -3649,6 +3840,14 @@ function App() {
           )}
           <div className="flex items-center justify-center">
             <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowAdminPanel(true)}
+                className="flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-semibold text-gray-500 backdrop-blur-3xl transition-all hover:border-white/20 hover:text-gray-300 focus:outline-none"
+                title="Admin"
+              >
+                <Palette className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
