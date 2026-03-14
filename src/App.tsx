@@ -17,7 +17,6 @@ import {
   Flower2,
   Droplets,
   Gem,
-  ArrowLeftRight,
   Brain,
   CheckCircle2,
   ChevronRight,
@@ -600,7 +599,6 @@ function App() {
   const [isUploaded, setIsUploaded] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
-  const [sliderPosition, setSliderPosition] = useState(50)
   const [makeupOpacity, setMakeupOpacity] = useState(100)
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -728,7 +726,6 @@ function App() {
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
       setGeneratedImage(outputUrl)
-      setSliderPosition(50)
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -777,7 +774,6 @@ function App() {
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
 
       setGeneratedImage(outputUrl)
-      setSliderPosition(50)
 
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
@@ -805,7 +801,6 @@ function App() {
     setGeneratedImage(entry.generatedUrl)
     setSelectedPreset(entry.lookName)
     setIsUploaded(true)
-    setSliderPosition(50)
     setActiveHistoryId(entry.id)
     setError(null)
   }
