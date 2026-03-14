@@ -24,9 +24,6 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-// ─── Replicate ──────────────────────────────────────────────────────────────
-const NANO_BANANA_2_MODEL = 'google/nano-banana-2'
-
 // ─── Beauty Presets ──────────────────────────────────────────────────────────
 const BEAUTY_PRESETS: Array<{
   id: string
