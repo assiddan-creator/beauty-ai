@@ -1087,7 +1087,7 @@ function App() {
                           className="absolute inset-0 h-full w-full object-cover object-top"
                           style={{
                             opacity: makeupOpacity / 100,
-                            transform: 'scale(0.96)',
+                            transform: 'scaleX(0.97) scaleY(0.96)',
                             transformOrigin: 'top center',
                           }}
                         />
