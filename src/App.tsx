@@ -1,5 +1,5 @@
 // AI Beauty Try-On — converted from Virtual Staging by Claude
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   ImageIcon,
   Trash2,
@@ -770,6 +770,7 @@ function App() {
   const [faceAnalysis, setFaceAnalysis] = useState<FaceAnalysis | null>(null)
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
+  const [looksCarouselCategory, setLooksCarouselCategory] = useState('all')
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
@@ -1790,96 +1791,188 @@ function App() {
 
                 {/* ── Looks Carousel ── */}
                 <section id="looks-carousel" className="mt-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">{t.popularLooks}</h2>
-                    <span className="text-xs font-medium text-gray-500">
-                      {selectedPreset ?? (lang === 'he' ? 'לא נבחר' : 'None selected')}
-                    </span>
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {BEAUTY_PRESETS.map((preset) => {
-                      const PresetIcon = preset.icon
-                      const isSelected = selectedPreset === preset.name
-                      const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
-                      return (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => setSelectedPreset(preset.name)}
-                          className={`group relative flex shrink-0 w-44 md:w-52 h-56 md:h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.04] focus:outline-none ${
-                            isSelected ? 'border-2 border-coral/80' : 'border border-white/10 hover:border-white/20'
-                          }`}
-                          style={{
-                            boxShadow: isSelected
-                              ? '0 0 25px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,107,71,0.2)'
-                              : '0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                          }}
-                        >
-                          {brokenImgs.has(`preset-${preset.id}`) ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-surface/90">
-                              <ImageIcon className="h-6 w-6 text-gray-600" />
-                              <span className="text-[10px] text-gray-600">No preview</span>
-                            </div>
-                          ) : (
-                            <img
-                              src={preset.image}
-                              alt={preset.name}
-                              className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
-                              onError={() => markBroken(`preset-${preset.id}`)}
-                            />
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                          {isSelected && (
-                            <div className="absolute inset-0 bg-gradient-to-t from-coral/30 via-transparent to-transparent" />
-                          )}
-                          {/* Category badge */}
-                          <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 backdrop-blur-sm">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-white/70">{preset.category}</span>
+                  {(() => {
+                    const categories = [
+                      { id: 'all', label: lang === 'he' ? 'הכל' : 'All' },
+                      { id: 'טבעי וקל', label: lang === 'he' ? 'טבעי וקל' : 'Natural & Easy' },
+                      { id: 'זוהר ורענן', label: lang === 'he' ? 'זוהר ורענן' : 'Glow & Fresh' },
+                      { id: 'מסודר ויוקרתי', label: lang === 'he' ? 'מסודר ויוקרתי' : 'Polished & Luxury' },
+                      { id: 'חם וקייצי', label: lang === 'he' ? 'חם וקייצי' : 'Warm & Sunny' },
+                      { id: 'ערב ודומיננטי', label: lang === 'he' ? 'ערב ודומיננטי' : 'Evening & Bold' },
+                    ]
+                    const activeCategory = looksCarouselCategory
+                    const setActiveCategory = setLooksCarouselCategory
+                    const filteredPresets = activeCategory === 'all'
+                      ? BEAUTY_PRESETS
+                      : BEAUTY_PRESETS.filter(p => LOOK_METADATA[p.name]?.category === activeCategory)
+                    const groupedPresets = activeCategory === 'all'
+                      ? [
+                          { id: 'טבעי וקל', label: lang === 'he' ? 'טבעי וקל' : 'Natural & Easy', sublabel: lang === 'he' ? 'מחמיא, קל ובטוח' : 'Flattering, easy and safe' },
+                          { id: 'זוהר ורענן', label: lang === 'he' ? 'זוהר ורענן' : 'Glow & Fresh', sublabel: lang === 'he' ? 'רענן, זוהר ומחיה' : 'Fresh, glowing and alive' },
+                          { id: 'מסודר ויוקרתי', label: lang === 'he' ? 'מסודר ויוקרתי' : 'Polished & Luxury', sublabel: lang === 'he' ? 'אלגנטי, מדויק ויקר' : 'Elegant, precise and expensive' },
+                          { id: 'חם וקייצי', label: lang === 'he' ? 'חם וקייצי' : 'Warm & Sunny', sublabel: lang === 'he' ? 'חם, שזוף ומזהיר' : 'Warm, tanned and radiant' },
+                          { id: 'ערב ודומיננטי', label: lang === 'he' ? 'ערב ודומיננטי' : 'Evening & Bold', sublabel: lang === 'he' ? 'נוכחות, עוצמה וסטייל' : 'Presence, power and style' },
+                        ].map(group => ({
+                          ...group,
+                          presets: BEAUTY_PRESETS.filter(p => LOOK_METADATA[p.name]?.category === group.id)
+                        })).filter(g => g.presets.length > 0)
+                      : null
+                    return (
+                      <>
+                        <div className="mb-5 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                          {categories.map(cat => {
+                            const isActive = activeCategory === cat.id
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setActiveCategory(cat.id)}
+                                className="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none"
+                                style={isActive ? {
+                                  background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)',
+                                  color: 'white',
+                                  boxShadow: '0 0 16px rgba(255,107,71,0.4)',
+                                  border: 'none',
+                                } : {
+                                  background: 'rgba(255,255,255,0.04)',
+                                  color: 'rgba(255,255,255,0.45)',
+                                  border: '1px solid rgba(255,255,255,0.08)',
+                                }}
+                              >
+                                {cat.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {groupedPresets ? (
+                          <div className="space-y-8">
+                            {groupedPresets.map(group => (
+                              <div key={group.id}>
+                                <div className="mb-3">
+                                  <div className="flex items-baseline gap-2">
+                                    <h3 className="text-sm font-extrabold text-white" style={{ letterSpacing: '-0.01em' }}>
+                                      {group.label}
+                                    </h3>
+                                    <span className="text-[10px] text-gray-600">{group.sublabel}</span>
+                                  </div>
+                                  <div className="mt-1.5 h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(255,107,71,0.5), transparent)' }} />
+                                </div>
+                                <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                                  {group.presets.map(preset => {
+                                    const meta = LOOK_METADATA[preset.name]
+                                    const isSelected = selectedPreset === preset.name
+                                    const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
+                                    const PresetIcon = preset.icon
+                                    return (
+                                      <button
+                                        key={preset.id}
+                                        type="button"
+                                        onClick={() => setSelectedPreset(preset.name)}
+                                        className="group relative flex shrink-0 w-40 h-52 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none"
+                                        style={{
+                                          border: isSelected ? '1.5px solid rgba(255,107,71,0.7)' : '1px solid rgba(255,255,255,0.07)',
+                                          boxShadow: isSelected ? '0 0 25px rgba(255,107,71,0.4), 0 0 50px rgba(255,107,71,0.15)' : '0 8px 32px rgba(0,0,0,0.5)',
+                                        }}
+                                      >
+                                        {brokenImgs.has(`preset-${preset.id}`) ? (
+                                          <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(255,107,71,0.04)' }}>
+                                            <ImageIcon className="h-5 w-5 text-gray-700" />
+                                          </div>
+                                        ) : (
+                                          <img
+                                            src={preset.image}
+                                            alt={preset.name}
+                                            className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                            onError={() => markBroken(`preset-${preset.id}`)}
+                                          />
+                                        )}
+                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
+                                        {isSelected && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.08) 0%, transparent 50%)' }} />}
+                                        {isRecommended && (
+                                          <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5" style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.5)' }}>
+                                            <Brain className="h-2.5 w-2.5 text-white" />
+                                            <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
+                                          </div>
+                                        )}
+                                        <div className="relative z-10 mt-auto p-3">
+                                          <p className="text-xs font-extrabold leading-tight text-white" style={{ letterSpacing: '-0.01em' }}>
+                                            {lang === 'he' ? preset.nameHe : preset.name}
+                                          </p>
+                                          {meta && (
+                                            <p className="mt-0.5 text-[9px] leading-relaxed text-gray-400 line-clamp-2">{meta.salesLine}</p>
+                                          )}
+                                          {isSelected && (
+                                            <div className="mt-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 8px rgba(255,107,71,0.6)' }}>
+                                              <PresetIcon className="h-2.5 w-2.5 text-white" />
+                                            </div>
+                                          )}
+                                        </div>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          {/* AI Recommended badge */}
-                          {isRecommended && !isSelected && (
-                            <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-coral/90 px-2 py-0.5 backdrop-blur-sm">
-                              <Brain className="h-2.5 w-2.5 text-white" />
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
-                            </div>
-                          )}
-                          {isRecommended && isSelected && (
-                            <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 backdrop-blur-sm">
-                              <CheckCircle2 className="h-2.5 w-2.5 text-white" />
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-white">AI Pick</span>
-                            </div>
-                          )}
-                          <div className="relative z-10 mt-auto flex items-end justify-between p-3">
-                            <div>
-                              <span className="block max-w-[90%] text-xs font-bold leading-tight text-white drop-shadow">
-                                {lang === 'he' ? preset.nameHe : preset.name}
-                              </span>
-                              {LOOK_METADATA[preset.name]?.salesLine && (
-                                <span className="mt-0.5 block text-[9px] text-white/70 line-clamp-2">
-                                  {LOOK_METADATA[preset.name].salesLine}
-                                </span>
-                              )}
-                              {LOOK_METADATA[preset.name]?.vibe && (
-                                <span className="mt-0.5 block text-[8px] text-white/50">
-                                  {LOOK_METADATA[preset.name].vibe}
-                                </span>
-                              )}
-                            </div>
-                            <div
-                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg backdrop-blur-sm transition-all duration-200 ${
-                                isSelected
-                                  ? 'bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E]'
-                                  : 'bg-white/20 group-hover:bg-white/35'
-                              }`}
-                              style={isSelected ? { boxShadow: '0 0 10px rgba(255,107,71,0.6)' } : undefined}
-                            >
-                              <PresetIcon className="h-3 w-3 text-white" />
-                            </div>
+                        ) : (
+                          <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                            {filteredPresets.map(preset => {
+                              const meta = LOOK_METADATA[preset.name]
+                              const isSelected = selectedPreset === preset.name
+                              const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
+                              const PresetIcon = preset.icon
+                              return (
+                                <button
+                                  key={preset.id}
+                                  type="button"
+                                  onClick={() => setSelectedPreset(preset.name)}
+                                  className="group relative flex shrink-0 w-40 h-52 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-200 hover:scale-[1.03] focus:outline-none"
+                                  style={{
+                                    border: isSelected ? '1.5px solid rgba(255,107,71,0.7)' : '1px solid rgba(255,255,255,0.07)',
+                                    boxShadow: isSelected ? '0 0 25px rgba(255,107,71,0.4), 0 0 50px rgba(255,107,71,0.15)' : '0 8px 32px rgba(0,0,0,0.5)',
+                                  }}
+                                >
+                                  {brokenImgs.has(`preset-${preset.id}`) ? (
+                                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(255,107,71,0.04)' }}>
+                                      <ImageIcon className="h-5 w-5 text-gray-700" />
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={preset.image}
+                                      alt={preset.name}
+                                      className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                                      onError={() => markBroken(`preset-${preset.id}`)}
+                                    />
+                                  )}
+                                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
+                                  {isSelected && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.08) 0%, transparent 50%)' }} />}
+                                  {isRecommended && (
+                                    <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5" style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.5)' }}>
+                                      <Brain className="h-2.5 w-2.5 text-white" />
+                                      <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
+                                    </div>
+                                  )}
+                                  <div className="relative z-10 mt-auto p-3">
+                                    <p className="text-xs font-extrabold leading-tight text-white" style={{ letterSpacing: '-0.01em' }}>
+                                      {lang === 'he' ? preset.nameHe : preset.name}
+                                    </p>
+                                    {meta && (
+                                      <p className="mt-0.5 text-[9px] leading-relaxed text-gray-400 line-clamp-2">{meta.salesLine}</p>
+                                    )}
+                                    {isSelected && (
+                                      <div className="mt-1.5 flex h-5 w-5 items-center justify-center rounded-full" style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 8px rgba(255,107,71,0.6)' }}>
+                                        <PresetIcon className="h-2.5 w-2.5 text-white" />
+                                      </div>
+                                    )}
+                                  </div>
+                                </button>
+                              )
+                            })}
                           </div>
-                        </button>
-                      )
-                    })}
-                  </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </section>
 
                 {/* ── Product Category Filter ── */}
