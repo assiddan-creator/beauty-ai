@@ -152,24 +152,6 @@ function scoreLook(
   return score
 }
 
-function assignRole(
-  index: number,
-  _lookName: string,
-  entry: LookMetadataEntry,
-  bestEntry: LookMetadataEntry,
-  _bestLookName: string
-): SearchResult['role'] {
-  if (index === 0) return 'best'
-  const bestPlIdx = presenceIndex(bestEntry.presenceLevel)
-  const plIdx = presenceIndex(entry.presenceLevel)
-  const category = entry.category.toLowerCase()
-
-  if (index === 1) return plIdx < bestPlIdx ? 'softer' : 'alternate'
-  if (index === 2) return plIdx > bestPlIdx ? 'bolder' : 'alternate'
-  if (index === 3) return category.includes('ערב') || category.includes('evening') ? 'evening' : 'alternate'
-  return 'alternate'
-}
-
 const REASON_LINE_BY_ROLE: Record<SearchResult['role'], string> = {
   best: 'זה כיוון שמרגיש נכון למה שתיארת',
   softer: 'אותה תחושה, אבל בצורה רכה יותר',

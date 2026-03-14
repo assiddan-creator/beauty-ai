@@ -1777,8 +1777,6 @@ function App() {
     </div>
   )
 
-  const activeBgPreset = (BEAUTY_PRESETS.find(p => p.name === selectedPreset) ?? BEAUTY_PRESETS[0])
-
   const ProductTryOnMode = () => {
     const categories = [
       { id: 'lips', labelHe: 'שפתיים', labelEn: 'Lips', emoji: '💋' },
