@@ -2060,207 +2060,102 @@ function App() {
       <div
         className="w-full max-w-3xl overflow-y-auto"
         style={{
-          background: 'linear-gradient(180deg, #0e0810 0%, #080508 70%, #060306 100%)',
+          background: 'linear-gradient(180deg, #0a0608 0%, #080408 60%, #060306 100%)',
           borderTop: '1px solid rgba(255,255,255,0.07)',
           borderRadius: '28px 28px 0 0',
-          maxHeight: '90vh',
-          boxShadow: '0 -30px 80px rgba(0,0,0,0.7), 0 -1px 0 rgba(255,107,71,0.12)',
+          maxHeight: '92vh',
+          boxShadow: '0 -30px 80px rgba(0,0,0,0.8)',
         }}
       >
+        {/* Top glow line */}
+        <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.4), transparent)' }} />
+
+        {/* Handle */}
         <div className="flex justify-center pt-3.5 pb-1">
-          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.12)' }} />
+          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
         </div>
 
-        <div className="px-5 pb-14 pt-3">
+        <div className="px-6 pb-16 pt-4">
 
-          {/* STEP 1 — Header */}
-          <div className="mb-5 flex items-start justify-between">
-            <div>
-              <p className="text-lg font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>
-                {lang === 'he' ? 'התחילי מהלוק הזה ✨' : 'Start with this look ✨'}
-              </p>
-              <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                {lang === 'he' ? 'הכי מחמיא לך לפי הניתוח' : 'most flattering based on your analysis'}
-              </p>
-            </div>
+          {/* Close button */}
+          <div className="flex justify-end mb-4">
             <button
               type="button"
               onClick={() => setShowAnalysisPanel(false)}
-              className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full transition-colors focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="flex h-8 w-8 items-center justify-center rounded-full focus:outline-none"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             >
               <X className="h-3.5 w-3.5 text-gray-500" />
             </button>
           </div>
 
-          {/* STEP 1 — AI Pick hero */}
-          {recommendedPreset && (
-            <div
-              className="relative mb-6 overflow-hidden rounded-2xl"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,107,71,0.09) 0%, rgba(80,30,60,0.12) 60%, rgba(15,8,20,0.2) 100%)',
-                border: '1px solid rgba(255,107,71,0.2)',
-                boxShadow: '0 0 40px rgba(255,107,71,0.07), inset 0 1px 0 rgba(255,107,71,0.12)',
-              }}
+          {/* Personal greeting */}
+          <div className="mb-8">
+            <p
+              className="text-2xl font-extrabold text-white mb-3 leading-snug"
+              style={{ letterSpacing: '-0.02em' }}
             >
-              <div
-                className="absolute top-0 left-0 right-0 h-px"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.5), transparent)' }}
-              />
-
-              <div className="flex gap-4 p-4">
-                <div
-                  className="relative h-28 shrink-0 overflow-hidden rounded-xl"
-                  style={{ width: 76, border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
-                >
-                  <img
-                    src={recommendedPreset.image}
-                    alt={recommendedPreset.name}
-                    className="h-full w-full object-cover object-top"
-                    onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.04)' }}
-                  />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.5) 100%)' }} />
-                </div>
-
-                <div className="flex flex-1 flex-col min-w-0 py-0.5">
-                  <span
-                    className="mb-1.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white"
-                    style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.45)' }}
-                  >
-                    <Brain className="h-2.5 w-2.5" />
-                    {lang === 'he' ? 'הבחירה שלנו' : 'Our pick'}
-                  </span>
-
-                  <p className="text-base font-extrabold text-white leading-tight" style={{ letterSpacing: '-0.02em' }}>
-                    {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
-                  </p>
-
-                  {LOOK_METADATA[recommendedPreset.name]?.salesLine && (
-                    <p className="mt-0.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                      {LOOK_METADATA[recommendedPreset.name].salesLine}
-                    </p>
-                  )}
-
-                  {faceAnalysis.reasoning && (
-                    <p className="mt-1.5 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                      {faceAnalysis.reasoning.split('.')[0]}.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="px-4 pb-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPreset(recommendedPreset.name)
-                    setShowAnalysisPanel(false)
-                    setAnalysisDismissed(true)
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
-                  style={{
-                    background: 'linear-gradient(135deg, #FF6B47 0%, #FF8A65 50%, #FF9D6E 100%)',
-                    boxShadow: '0 0 28px rgba(255,107,71,0.4), inset 0 1px 0 rgba(255,255,255,0.18)',
-                    letterSpacing: '0.01em',
-                  }}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {lang === 'he' ? 'נסי את הלוק הזה' : 'Try this look'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2 — Safer / Bolder */}
-          {(faceAnalysis.saferOption || faceAnalysis.bolderOption) && (
-            <div className="mb-6">
-              <p className="mb-2.5 text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.25)' }}>
-                {lang === 'he' ? 'רוצה כיוון אחר?' : 'Want a different direction?'}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {faceAnalysis.saferOption && (() => {
-                  const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.saferOption)
-                  if (!p) return null
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
-                      className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    >
-                      <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                        {lang === 'he' ? '🕊️ רך ועדין יותר' : '🕊️ Softer & easier'}
-                      </span>
-                      <span className="text-xs font-bold text-white leading-tight" style={{ letterSpacing: '-0.01em' }}>
-                        {lang === 'he' ? p.nameHe : p.name}
-                      </span>
-                      <span className="mt-0.5 text-[9px] line-clamp-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                        {LOOK_METADATA[p.name]?.salesLine ?? ''}
-                      </span>
-                    </button>
-                  )
-                })()}
-                {faceAnalysis.bolderOption && (() => {
-                  const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.bolderOption)
-                  if (!p) return null
-                  return (
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
-                      className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    >
-                      <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                        {lang === 'he' ? '🔥 יותר נוכח' : '🔥 More statement'}
-                      </span>
-                      <span className="text-xs font-bold text-white leading-tight" style={{ letterSpacing: '-0.01em' }}>
-                        {lang === 'he' ? p.nameHe : p.name}
-                      </span>
-                      <span className="mt-0.5 text-[9px] line-clamp-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                        {LOOK_METADATA[p.name]?.salesLine ?? ''}
-                      </span>
-                    </button>
-                  )
-                })()}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3 — Analysis summary — compact */}
-          <div
-            className="mb-5 rounded-xl p-4"
-            style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <p className="mb-2.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
-              {lang === 'he' ? 'מה מחמיא לך' : 'What flatters you'}
+              {lang === 'he'
+                ? 'הסתכלנו על התמונה שלך —'
+                : 'We looked at your photo —'}
             </p>
-            <div className="flex flex-wrap gap-1.5 mb-3">
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {lang === 'he'
+                ? 'ניתחנו את גוון העור שלך, האנדרטון, והוייב הכללי. הנה מה שראינו:'
+                : 'We analyzed your skin tone, undertone, and overall vibe. Here\'s what we found:'}
+            </p>
+          </div>
+
+          {/* What we saw — personal cards */}
+          <div
+            className="mb-8 rounded-2xl p-5"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              {lang === 'he' ? 'מה ראינו' : 'What we saw'}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
               {faceAnalysis.skinTone && (
-                <span className="rounded-lg px-2 py-1 text-[10px] font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)' }}>
-                  {lang === 'he' ? 'גוון ' : 'Skin · '}{faceAnalysis.skinTone}
-                </span>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                    {lang === 'he' ? 'גוון עור' : 'Skin tone'}
+                  </p>
+                  <p className="text-sm font-bold text-white">{faceAnalysis.skinTone}</p>
+                </div>
               )}
               {faceAnalysis.undertone && (
-                <span className="rounded-lg px-2 py-1 text-[10px] font-medium" style={{ background: 'rgba(255,107,71,0.08)', color: 'rgba(255,140,100,0.8)' }}>
-                  {faceAnalysis.undertone}
-                </span>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,107,71,0.06)', border: '1px solid rgba(255,107,71,0.12)' }}>
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(255,107,71,0.5)' }}>
+                    {lang === 'he' ? 'אנדרטון' : 'Undertone'}
+                  </p>
+                  <p className="text-sm font-bold" style={{ color: 'rgba(255,140,100,0.95)' }}>{faceAnalysis.undertone}</p>
+                </div>
               )}
               {faceAnalysis.lipColorFamily && (
-                <span className="rounded-lg px-2 py-1 text-[10px] font-medium" style={{ background: 'rgba(236,72,153,0.08)', color: 'rgba(240,150,190,0.8)' }}>
-                  {lang === 'he' ? 'שפתיים · ' : 'Lips · '}{faceAnalysis.lipColorFamily}
-                </span>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.1)' }}>
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(236,72,153,0.5)' }}>
+                    {lang === 'he' ? 'גוני שפתיים' : 'Lip tones'}
+                  </p>
+                  <p className="text-sm font-bold" style={{ color: 'rgba(240,150,190,0.95)' }}>{faceAnalysis.lipColorFamily}</p>
+                </div>
               )}
               {faceAnalysis.blushColorFamily && (
-                <span className="rounded-lg px-2 py-1 text-[10px] font-medium" style={{ background: 'rgba(249,115,22,0.08)', color: 'rgba(255,180,120,0.8)' }}>
-                  {lang === 'he' ? 'סומק · ' : 'Blush · '}{faceAnalysis.blushColorFamily}
-                </span>
+                <div className="rounded-xl p-3" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.1)' }}>
+                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(249,115,22,0.5)' }}>
+                    {lang === 'he' ? 'גוני סומק' : 'Blush tones'}
+                  </p>
+                  <p className="text-sm font-bold" style={{ color: 'rgba(255,180,120,0.95)' }}>{faceAnalysis.blushColorFamily}</p>
+                </div>
               )}
             </div>
+
+            {/* Beauty tips */}
             {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
-              <div className="space-y-1.5">
+              <div className="space-y-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 {faceAnalysis.beautyTips.map((tip, i) => (
-                  <div key={i} className="flex gap-2 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                    <span className="mt-0.5 shrink-0" style={{ color: 'rgba(255,107,71,0.45)' }}>✦</span>
+                  <div key={i} className="flex gap-2.5 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    <span className="shrink-0 mt-0.5" style={{ color: 'rgba(255,107,71,0.4)' }}>✦</span>
                     <span>{tip}</span>
                   </div>
                 ))}
@@ -2268,10 +2163,150 @@ function App() {
             )}
           </div>
 
-          {/* STEP 4 — Alternate looks */}
+          {/* The recommendation — personal and warm */}
+          {recommendedPreset && (
+            <div className="mb-8">
+              <p className="text-lg font-extrabold text-white mb-2 leading-snug" style={{ letterSpacing: '-0.02em' }}>
+                {lang === 'he'
+                  ? 'והכיוון שהכי מחמיא לך כרגע —'
+                  : 'And the look that flatters you most right now —'}
+              </p>
+
+              {/* Look name — hero */}
+              <div
+                className="relative mb-4 overflow-hidden rounded-2xl p-5"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,107,71,0.1) 0%, rgba(80,20,60,0.15) 100%)',
+                  border: '1px solid rgba(255,107,71,0.2)',
+                  boxShadow: '0 0 40px rgba(255,107,71,0.06)',
+                }}
+              >
+                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.4), transparent)' }} />
+
+                <div className="flex items-start gap-4">
+                  {/* Preset preview */}
+                  <div
+                    className="h-20 w-16 shrink-0 overflow-hidden rounded-xl"
+                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <img
+                      src={recommendedPreset.image}
+                      alt={recommendedPreset.name}
+                      className="h-full w-full object-cover object-top"
+                      onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.background = 'rgba(255,107,71,0.06)' }}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white mb-2"
+                      style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.4)' }}
+                    >
+                      <Brain className="h-2.5 w-2.5" />
+                      {lang === 'he' ? 'הבחירה שלנו' : 'Our pick'}
+                    </span>
+
+                    <p
+                      className="text-xl font-extrabold text-white leading-tight"
+                      style={{ letterSpacing: '-0.02em' }}
+                    >
+                      {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
+                    </p>
+
+                    {LOOK_METADATA[recommendedPreset.name]?.salesLine && (
+                      <p className="mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                        {LOOK_METADATA[recommendedPreset.name].salesLine}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Personal reasoning */}
+                {faceAnalysis.reasoning && (
+                  <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                      {lang === 'he'
+                        ? `לפי הגוונים והוייב הכללי שלך, ${faceAnalysis.reasoning.split('.')[0].toLowerCase()}.`
+                        : `Based on your tones and overall vibe, ${faceAnalysis.reasoning.split('.')[0].toLowerCase()}.`}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      {lang === 'he'
+                        ? 'אם בא לך להתחיל בבטוח — זה המקום הנכון להתחיל ממנו.'
+                        : 'If you want to start safe — this is the right place to begin.'}
+                    </p>
+                  </div>
+                )}
+
+                {/* CTA */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPreset(recommendedPreset.name)
+                    setShowAnalysisPanel(false)
+                    setAnalysisDismissed(true)
+                  }}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
+                  style={{
+                    background: 'linear-gradient(135deg, #FF6B47 0%, #FF9D6E 100%)',
+                    boxShadow: '0 0 24px rgba(255,107,71,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {lang === 'he' ? 'נסי את הלוק הזה' : 'Try this look'}
+                </button>
+              </div>
+
+              {/* Safer / Bolder */}
+              {(faceAnalysis.saferOption || faceAnalysis.bolderOption) && (
+                <div className="mb-2">
+                  <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                    {lang === 'he'
+                      ? 'ואם תרצי, יש לנו גם עוד כיוונים שיכולים להתאים לך —'
+                      : 'And if you want, we have more directions that could suit you —'}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {faceAnalysis.saferOption && (() => {
+                      const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.saferOption)
+                      if (!p) return null
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
+                          className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                        >
+                          <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>🕊️ {lang === 'he' ? 'רך יותר' : 'Softer'}</span>
+                          <span className="text-xs font-bold text-white">{lang === 'he' ? p.nameHe : p.name}</span>
+                          <span className="text-[9px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[p.name]?.salesLine ?? ''}</span>
+                        </button>
+                      )
+                    })()}
+                    {faceAnalysis.bolderOption && (() => {
+                      const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.bolderOption)
+                      if (!p) return null
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
+                          className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
+                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                        >
+                          <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>🔥 {lang === 'he' ? 'יותר נוכח' : 'Bolder'}</span>
+                          <span className="text-xs font-bold text-white">{lang === 'he' ? p.nameHe : p.name}</span>
+                          <span className="text-[9px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[p.name]?.salesLine ?? ''}</span>
+                        </button>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Alternate looks */}
           {alternatePresets.length > 0 && (
-            <div className="mb-5">
-              <p className="mb-2.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.22)' }}>
+            <div className="mb-6">
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
                 {lang === 'he' ? 'עוד לוקים שיכולים להתאים לך' : 'More looks that suit you'}
               </p>
               <div className="flex flex-col gap-2">
@@ -2279,26 +2314,17 @@ function App() {
                   <div
                     key={preset.id}
                     className="flex items-center gap-3 rounded-xl p-3 cursor-pointer transition-all hover:opacity-80"
-                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
                     onClick={() => { setSelectedPreset(preset.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
                   >
                     <div className="h-11 w-9 shrink-0 overflow-hidden rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <img
-                        src={preset.image}
-                        alt={preset.name}
-                        className="h-full w-full object-cover object-top"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
+                      <img src={preset.image} alt={preset.name} className="h-full w-full object-cover object-top" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
-                        {lang === 'he' ? preset.nameHe : preset.name}
-                      </p>
-                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                        {LOOK_METADATA[preset.name]?.salesLine ?? ''}
-                      </p>
+                      <p className="text-xs font-bold text-white">{lang === 'he' ? preset.nameHe : preset.name}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[preset.name]?.salesLine ?? ''}</p>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />
                   </div>
                 ))}
               </div>
@@ -2309,8 +2335,8 @@ function App() {
           <button
             type="button"
             onClick={() => setShowAnalysisPanel(false)}
-            className="flex w-full items-center justify-center rounded-xl py-3 text-xs font-medium transition-all hover:opacity-60 focus:outline-none"
-            style={{ color: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.05)' }}
+            className="flex w-full items-center justify-center rounded-xl py-3 text-xs transition-all hover:opacity-60 focus:outline-none"
+            style={{ color: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.05)' }}
           >
             {lang === 'he' ? 'אני רוצה לבחור בעצמי' : 'Let me choose myself'}
           </button>
