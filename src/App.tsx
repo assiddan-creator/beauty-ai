@@ -847,22 +847,30 @@ async function runReplicatePrediction(
 ): Promise<string> {
   const token = import.meta.env.VITE_REPLICATE_API_TOKEN as string
 
-  const payload = engine.isArray
-    ? {
-        input: {
-          prompt,
-          [engine.inputKey]: [imageDataUrl],
-          aspect_ratio: 'match_input_image',
-          output_format: 'jpg',
-        },
-      }
-    : {
-        input: {
-          prompt,
-          [engine.inputKey]: imageDataUrl,
-          output_format: 'jpg',
-        },
-      }
+  const isFlux2Pro = engine.id === 'flux-2-pro'
+  const isSeedream5 = engine.id === 'seedream-5-lite'
+  const isSeedream45 = engine.id === 'seedream-4.5'
+
+  const baseInput: Record<string, unknown> = { prompt }
+
+  if (engine.isArray) {
+    baseInput[engine.inputKey] = [imageDataUrl]
+  } else {
+    baseInput[engine.inputKey] = imageDataUrl
+  }
+
+  if (isFlux2Pro) {
+    baseInput['aspect_ratio'] = 'match_input_image'
+    baseInput['output_format'] = 'jpg'
+  } else if (isSeedream5 || isSeedream45) {
+    baseInput['aspect_ratio'] = 'match_input_image'
+    baseInput['output_format'] = 'jpeg'
+  } else {
+    baseInput['aspect_ratio'] = 'match_input_image'
+    baseInput['output_format'] = 'jpg'
+  }
+
+  const payload = { input: baseInput }
 
   const endpoint = engine.model.includes('/')
     ? `/api/replicate/v1/models/${engine.model}/predictions`
