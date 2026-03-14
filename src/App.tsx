@@ -366,6 +366,126 @@ Do not make the image look like a beauty filter or AI-generated face.
 OUTPUT STYLE:
 Photorealistic cosmetic edit. Premium beauty realism. Overlay-ready result. Very clean, subtle, clearly groomed enhancement.`,
   },
+  {
+    id: 'date-night-romantic',
+    name: 'Date Night Romantic',
+    nameHe: 'רומנטי ליל דייט',
+    category: 'full',
+    image: '/looks/Date-Night-Romantic.jpg',
+    icon: Heart,
+    tags: ['romantic', 'evening', 'rosy', 'soft'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a romantic date-night look: soft rosy lips, subtle blush, soft definition. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'evening-luxury',
+    name: 'Evening Luxury',
+    nameHe: 'יוקרה ערב',
+    category: 'full',
+    image: '/looks/Evening-Luxury.jpg',
+    icon: Star,
+    tags: ['luxury', 'evening', 'glossy', 'refined'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply an evening luxury look: glossy lips, refined blush, elegant definition. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'fresh-rosy',
+    name: 'Fresh Rosy',
+    nameHe: 'ורדרד רענן',
+    category: 'full',
+    image: '/looks/Fresh-Rosy.jpg',
+    icon: Droplets,
+    tags: ['fresh', 'rosy', 'youthful'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a fresh rosy look: rosy pink lips and cheeks, dewy finish. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'nude-sculpt',
+    name: 'Nude Sculpt',
+    nameHe: 'מפוסל ניוד',
+    category: 'full',
+    image: '/looks/Nude-Sculpt.jpg',
+    icon: Gem,
+    tags: ['nude', 'sculpted', 'elegant', 'premium'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a nude sculpted look: nude lips, sculpted blush placement, elegant definition. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'peach-pop',
+    name: 'Peach Pop',
+    nameHe: 'אפרסק פופ',
+    category: 'full',
+    image: '/looks/Peach-Pop.jpg',
+    icon: Sun,
+    tags: ['peach', 'cheerful', 'modern'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a peach pop look: peachy lips and blush, fresh and cheerful. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'rosewood-satin',
+    name: 'Rosewood Satin',
+    nameHe: 'סאטן וודרוז',
+    category: 'full',
+    image: '/looks/Rosewood-Satin.jpg',
+    icon: Gem,
+    tags: ['rosewood', 'satin', 'refined', 'luxurious'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a rosewood satin look: rosewood-toned lips and blush, satin finish. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'berry-chic',
+    name: 'Berry Chic',
+    nameHe: 'ברי שיק',
+    category: 'lips',
+    image: '/looks/Berry-Chic.jpg',
+    icon: Moon,
+    tags: ['berry', 'cool', 'chic', 'fashion'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a berry chic look: berry lip color, cool-toned blush. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'terracotta-nude',
+    name: 'Terracotta Nude',
+    nameHe: 'ניוד טרקוטה',
+    category: 'blush',
+    image: '/looks/Terracotta-Nude.jpg',
+    icon: Sun,
+    tags: ['terracotta', 'warm', 'earthy', 'rich'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a terracotta nude look: warm terracotta blush and nude lips. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'glass-nude',
+    name: 'Glass Nude',
+    nameHe: 'ניוד זכוכית',
+    category: 'full',
+    image: '/looks/Glass-Nude.jpg',
+    icon: Droplets,
+    tags: ['glass', 'sheer', 'glossy', 'soft'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a glass nude look: sheer glossy lips, soft glow. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'coral-breeze',
+    name: 'Coral Breeze',
+    nameHe: 'בריז קורל',
+    category: 'full',
+    image: '/looks/Coral-Breeze.jpg',
+    icon: Sun,
+    tags: ['coral', 'fresh', 'breezy'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a coral breeze look: coral lips and blush, fresh and breezy. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'power-nude',
+    name: 'Power Nude',
+    nameHe: 'ניוד עוצמה',
+    category: 'full',
+    image: '/looks/Power-Nude.jpg',
+    icon: Star,
+    tags: ['power', 'nude', 'confident', 'modern'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a power nude look: strong nude lips, defined blush, confident finish. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
+  {
+    id: 'local-chic',
+    name: 'Local Chic',
+    nameHe: 'שיק לוקל',
+    category: 'full',
+    image: '/looks/Local-Chic.jpg',
+    icon: Flower2,
+    tags: ['approachable', 'glossy', 'flattering'],
+    prompt: `Beauty makeup virtual try-on. Edit the uploaded selfie and apply a local chic look: approachable glossy lips and soft blush. Preserve identity, face shape, skin texture, composition. Photorealistic, overlay-ready.`,
+  },
 ]
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
@@ -1409,7 +1529,7 @@ function App() {
 
                 {/* ── Manual Claude Vision trigger ── */}
                 {originalImage && !isGenerating && (
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={handleAnalyzeWithAI}
@@ -1419,6 +1539,16 @@ function App() {
                       <Brain className="h-4 w-4" />
                       {isAnalyzing ? t.generating : t.analyzeBtn}
                     </button>
+                    {faceAnalysis && !showAnalysisPanel && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAnalysisPanel(true)}
+                        className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-coral/30 bg-coral/10 px-4 py-2 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        {lang === 'he' ? 'הניתוח שלי' : 'My Analysis'}
+                      </button>
+                    )}
                   </div>
                 )}
 
