@@ -2393,6 +2393,15 @@ function App() {
               <p className="mt-0.5 text-[11px] text-gray-500">
                 {lang === 'he' ? 'סטודיו לאיפור וירטואלי' : 'Makeup Try-On Studio'}
               </p>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium transition-all hover:opacity-80 focus:outline-none mt-2"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}
+              >
+                <Trash2 className="h-3 w-3" />
+                {lang === 'he' ? 'התחל מחדש' : 'Start over'}
+              </button>
             </div>
             <div
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B47] to-[#FF9D6E] text-base font-extrabold text-white"
@@ -2491,50 +2500,9 @@ function App() {
             {isUploaded && (
               <div className="mt-8">
 
-                {/* Control Bar */}
-                <div className="flex items-center justify-between rounded-t-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-3xl">
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/8 hover:text-white focus:outline-none"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    {lang === 'he' ? 'התחל מחדש' : 'Clear / Start Over'}
-                  </button>
-                  {generatedImage && (
-                    <button
-                      type="button"
-                      onClick={handleDownload}
-                      className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-5 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none"
-                      style={{ boxShadow: '0 0 25px rgba(255,107,71,0.5)' }}
-                    >
-                      <Download className="h-4 w-4" />
-                      {t.downloadBtn}
-                    </button>
-                  )}
-                  {generatedImage && selectedPreset && LOOK_PRODUCTS[selectedPreset] && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAppMode('product')
-                        setShowPathScreen(false)
-                      }}
-                      className="flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-80 active:scale-95 focus:outline-none"
-                      style={{
-                        background: 'rgba(255,107,71,0.1)',
-                        border: '1px solid rgba(255,107,71,0.25)',
-                        color: 'rgba(255,107,71,0.9)',
-                      }}
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {lang === 'he' ? 'קני את המוצרים' : 'Shop the look'}
-                    </button>
-                  )}
-                </div>
-
                 {/* ── Image Viewer ── */}
-                <div className="overflow-hidden rounded-b-2xl border border-t-0 border-white/10 bg-white/5 backdrop-blur-3xl">
-                  <div className="relative w-full overflow-hidden aspect-[3/4] max-h-[65vh]">
+                <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur-3xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="relative w-full overflow-hidden aspect-[3/4] max-h-[72vh]">
 
                     {/* Generating Overlay */}
                     {isGenerating && (
@@ -2677,6 +2645,61 @@ function App() {
                 <p className="mt-3 text-center text-[11px] text-gray-600">
                   ✦ {t.disclaimer}
                 </p>
+
+                {generatedImage && !isGenerating && (
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    {/* Button 1 - Download */}
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <Download className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        {lang === 'he' ? 'הורדי תמונה' : 'Download'}
+                      </span>
+                    </button>
+
+                    {/* Button 2 - View products */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedPreset && LOOK_PRODUCTS[selectedPreset]) {
+                          setAppMode('product')
+                          setShowPathScreen(false)
+                        }
+                      }}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                      style={{
+                        background: 'rgba(255,107,71,0.08)',
+                        border: '1px solid rgba(255,107,71,0.18)',
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4" style={{ color: 'rgba(255,107,71,0.8)' }} />
+                      <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,107,71,0.7)' }}>
+                        {lang === 'he' ? 'מוצרי הלוק' : 'Shop look'}
+                      </span>
+                    </button>
+
+                    {/* Button 3 - Try another look */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGeneratedImage(null)
+                        setSelectedPreset(null)
+                        document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl py-3.5 px-2 transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <ArrowLeftRight className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                        {lang === 'he' ? 'לוק אחר' : 'Try another'}
+                      </span>
+                    </button>
+                  </div>
+                )}
 
                 {/* ── Mode: Looks | Product ── */}
                 <div className="mt-4 flex gap-2 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
