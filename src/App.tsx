@@ -718,10 +718,11 @@ function App() {
         : ''
 
       const prompt = [
+        'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo. Output dimensions and framing must be identical to the input.',
         activePreset.prompt,
         categoryNote,
         customNote ? `Additional request: ${customNote}` : null,
-      ].filter(Boolean).join(' ')
+      ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
       const outputUrl = await runReplicatePrediction(prompt, imageDataUrl)
@@ -1120,7 +1121,7 @@ function App() {
                           className="absolute inset-0 z-20 h-full w-full cursor-col-resize opacity-0"
                           aria-label="Compare before and after"
                         />
-                        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
+                        <div className="hidden absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-full bg-black/60 px-4 py-2 backdrop-blur-sm">
                           <span className="text-[11px] font-semibold text-white/70">Intensity</span>
                           <input
                             type="range"
