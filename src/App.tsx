@@ -736,14 +736,17 @@ const BEAUTY_INTENT_ROLE_LABELS: Record<SearchResult['role'], string> = {
 }
 
 function BeautyIntentSearchBar(props: {
-  query: string
-  onQueryChange: (q: string) => void
-  results: SearchResult[]
-  onSearch: () => void
   onSelectLook: (lookName: string) => void
   metadata: LookMetadataRecord
 }) {
-  const { query, onQueryChange, results, onSearch, onSelectLook } = props
+  const { onSelectLook, metadata } = props
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+
+  const handleSearch = () => {
+    setResults(searchByIntent(query, metadata))
+  }
+
   return (
     <section className="mt-7">
       <h2 className="text-sm font-bold text-white mb-2">
@@ -756,8 +759,8 @@ function BeautyIntentSearchBar(props: {
         <input
           type="text"
           value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="ספרי לי לאן את הולכת או איזה מראה מחפשת..."
           autoComplete="off"
           autoCorrect="off"
@@ -767,7 +770,7 @@ function BeautyIntentSearchBar(props: {
         />
         <button
           type="button"
-          onClick={onSearch}
+          onClick={handleSearch}
           className="shrink-0 flex items-center gap-2 rounded-2xl border border-coral/30 bg-coral/15 px-4 py-3 text-sm font-semibold text-coral transition-all hover:bg-coral/25 focus:outline-none"
         >
           <Search className="h-4 w-4" />
@@ -1165,8 +1168,6 @@ function App() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [customInstructions, setCustomInstructions] = useState('')
-  const [intentSearchQuery, setIntentSearchQuery] = useState('')
-  const [intentSearchResults, setIntentSearchResults] = useState<SearchResult[]>([])
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistoryFromStorage)
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null)
@@ -2397,10 +2398,6 @@ function App() {
             {/* Beauty intent search */}
             <div className="mb-6">
               <BeautyIntentSearchBar
-                query={intentSearchQuery}
-                onQueryChange={setIntentSearchQuery}
-                results={intentSearchResults}
-                onSearch={handleIntentSearch}
                 onSelectLook={handleIntentSelectLook}
                 metadata={LOOK_METADATA}
               />
@@ -2914,9 +2911,6 @@ function App() {
     )
   }
 
-  const handleIntentSearch = () => {
-    setIntentSearchResults(searchByIntent(intentSearchQuery, LOOK_METADATA))
-  }
   const handleIntentSelectLook = (lookName: string) => {
     setSelectedPreset(lookName)
     document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
@@ -3896,10 +3890,6 @@ function App() {
                 {/* ── Beauty intent search (mood/occasion) ── */}
                 {appMode === 'looks' && (
                   <BeautyIntentSearchBar
-                    query={intentSearchQuery}
-                    onQueryChange={setIntentSearchQuery}
-                    results={intentSearchResults}
-                    onSearch={handleIntentSearch}
                     onSelectLook={handleIntentSelectLook}
                     metadata={LOOK_METADATA}
                   />
