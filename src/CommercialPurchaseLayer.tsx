@@ -166,12 +166,19 @@ export default function CommercialPurchaseLayer() {
     window.dispatchEvent(new CustomEvent('beauty:commerce-click', { detail }))
   }
 
+  const openCommerce = () => {
+    setOpen(true)
+    window.dispatchEvent(new CustomEvent('beauty:commerce-open', {
+      detail: { visibleItems: activeProducts.length + (activeLook ? 1 : 0) },
+    }))
+  }
+
   return (
     <div className="beauty-commerce-layer" dir={isHe ? 'rtl' : 'ltr'}>
       <button
         type="button"
         className="beauty-commerce-chip"
-        onClick={() => setOpen(true)}
+        onClick={openCommerce}
         aria-label={copy.chip}
       >
         <ShoppingBag aria-hidden="true" />
