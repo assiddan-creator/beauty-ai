@@ -1,6 +1,9 @@
 {
   "operatorName": "",
   "retailerName": "",
+  "retailerUrl": "",
   "privacyContact": "",
-  "purchaseLinks": {}
+  "purchaseLinks": {},
+  "products": [],
+  "lookLinks": {}
 }
