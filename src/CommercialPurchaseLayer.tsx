@@ -9,7 +9,7 @@ import {
   getActiveCommercialProducts,
 } from './lib/commercialCatalog'
 import { normalizeCatalogText } from './lib/beautyCatalog'
-import { getProductTryOnItem } from './lib/productTryOnCatalog'
+import { getBeautyProductView } from './lib/productCatalogFacade'
 import './commercial-purchase.css'
 
 type UiLanguage = 'he' | 'en'
@@ -227,14 +227,14 @@ export default function CommercialPurchaseLayer() {
             {activeProducts.length > 0 && (
               <div className="beauty-commerce-products">
                 {activeProducts.map((product) => {
-                  const tryOnDetail = getProductTryOnItem(product.id)
+                  const productView = getBeautyProductView(product.id)
                   return (
                     <article className="beauty-commerce-product" key={product.id}>
                       <div className="beauty-commerce-product-main">
-                        {tryOnDetail && (
+                        {productView?.swatchColor && (
                           <span
                             className="beauty-commerce-swatch"
-                            style={{ background: tryOnDetail.swatchColor }}
+                            style={{ background: productView.swatchColor }}
                             aria-hidden="true"
                           />
                         )}
@@ -242,9 +242,9 @@ export default function CommercialPurchaseLayer() {
                           <span>{product.brand}</span>
                           <strong>{product.productName}</strong>
                           <small>{product.shadeName}</small>
-                          {tryOnDetail && (
+                          {(productView?.shadeFamily || productView?.finish) && (
                             <small className="beauty-commerce-product-detail">
-                              {tryOnDetail.shadeFamily} · {tryOnDetail.finish}
+                              {[productView?.shadeFamily, productView?.finish].filter(Boolean).join(' · ')}
                             </small>
                           )}
                           {product.priceLabel && <em>{product.priceLabel}</em>}
@@ -262,8 +262,8 @@ export default function CommercialPurchaseLayer() {
                           brand: product.brand,
                           productName: product.productName,
                           shadeName: product.shadeName,
-                          shadeFamily: tryOnDetail?.shadeFamily ?? '',
-                          finish: tryOnDetail?.finish ?? '',
+                          shadeFamily: productView?.shadeFamily ?? '',
+                          finish: productView?.finish ?? '',
                           url: product.url,
                         })}
                       >
