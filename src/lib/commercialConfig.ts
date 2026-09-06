@@ -1,5 +1,7 @@
 import { getCanonicalBeautyProduct } from './beautyCatalog'
 
+export type CommercialAvailability = 'in_stock' | 'out_of_stock' | 'unknown'
+
 export type CommercialProductLink = {
   id: string
   brand: string
@@ -7,6 +9,8 @@ export type CommercialProductLink = {
   shadeName: string
   url: string
   priceLabel: string
+  retailerSku: string
+  availability: CommercialAvailability
 }
 
 export type CommercialConfig = {
@@ -47,6 +51,11 @@ function safeHttpUrl(value: unknown): string | null {
   }
 }
 
+function safeAvailability(value: unknown): CommercialAvailability {
+  if (value === 'in_stock' || value === 'out_of_stock') return value
+  return 'unknown'
+}
+
 function normalizeUrlMap(value: unknown, maxEntries = 500): Record<string, string> {
   const output: Record<string, string> = {}
   if (!value || typeof value !== 'object' || Array.isArray(value)) return output
@@ -74,6 +83,8 @@ function normalizeProducts(value: unknown): CommercialProductLink[] {
       const id = safeString(record.id, 120)
       const url = safeHttpUrl(record.url)
       const priceLabel = safeString(record.priceLabel, 80)
+      const retailerSku = safeString(record.retailerSku, 120)
+      const availability = safeAvailability(record.availability)
 
       if (!id || !url) return null
 
@@ -81,8 +92,8 @@ function normalizeProducts(value: unknown): CommercialProductLink[] {
 
       // For known Beauty AI product IDs, the canonical catalog owns the display
       // identity. Retailer config only needs the stable ID plus its own URL and
-      // optional price. This prevents a retailer feed typo from linking the right
-      // URL to the wrong visible shade/product label.
+      // optional commercial metadata. This prevents a retailer feed typo from
+      // changing the visible product/shade identity.
       const brand = canonical?.brand ?? safeString(record.brand, 120)
       const productName = canonical?.productName ?? safeString(record.productName, 180)
       const shadeName = canonical?.shadeName ?? safeString(record.shadeName, 140)
@@ -98,6 +109,8 @@ function normalizeProducts(value: unknown): CommercialProductLink[] {
         shadeName,
         url,
         priceLabel,
+        retailerSku,
+        availability,
       }
     })
     .filter((item): item is CommercialProductLink => Boolean(item))
@@ -135,8 +148,12 @@ export function loadCommercialConfig(): Promise<CommercialConfig> {
 
 export async function getPurchaseUrl(productId: string): Promise<string | null> {
   const config = await loadCommercialConfig()
-  return config.purchaseLinks[productId]
-    ?? config.products.find((product) => product.id === productId)?.url
+  const product = config.products.find((item) => item.id === productId)
+
+  if (product?.availability === 'out_of_stock') return null
+
+  return product?.url
+    ?? config.purchaseLinks[productId]
     ?? null
 }
 
