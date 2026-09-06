@@ -9,6 +9,10 @@ export type CommercialFunnelEventName =
   | 'beauty_analysis_requested'
   | 'beauty_analysis_succeeded'
   | 'beauty_analysis_failed'
+  | 'product_category_selected'
+  | 'product_brand_selected'
+  | 'product_selected'
+  | 'product_shade_selected'
   | 'tryon_requested'
   | 'tryon_succeeded'
   | 'tryon_failed'
@@ -31,6 +35,7 @@ export type CommercialFunnelSnapshot = {
     selfieConfirmation: number | null
     selfieRetake: number | null
     analysisCompletion: number | null
+    productToShadeSelection: number | null
     tryOnCompletion: number | null
     shopClickThrough: number | null
   }
@@ -42,7 +47,11 @@ const SAFE_DETAIL_KEYS = new Set([
   'mode',
   'status',
   'type',
+  'category',
+  'brand',
   'productId',
+  'productName',
+  'shadeName',
   'lookName',
   'engine',
   'visibleItems',
@@ -118,6 +127,10 @@ export function getCommercialFunnelSnapshot(): CommercialFunnelSnapshot {
     beauty_analysis_requested: 0,
     beauty_analysis_succeeded: 0,
     beauty_analysis_failed: 0,
+    product_category_selected: 0,
+    product_brand_selected: 0,
+    product_selected: 0,
+    product_shade_selected: 0,
     tryon_requested: 0,
     tryon_succeeded: 0,
     tryon_failed: 0,
@@ -137,6 +150,7 @@ export function getCommercialFunnelSnapshot(): CommercialFunnelSnapshot {
       selfieConfirmation: rate(counts.selfie_confirmed, counts.selfie_captured),
       selfieRetake: rate(counts.selfie_retaken, counts.selfie_captured),
       analysisCompletion: rate(counts.beauty_analysis_succeeded, counts.beauty_analysis_requested),
+      productToShadeSelection: rate(counts.product_shade_selected, counts.product_category_selected),
       tryOnCompletion: rate(counts.tryon_succeeded, counts.tryon_requested),
       shopClickThrough: rate(counts.commerce_clicked, counts.commerce_opened),
     },
