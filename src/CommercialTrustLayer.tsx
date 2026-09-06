@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ShieldCheck, X } from 'lucide-react'
+import { loadCommercialConfig, type CommercialConfig } from './lib/commercialConfig'
 
 type UiLanguage = 'he' | 'en'
 
@@ -21,6 +22,9 @@ const COPY = {
       'היסטוריית תוצאות יכולה להישמר מקומית בדפדפן במכשיר שלך. ספקי ה-AI עשויים לעבד מידע בהתאם למדיניות השירות שלהם.',
       'שמות מותגים ומוצרים משמשים לזיהוי מוצרים ולהדגמת חוויית קנייה. אין בכך הצהרה על שותפות, חסות או אישור מצד המותגים.',
     ],
+    operator: 'מפעיל המוצר',
+    retailer: 'חנות / מותג',
+    privacyContact: 'יצירת קשר בנושא פרטיות',
     details: 'מידע מלא על טיפול בנתונים',
     close: 'הבנתי',
   },
@@ -34,6 +38,9 @@ const COPY = {
       'Result history may be stored locally in your browser on this device. AI providers may process data under their own service policies.',
       'Brand and product names are used for product identification and shopping-demo purposes. They do not imply partnership, sponsorship, or endorsement.',
     ],
+    operator: 'Product operator',
+    retailer: 'Retailer / brand',
+    privacyContact: 'Privacy contact',
     details: 'Full data-handling notice',
     close: 'Got it',
   },
@@ -42,6 +49,7 @@ const COPY = {
 export default function CommercialTrustLayer() {
   const [open, setOpen] = useState(false)
   const [lang, setLang] = useState<UiLanguage>(() => detectLanguage())
+  const [config, setConfig] = useState<CommercialConfig | null>(null)
 
   useEffect(() => {
     const observer = new MutationObserver(() => setLang(detectLanguage()))
@@ -49,8 +57,21 @@ export default function CommercialTrustLayer() {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    let active = true
+    loadCommercialConfig().then((value) => {
+      if (active) setConfig(value)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   const copy = COPY[lang]
   const isHe = lang === 'he'
+  const hasCommercialIdentity = Boolean(
+    config?.operatorName || config?.retailerName || config?.privacyContact,
+  )
 
   return (
     <>
@@ -104,6 +125,20 @@ export default function CommercialTrustLayer() {
                 </div>
               ))}
             </div>
+
+            {hasCommercialIdentity && config && (
+              <div className="beauty-trust-identity">
+                {config.operatorName && (
+                  <p><strong>{copy.operator}:</strong> {config.operatorName}</p>
+                )}
+                {config.retailerName && (
+                  <p><strong>{copy.retailer}:</strong> {config.retailerName}</p>
+                )}
+                {config.privacyContact && (
+                  <p><strong>{copy.privacyContact}:</strong> {config.privacyContact}</p>
+                )}
+              </div>
+            )}
 
             <a className="beauty-trust-details" href="/privacy.html" target="_blank" rel="noreferrer">
               {copy.details}
