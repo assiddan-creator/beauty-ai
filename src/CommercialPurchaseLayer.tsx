@@ -9,6 +9,7 @@ import {
   getActiveCommercialProducts,
 } from './lib/commercialCatalog'
 import { normalizeCatalogText } from './lib/beautyCatalog'
+import { getProductTryOnItem } from './lib/productTryOnCatalog'
 import './commercial-purchase.css'
 
 type UiLanguage = 'he' | 'en'
@@ -225,34 +226,53 @@ export default function CommercialPurchaseLayer() {
 
             {activeProducts.length > 0 && (
               <div className="beauty-commerce-products">
-                {activeProducts.map((product) => (
-                  <article className="beauty-commerce-product" key={product.id}>
-                    <div className="beauty-commerce-product-copy">
-                      <span>{product.brand}</span>
-                      <strong>{product.productName}</strong>
-                      <small>{product.shadeName}</small>
-                      {product.priceLabel && <em>{product.priceLabel}</em>}
-                    </div>
-                    <a
-                      href={product.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => emitCommerceClick({
-                        type: 'product',
-                        productId: product.id,
-                        retailerSku: product.retailerSku,
-                        availability: product.availability,
-                        brand: product.brand,
-                        productName: product.productName,
-                        shadeName: product.shadeName,
-                        url: product.url,
-                      })}
-                    >
-                      {copy.productCta}
-                      <ExternalLink aria-hidden="true" />
-                    </a>
-                  </article>
-                ))}
+                {activeProducts.map((product) => {
+                  const tryOnDetail = getProductTryOnItem(product.id)
+                  return (
+                    <article className="beauty-commerce-product" key={product.id}>
+                      <div className="beauty-commerce-product-main">
+                        {tryOnDetail && (
+                          <span
+                            className="beauty-commerce-swatch"
+                            style={{ background: tryOnDetail.swatchColor }}
+                            aria-hidden="true"
+                          />
+                        )}
+                        <div className="beauty-commerce-product-copy">
+                          <span>{product.brand}</span>
+                          <strong>{product.productName}</strong>
+                          <small>{product.shadeName}</small>
+                          {tryOnDetail && (
+                            <small className="beauty-commerce-product-detail">
+                              {tryOnDetail.shadeFamily} · {tryOnDetail.finish}
+                            </small>
+                          )}
+                          {product.priceLabel && <em>{product.priceLabel}</em>}
+                        </div>
+                      </div>
+                      <a
+                        href={product.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => emitCommerceClick({
+                          type: 'product',
+                          productId: product.id,
+                          retailerSku: product.retailerSku,
+                          availability: product.availability,
+                          brand: product.brand,
+                          productName: product.productName,
+                          shadeName: product.shadeName,
+                          shadeFamily: tryOnDetail?.shadeFamily ?? '',
+                          finish: tryOnDetail?.finish ?? '',
+                          url: product.url,
+                        })}
+                      >
+                        {copy.productCta}
+                        <ExternalLink aria-hidden="true" />
+                      </a>
+                    </article>
+                  )
+                })}
               </div>
             )}
           </section>
