@@ -1,5 +1,11 @@
 export type CommercialFunnelEventName =
   | 'app_loaded'
+  | 'selfie_camera_opened'
+  | 'selfie_captured'
+  | 'selfie_retaken'
+  | 'selfie_confirmed'
+  | 'selfie_cancelled'
+  | 'selfie_native_fallback'
   | 'beauty_analysis_requested'
   | 'beauty_analysis_succeeded'
   | 'beauty_analysis_failed'
@@ -22,6 +28,8 @@ export type CommercialFunnelSnapshot = {
   eventCount: number
   counts: Record<CommercialFunnelEventName, number>
   rates: {
+    selfieConfirmation: number | null
+    selfieRetake: number | null
     analysisCompletion: number | null
     tryOnCompletion: number | null
     shopClickThrough: number | null
@@ -101,6 +109,12 @@ export function getCommercialFunnelSnapshot(): CommercialFunnelSnapshot {
   const events = readEvents()
   const counts: Record<CommercialFunnelEventName, number> = {
     app_loaded: 0,
+    selfie_camera_opened: 0,
+    selfie_captured: 0,
+    selfie_retaken: 0,
+    selfie_confirmed: 0,
+    selfie_cancelled: 0,
+    selfie_native_fallback: 0,
     beauty_analysis_requested: 0,
     beauty_analysis_succeeded: 0,
     beauty_analysis_failed: 0,
@@ -120,6 +134,8 @@ export function getCommercialFunnelSnapshot(): CommercialFunnelSnapshot {
     eventCount: events.length,
     counts,
     rates: {
+      selfieConfirmation: rate(counts.selfie_confirmed, counts.selfie_captured),
+      selfieRetake: rate(counts.selfie_retaken, counts.selfie_captured),
       analysisCompletion: rate(counts.beauty_analysis_succeeded, counts.beauty_analysis_requested),
       tryOnCompletion: rate(counts.tryon_succeeded, counts.tryon_requested),
       shopClickThrough: rate(counts.commerce_clicked, counts.commerce_opened),
