@@ -1,0 +1,23 @@
+.beauty-trust-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.018);
+}
+
+.beauty-trust-identity p {
+  margin: 0;
+  color: rgba(255,255,255,0.42);
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.beauty-trust-identity strong {
+  color: rgba(255,255,255,0.66);
+  font-weight: 700;
+}
