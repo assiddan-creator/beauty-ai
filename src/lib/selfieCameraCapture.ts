@@ -103,6 +103,17 @@ async function openSelfieCamera(input: HTMLInputElement) {
     'transform:scaleX(-1)',
   ].join(';')
 
+  const reviewImage = document.createElement('img')
+  reviewImage.alt = lang === 'he' ? 'התמונה שצולמה' : 'Captured selfie'
+  reviewImage.style.cssText = [
+    'position:absolute',
+    'inset:0',
+    'width:100%',
+    'height:100%',
+    'object-fit:cover',
+    'display:none',
+  ].join(';')
+
   const hint = document.createElement('div')
   hint.textContent = lang === 'he' ? 'מקמי את הפנים במרכז הפריים' : 'Center your face in the frame'
   hint.style.cssText = [
@@ -120,12 +131,14 @@ async function openSelfieCamera(input: HTMLInputElement) {
     'color:rgba(255,255,255,.82)',
   ].join(';')
 
-  stage.append(video, hint)
+  stage.append(video, reviewImage, hint)
 
   const footer = document.createElement('div')
   footer.style.cssText = [
     'display:flex',
     'justify-content:center',
+    'align-items:center',
+    'gap:12px',
     'padding:18px 16px calc(18px + env(safe-area-inset-bottom))',
     'background:rgba(0,0,0,.35)',
     'border-top:1px solid rgba(255,255,255,.08)',
@@ -143,16 +156,101 @@ async function openSelfieCamera(input: HTMLInputElement) {
     'box-shadow:0 0 0 3px rgba(255,107,71,.25),0 0 28px rgba(255,107,71,.35)',
   ].join(';')
 
-  footer.append(capture)
+  const retake = document.createElement('button')
+  retake.type = 'button'
+  retake.textContent = lang === 'he' ? 'צלמי שוב' : 'Retake'
+  retake.style.cssText = [
+    'display:none',
+    'min-width:112px',
+    'appearance:none',
+    'border:1px solid rgba(255,255,255,.18)',
+    'border-radius:999px',
+    'padding:13px 18px',
+    'background:rgba(255,255,255,.08)',
+    'color:#fff',
+    'font:700 14px system-ui,-apple-system,sans-serif',
+  ].join(';')
+
+  const usePhoto = document.createElement('button')
+  usePhoto.type = 'button'
+  usePhoto.textContent = lang === 'he' ? 'השתמשי בתמונה' : 'Use photo'
+  usePhoto.style.cssText = [
+    'display:none',
+    'min-width:148px',
+    'appearance:none',
+    'border:0',
+    'border-radius:999px',
+    'padding:14px 20px',
+    'background:linear-gradient(135deg,#FF6B47,#FF9D6E)',
+    'color:#180705',
+    'font:800 14px system-ui,-apple-system,sans-serif',
+    'box-shadow:0 8px 24px rgba(255,107,71,.28)',
+  ].join(';')
+
+  footer.append(capture, retake, usePhoto)
   overlay.append(header, stage, footer)
   document.body.append(overlay)
 
+  let capturedBlob: Blob | null = null
+  let capturedUrl: string | null = null
+
+  const clearCapturedPreview = () => {
+    capturedBlob = null
+    if (capturedUrl) URL.revokeObjectURL(capturedUrl)
+    capturedUrl = null
+    reviewImage.removeAttribute('src')
+  }
+
+  const showCamera = () => {
+    clearCapturedPreview()
+    title.textContent = lang === 'he' ? 'מצלמת סלפי' : 'Selfie camera'
+    video.style.display = 'block'
+    reviewImage.style.display = 'none'
+    hint.style.display = 'block'
+    capture.style.display = 'block'
+    retake.style.display = 'none'
+    usePhoto.style.display = 'none'
+    capture.disabled = false
+  }
+
+  const showReview = (blob: Blob) => {
+    clearCapturedPreview()
+    capturedBlob = blob
+    capturedUrl = URL.createObjectURL(blob)
+    reviewImage.src = capturedUrl
+    title.textContent = lang === 'he' ? 'איך יצאה התמונה?' : 'How does it look?'
+    video.style.display = 'none'
+    reviewImage.style.display = 'block'
+    hint.style.display = 'none'
+    capture.style.display = 'none'
+    retake.style.display = 'inline-flex'
+    retake.style.alignItems = 'center'
+    retake.style.justifyContent = 'center'
+    usePhoto.style.display = 'inline-flex'
+    usePhoto.style.alignItems = 'center'
+    usePhoto.style.justifyContent = 'center'
+  }
+
   const cleanup = () => {
+    clearCapturedPreview()
     stopStream(stream)
     overlay.remove()
   }
 
   close.addEventListener('click', cleanup, { once: true })
+
+  retake.addEventListener('click', showCamera)
+
+  usePhoto.addEventListener('click', () => {
+    if (!capturedBlob) return
+
+    const file = new File([capturedBlob], `beauty-selfie-${Date.now()}.jpg`, { type: 'image/jpeg' })
+    const transfer = new DataTransfer()
+    transfer.items.add(file)
+    input.files = transfer.files
+    cleanup()
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  })
 
   capture.addEventListener('click', async () => {
     capture.disabled = true
@@ -171,12 +269,7 @@ async function openSelfieCamera(input: HTMLInputElement) {
       // the camera's natural orientation so AI analysis receives a true image.
       context.drawImage(video, 0, 0, width, height)
       const blob = await canvasBlob(canvas)
-      const file = new File([blob], `beauty-selfie-${Date.now()}.jpg`, { type: 'image/jpeg' })
-      const transfer = new DataTransfer()
-      transfer.items.add(file)
-      input.files = transfer.files
-      cleanup()
-      input.dispatchEvent(new Event('change', { bubbles: true }))
+      showReview(blob)
     } catch (error) {
       console.warn('[selfie camera] capture failed', error)
       capture.disabled = false
