@@ -209,6 +209,23 @@
   background: rgba(255,255,255,0.025);
 }
 
+.beauty-commerce-product-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+}
+
+.beauty-commerce-swatch {
+  display: block;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 11px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 5px 14px rgba(0,0,0,0.18);
+}
+
 .beauty-commerce-product-copy {
   display: flex;
   min-width: 0;
@@ -239,6 +256,12 @@
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.beauty-commerce-product-copy > .beauty-commerce-product-detail {
+  color: rgba(255,255,255,0.28);
+  font-size: 9px;
+  text-transform: capitalize;
 }
 
 .beauty-commerce-product-copy > em {
