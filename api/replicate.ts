@@ -1,15 +1,69 @@
 // api/replicate.ts
-// Vercel Serverless Function — Replicate API Proxy
+// Vercel Serverless Function — restricted Replicate prediction proxy
 //
 // Security rules:
 // - The Replicate token exists only on the server as REPLICATE_API_TOKEN.
-// - The browser never needs (or receives) the secret token.
-// - Upstream Replicate errors are normalized so the UI gets the real reason
-//   instead of a generic 4xx message.
+// - The browser never receives the secret token.
+// - Browser POST requests must be same-site.
+// - The proxy exposes prediction creation/polling only, not the full Replicate API.
+// - Large or unexpected payloads are rejected before upstream billing work begins.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const REPLICATE_BASE = 'https://api.replicate.com'
+const MAX_JSON_CHARS = 8_000_000
+
+function firstHeader(value: string | string[] | undefined): string | null {
+  if (Array.isArray(value)) return value[0] ?? null
+  return value ?? null
+}
+
+function requestHost(req: VercelRequest): string | null {
+  return firstHeader(req.headers['x-forwarded-host']) || firstHeader(req.headers.host)
+}
+
+function sameSiteOrigin(req: VercelRequest): string | null {
+  const host = requestHost(req)
+  if (!host) return null
+
+  const origin = firstHeader(req.headers.origin)
+  if (origin) {
+    try {
+      const parsed = new URL(origin)
+      return parsed.host === host ? parsed.origin : null
+    } catch {
+      return null
+    }
+  }
+
+  const referer = firstHeader(req.headers.referer)
+  if (referer) {
+    try {
+      const parsed = new URL(referer)
+      return parsed.host === host ? parsed.origin : null
+    } catch {
+      return null
+    }
+  }
+
+  // Same-origin GET polling may legitimately omit Origin/Referer.
+  return req.method === 'GET' ? `https://${host}` : null
+}
+
+function setCors(req: VercelRequest, res: VercelResponse): boolean {
+  const allowedOrigin = sameSiteOrigin(req)
+  res.setHeader('Vary', 'Origin')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Prefer')
+  res.setHeader('Cache-Control', 'no-store')
+
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+    return true
+  }
+
+  return false
+}
 
 function normalizeUpstreamError(data: unknown, status: number): string {
   if (typeof data === 'string' && data.trim()) return data
@@ -47,14 +101,31 @@ function normalizeUpstreamError(data: unknown, status: number): string {
   return `Replicate request failed with status ${status}`
 }
 
+function validateProxyPath(method: string, path: string): boolean {
+  if (method === 'POST') {
+    return /^\/v1\/models\/[^/]+\/[^/]+\/predictions$/.test(path)
+  }
+
+  if (method === 'GET') {
+    return /^\/v1\/predictions\/[A-Za-z0-9_-]+$/.test(path)
+  }
+
+  return false
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Prefer')
-  res.setHeader('Cache-Control', 'no-store')
+  const corsAllowed = setCors(req, res)
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+    return corsAllowed ? res.status(204).end() : res.status(403).end()
+  }
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ detail: 'Method not allowed' })
+  }
+
+  if (!corsAllowed && req.method === 'POST') {
+    return res.status(403).json({ detail: 'Cross-site prediction requests are not allowed.' })
   }
 
   const token = process.env.REPLICATE_API_TOKEN
@@ -68,10 +139,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // rewrites /api/replicate/* to this function.
   const upstreamPath = (req.url ?? '').replace(/^\/api\/replicate/, '')
 
-  const upstreamUrl =
-    upstreamPath.startsWith('/v1/')
-      ? `${REPLICATE_BASE}${upstreamPath}`
-      : `${REPLICATE_BASE}/v1/models/google/nano-banana-2/predictions`
+  if (!validateProxyPath(req.method, upstreamPath)) {
+    return res.status(404).json({ detail: 'Unsupported Replicate proxy path.' })
+  }
+
+  let requestBody: string | undefined
+  if (req.method === 'POST') {
+    requestBody = JSON.stringify(req.body ?? {})
+    if (requestBody.length > MAX_JSON_CHARS) {
+      return res.status(413).json({ detail: 'Prediction request is too large.' })
+    }
+  }
+
+  const upstreamUrl = `${REPLICATE_BASE}${upstreamPath}`
 
   try {
     const headers: Record<string, string> = {
@@ -84,12 +164,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const fetchOptions: RequestInit = {
-      method: req.method ?? 'GET',
+      method: req.method,
       headers,
-    }
-
-    if (req.method === 'POST' || req.method === 'PATCH') {
-      fetchOptions.body = JSON.stringify(req.body)
+      body: requestBody,
     }
 
     const upstream = await fetch(upstreamUrl, fetchOptions)
@@ -108,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const detail = normalizeUpstreamError(data, upstream.status)
       console.error('[replicate proxy] upstream error', {
         status: upstream.status,
-        path: upstreamPath || '/v1/models/google/nano-banana-2/predictions',
+        path: upstreamPath,
         detail,
       })
       return res.status(upstream.status).json({ detail })
