@@ -1,13 +1,36 @@
 // api/analyze-room.ts
-// Vercel Serverless Function — Claude Vision Beauty Analysis
+// Vercel Serverless Function — Claude-powered Beauty AI services
 //
-// משתנה סביבה נדרש:
-//   ANTHROPIC_API_KEY=sk-ant-xxxx  (ב-.env וב-Vercel dashboard)
+// Required server secret:
+//   ANTHROPIC_API_KEY
+//
+// Optional model overrides:
+//   CLAUDE_VISION_MODEL
+//   CLAUDE_FAST_MODEL
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-// ─── Anthropic call ───────────────────────────────────────────────────────────
-async function callClaude(systemPrompt: string, userContent: object[]) {
+const CLAUDE_VISION_MODEL = process.env.CLAUDE_VISION_MODEL || 'claude-sonnet-5'
+const CLAUDE_FAST_MODEL = process.env.CLAUDE_FAST_MODEL || 'claude-haiku-4-5-20251001'
+
+type ClaudeCallOptions = {
+  model: string
+  maxTokens: number
+}
+
+async function parseClaudeError(res: Response): Promise<string> {
+  const data = await res.json().catch(() => null) as
+    | { error?: { message?: string }; message?: string }
+    | null
+
+  return data?.error?.message || data?.message || `Claude request failed with status ${res.status}`
+}
+
+async function callClaude(
+  systemPrompt: string,
+  userContent: object[],
+  options: ClaudeCallOptions,
+) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -16,26 +39,27 @@ async function callClaude(systemPrompt: string, userContent: object[]) {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-5',
-      max_tokens: 1024,
+      model: options.model,
+      max_tokens: options.maxTokens,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
     }),
   })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(JSON.stringify(err))
-  }
-
+  if (!res.ok) throw new Error(await parseClaudeError(res))
   return res.json()
 }
 
-async function callClaudeChat(systemPrompt: string, messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+async function callClaudeChat(
+  systemPrompt: string,
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
+  options: ClaudeCallOptions,
+) {
   const apiMessages = messages.map((m) => ({
     role: m.role,
     content: [{ type: 'text' as const, text: m.content }],
   }))
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -44,16 +68,14 @@ async function callClaudeChat(systemPrompt: string, messages: Array<{ role: 'use
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-5',
-      max_tokens: 1024,
+      model: options.model,
+      max_tokens: options.maxTokens,
       system: systemPrompt,
       messages: apiMessages,
     }),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(JSON.stringify(err))
-  }
+
+  if (!res.ok) throw new Error(await parseClaudeError(res))
   return res.json()
 }
 
@@ -76,34 +98,34 @@ type FaceAnalysis = {
 // ─── Beauty system prompt ─────────────────────────────────────────────────────
 function buildBeautySystemPrompt(styleNames: string, lang: 'he' | 'en'): string {
   return `You are a warm, expert beauty advisor for a makeup virtual try-on app.
-Your role is to look at the uploaded selfie and recommend the most flattering makeup looks from a fixed library.
-You are NOT a skin analyzer or medical tool. You are a beauty advisor.
-Your tone is: warm, flattering, human, confident, and beauty-brand-like.
+Your role is to look at the uploaded selfie and recommend makeup color directions from a fixed library.
+You are NOT a skin analyzer, medical tool, attractiveness rater, or identity classifier.
+Your tone is warm, human, concise, and premium-beauty-brand-like.
 
-The app focuses on: lipstick, lip gloss, lip liner, blush.
-Do NOT mention skin conditions, blemishes, acne, pores, or any dermatological observations.
-Do NOT use negative language about appearance.
-Only speak about what will be flattering, beautiful, and enhancing.
+The app focuses on lipstick, lip gloss, lip liner, and blush.
+Do NOT mention skin conditions, blemishes, acne, pores, age, weight, body shape, or any medical observations.
+Do NOT criticize appearance or compare the person with beauty ideals.
+Only discuss makeup color, finish, intensity, and styling direction.
 
 Available looks (use ONLY these exact names — do not invent new ones):
 ${styleNames}
 
-Analyze the selfie and return:
+Analyze only the visible color information needed for makeup selection and return:
 - skinTone: fair / light / medium / tan / deep / rich
 - undertone: warm / cool / neutral / olive / neutral-warm / neutral-cool
-- recommendedPreset: single best look from the list above
-- alternatePresets: exactly 2 good alternative looks from the list above
-- saferOption: 1 look from the list that is more natural/subtle — good if the person wants something easier to wear
-- bolderOption: 1 look from the list that has more presence/impact — good if the person wants more effect
-- lipColorFamily: most flattering lip color family (e.g. rosy nude / warm nude / peachy nude / cool pink / berry rose / classic red / soft mauve)
-- blushColorFamily: most flattering blush color family (e.g. soft peach / fresh apricot / rosy pink / warm coral / terracotta / soft rose)
-- confidence: how clearly you can see the face — low / medium / high
-- reasoning: 1 short sentence in ${lang === 'he' ? 'Hebrew' : 'English'} — explain why the recommended look is flattering. Be warm and human. Max 15 words.
-- beautyTips: exactly 2 short positive actionable tips in ${lang === 'he' ? 'Hebrew' : 'English'} — focused on makeup shades and finish only
-- avoidPreset: 1 look from the list that would be less suitable (optional — only if clearly less suitable)
+- recommendedPreset: single best color-direction match from the list above
+- alternatePresets: exactly 2 good alternatives from the list above
+- saferOption: 1 more natural/subtle look from the list
+- bolderOption: 1 higher-impact look from the list
+- lipColorFamily: suitable lip color family (e.g. rosy nude / warm nude / peachy nude / cool pink / berry rose / classic red / soft mauve)
+- blushColorFamily: suitable blush color family (e.g. soft peach / fresh apricot / rosy pink / warm coral / terracotta / soft rose)
+- confidence: how clearly the relevant color information is visible — low / medium / high
+- reasoning: 1 short sentence in ${lang === 'he' ? 'Hebrew' : 'English'} explaining the color/finish match. Max 15 words.
+- beautyTips: exactly 2 short positive, practical tips in ${lang === 'he' ? 'Hebrew' : 'English'}, focused only on makeup shades and finish
+- avoidPreset: optional exact look name that contrasts most with the recommended color direction; otherwise return an empty string
 
 Important rules:
-- ALL of recommendedPreset / alternatePresets / saferOption / bolderOption / avoidPreset must be exact names from the available looks list above
+- ALL non-empty preset fields must be exact names from the available looks list above
 - Do not invent look names
 - Keep reasoning to 1 sentence maximum
 - Keep beautyTips short and practical
@@ -114,17 +136,17 @@ Return ONLY valid JSON, no markdown, no preamble:
   "skinTone": "light",
   "undertone": "neutral-warm",
   "recommendedPreset": "Clean Glow",
-  "alternatePresets": ["Natural Everyday", "Fresh Rosy"],
+  "alternatePresets": ["Natural Everyday", "Soft Glam"],
   "saferOption": "Natural Everyday",
   "bolderOption": "Soft Glam",
   "confidence": "high",
   "lipColorFamily": "rosy nude",
   "blushColorFamily": "soft peach",
-  "avoidPreset": "Classic Red Lip",
-  "reasoning": "${lang === 'he' ? 'הלוק הזה מחמיא לרכות הטבעית שלך ומוסיף זוהר נקי.' : 'This look enhances your natural softness with a clean glow.'}",
+  "avoidPreset": "",
+  "reasoning": "${lang === 'he' ? 'הגוונים והגימור יוצרים שילוב רך והרמוני עם התמונה.' : 'The shades and finish create a soft, harmonious color match.'}",
   "beautyTips": [
-    "${lang === 'he' ? 'גווני שפתיים ורדרדים-ניודיים יחמיאו לך במיוחד.' : 'Rosy nude lip shades will be especially flattering on you.'}",
-    "${lang === 'he' ? 'סומק אפרסקי רך ייתן לך מראה רענן וטבעי.' : 'A soft peachy blush will give you a fresh natural look.'}"
+    "${lang === 'he' ? 'נסי שפתון ניודי-ורדרד בגימור סאטן.' : 'Try a rosy-nude lip with a satin finish.'}",
+    "${lang === 'he' ? 'סומק אפרסקי רך ישמור על מראה טבעי ומאוזן.' : 'A soft peach blush keeps the look natural and balanced.'}"
   ]
 }`
 }
@@ -134,39 +156,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Cache-Control', 'no-store')
 
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  const key = process.env.ANTHROPIC_API_KEY
+  if (!key) {
+    return res.status(500).json({ error: { message: 'ANTHROPIC_API_KEY is not set on the server' } })
+  }
+
   // ─── Prompt-builder mode (product try-on) ───────────────────────────────────
   const body = req.body as { mode?: string; product?: Record<string, unknown> }
   if (body.mode === 'prompt-builder' && body.product) {
-    const key = process.env.ANTHROPIC_API_KEY
-    if (!key) {
-      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
-    }
-    const systemPrompt = `You are an expert makeup prompt engineer for a virtual try-on app powered by an AI image editing model called Nano Banana. Your job is to write precise, photorealistic editing prompts that apply makeup products to selfies with maximum accuracy and minimum identity distortion.
+    const systemPrompt = `You are an expert makeup prompt engineer for a virtual try-on app powered by an AI image editing model called Nano Banana. Your job is to write precise, photorealistic editing prompts that apply makeup products to selfies with maximum product fidelity and minimum identity distortion.
 
 You will receive product details and return ONLY a single editing prompt string. No explanation. No preamble. No markdown.
 
 The prompt must:
 - Start with: Beauty makeup virtual try-on.
-- Name the exact brand, product name, shade name
+- Name the exact brand, product name, and shade name
 - Describe the shade color accurately based on shadeFamily and swatchColor
 - Describe the finish (matte, satin, glossy, etc.)
 - Describe precise application placement
 - Describe the desired visible result
-- End with: Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.
+- End with: Photorealistic. Preserve exact face position, framing, identity, natural skin texture, hair, background, and camera angle completely.
 
-For lips products: describe application from center outward, clean edges, natural payoff.
-For blush products: describe placement on apples of cheeks, blended upward, natural flush.
+For lip products: describe precise placement on the natural lip area with clean edges and realistic payoff.
+For blush products: describe placement on the cheeks, blended upward, with realistic color payoff.
 
 Keep the prompt under 80 words.`
+
     const userContent = [{ type: 'text' as const, text: JSON.stringify(body.product) }]
+
     try {
-      const data = await callClaude(systemPrompt, userContent)
+      const data = await callClaude(systemPrompt, userContent, {
+        model: CLAUDE_FAST_MODEL,
+        maxTokens: 180,
+      })
       const text = (data.content as Array<{ type: string; text?: string }>)
-        .find(b => b.type === 'text')?.text?.trim() ?? ''
+        .find((b) => b.type === 'text')?.text?.trim() ?? ''
       return res.status(200).json({ prompt: text })
     } catch (err) {
       console.error('[analyze-room] prompt-builder Error:', err)
@@ -177,18 +206,18 @@ Keep the prompt under 80 words.`
   // ─── Result-description mode (after try-on) ──────────────────────────────────
   const bodyDesc = req.body as { mode?: string; lookName?: string; imageUrl?: string; lang?: 'he' | 'en' }
   if (bodyDesc.mode === 'result-description' && bodyDesc.lookName) {
-    const key = process.env.ANTHROPIC_API_KEY
-    if (!key) {
-      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
-    }
     const langDesc = bodyDesc.lang ?? 'en'
-    const systemPrompt = `You are a warm, premium beauty advisor writing short descriptions for a virtual makeup try-on app. You will receive a look name and a result image. Write ONE short sentence (maximum 18 words) describing how the look came out. Tone: warm, flattering, confidence-building, beauty-native. Do not mention AI. Do not say 'the image shows'. Speak directly to the user as 'you'. Return only the sentence, no punctuation at the end, no preamble. Respond in Hebrew if lang is 'he', in English if lang is 'en'.`
-    const userMessage = `Look applied: ${bodyDesc.lookName}. Lang: ${langDesc}. Please describe how this look came out on the user.`
+    const systemPrompt = `You are a warm, premium beauty advisor writing short descriptions for a virtual makeup try-on app. You will receive a look name. Write ONE short sentence (maximum 18 words) describing the makeup styling direction in a positive, neutral, beauty-native tone. Do not judge attractiveness or physical traits. Do not mention AI. Do not say 'the image shows'. Return only the sentence, no preamble. Respond in Hebrew if lang is 'he', in English if lang is 'en'.`
+    const userMessage = `Look applied: ${bodyDesc.lookName}. Lang: ${langDesc}. Describe the makeup styling direction.`
     const userContent = [{ type: 'text' as const, text: userMessage }]
+
     try {
-      const data = await callClaude(systemPrompt, userContent)
+      const data = await callClaude(systemPrompt, userContent, {
+        model: CLAUDE_FAST_MODEL,
+        maxTokens: 80,
+      })
       const text = (data.content as Array<{ type: string; text?: string }>)
-        .find(b => b.type === 'text')?.text?.trim() ?? ''
+        .find((b) => b.type === 'text')?.text?.trim() ?? ''
       return res.status(200).json({ description: text })
     } catch (err) {
       console.error('[analyze-room] result-description Error:', err)
@@ -201,34 +230,40 @@ Keep the prompt under 80 words.`
     mode?: string
     lookName?: string
     lang?: 'he' | 'en'
-    products?: Array<{ brand: string; productName: string; shadeName: string; category: string; shadeFamily: string; finish: string }>
+    products?: Array<{
+      brand: string
+      productName: string
+      shadeName: string
+      category: string
+      shadeFamily: string
+      finish: string
+    }>
     messages?: Array<{ role: 'user' | 'assistant'; content: string }>
   }
-  if (bodyChat.mode === 'beauty-chat' && bodyChat.lookName && Array.isArray(bodyChat.messages)) {
-    const key = process.env.ANTHROPIC_API_KEY
-    if (!key) {
-      return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server' })
-    }
-    const langChat = bodyChat.lang ?? 'en'
-    const products = Array.isArray(bodyChat.products) ? bodyChat.products : []
-    const productsContext =
-      products.length > 0
-        ? `\n\nThe products used in this look are:\n${products
-            .map(
-              (p) =>
-                `${p.category} — ${p.brand} ${p.productName} in ${p.shadeName}${p.shadeFamily || p.finish ? ` (${[p.shadeFamily, p.finish].filter(Boolean).join(', ')})` : ''}`
-            )
-            .join('\n')}`
-        : ''
-    const systemPrompt = `You are a warm, expert beauty advisor inside a virtual makeup try-on app. The user has just tried on a makeup look. Answer questions about the look in a warm, premium, beauty-native tone. Keep answers short — 2 to 3 sentences maximum. Do not mention AI. Do not use technical language. Sound like a knowledgeable beauty advisor friend.
 
-If lang is 'he': respond in Hebrew only. Use correct, natural Israeli Hebrew. Always address the user in feminine form (את, שלך, תוכלי, תרכיבי). Never mix Hebrew and English in the same sentence. Product names and brand names may remain in English.
+  if (bodyChat.mode === 'beauty-chat' && bodyChat.lookName && Array.isArray(bodyChat.messages)) {
+    const products = Array.isArray(bodyChat.products) ? bodyChat.products : []
+    const productsContext = products.length > 0
+      ? `\n\nThe products used in this look are:\n${products
+          .map(
+            (p) => `${p.category} — ${p.brand} ${p.productName} in ${p.shadeName}${p.shadeFamily || p.finish ? ` (${[p.shadeFamily, p.finish].filter(Boolean).join(', ')})` : ''}`,
+          )
+          .join('\n')}`
+      : ''
+
+    const systemPrompt = `You are a warm, expert beauty advisor inside a virtual makeup try-on app. The user has just tried a makeup look. Answer questions about the look, products, shades, finishes, and occasions in a concise, premium, beauty-native tone. Keep answers short — 2 to 3 sentences maximum. Do not judge attractiveness, body, age, health, or physical traits. Do not mention AI. Do not use technical language.
+
+If lang is 'he': respond in Hebrew only. Use correct, natural Israeli Hebrew. Address the user in feminine form. Product and brand names may remain in English when needed, but keep surrounding Hebrew readable.
 
 If lang is 'en': respond in English only.
 
 The look currently applied is: ${bodyChat.lookName}.${productsContext}`
+
     try {
-      const data = await callClaudeChat(systemPrompt, bodyChat.messages)
+      const data = await callClaudeChat(systemPrompt, bodyChat.messages, {
+        model: CLAUDE_FAST_MODEL,
+        maxTokens: 300,
+      })
       const text = (data.content as Array<{ type: string; text?: string }>)
         .find((b) => b.type === 'text')?.text?.trim() ?? ''
       return res.status(200).json({ reply: text })
@@ -238,6 +273,7 @@ The look currently applied is: ${bodyChat.lookName}.${productsContext}`
     }
   }
 
+  // ─── Selfie color-direction analysis ────────────────────────────────────────
   const { imageDataUrl, styleNames, lang = 'en' } = req.body as {
     imageDataUrl: string
     styleNames: string
@@ -252,16 +288,11 @@ The look currently applied is: ${bodyChat.lookName}.${productsContext}`
   if (!match) {
     return res.status(400).json({ error: 'Invalid image data URL' })
   }
-  const [, mediaType, base64Data] = match
 
-  const key = process.env.ANTHROPIC_API_KEY
-  if (!key) {
-    return res.status(500).json({ error: { message: 'ANTHROPIC_API_KEY is not set on the server' } })
-  }
+  const [, mediaType, base64Data] = match
 
   try {
     const systemPrompt = buildBeautySystemPrompt(styleNames, lang as 'he' | 'en')
-
     const userContent = [
       {
         type: 'image',
@@ -273,14 +304,18 @@ The look currently applied is: ${bodyChat.lookName}.${productsContext}`
       },
       {
         type: 'text',
-        text: 'Please analyze this selfie and return the beauty recommendation JSON.',
+        text: 'Analyze only the visible color information needed for makeup selection and return the requested JSON.',
       },
     ]
 
-    const data = await callClaude(systemPrompt, userContent)
+    const data = await callClaude(systemPrompt, userContent, {
+      model: CLAUDE_VISION_MODEL,
+      maxTokens: 700,
+    })
+
     return res.status(200).json(data)
   } catch (err) {
-    console.error('[analyze-room] Error:', err)
+    console.error('[analyze-room] vision Error:', err)
     return res.status(500).json({ error: { message: err instanceof Error ? err.message : 'Unknown error' } })
   }
 }
