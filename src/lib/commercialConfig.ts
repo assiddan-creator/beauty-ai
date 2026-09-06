@@ -1,3 +1,5 @@
+import { getCanonicalBeautyProduct } from './beautyCatalog'
+
 export type CommercialProductLink = {
   id: string
   brand: string
@@ -70,15 +72,24 @@ function normalizeProducts(value: unknown): CommercialProductLink[] {
       const record = item as Record<string, unknown>
 
       const id = safeString(record.id, 120)
-      const brand = safeString(record.brand, 120)
-      const productName = safeString(record.productName, 180)
-      const shadeName = safeString(record.shadeName, 140)
       const url = safeHttpUrl(record.url)
       const priceLabel = safeString(record.priceLabel, 80)
 
-      // Exact product commerce needs enough metadata to avoid linking the
-      // wrong shade when several products from the same brand are visible.
-      if (!id || !brand || !productName || !shadeName || !url) return null
+      if (!id || !url) return null
+
+      const canonical = getCanonicalBeautyProduct(id)
+
+      // For known Beauty AI product IDs, the canonical catalog owns the display
+      // identity. Retailer config only needs the stable ID plus its own URL and
+      // optional price. This prevents a retailer feed typo from linking the right
+      // URL to the wrong visible shade/product label.
+      const brand = canonical?.brand ?? safeString(record.brand, 120)
+      const productName = canonical?.productName ?? safeString(record.productName, 180)
+      const shadeName = canonical?.shadeName ?? safeString(record.shadeName, 140)
+
+      // Unknown retailer-specific IDs are still allowed, but they must carry
+      // their own complete visible identity so exact-product matching is safe.
+      if (!brand || !productName || !shadeName) return null
 
       return {
         id,
