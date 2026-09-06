@@ -1,9 +1,8 @@
 import {
+  findCanonicalLookNameInText,
   getCanonicalBeautyProduct,
   getLookCanonicalProducts,
-  LOOK_PRODUCT_IDS,
   matchesCatalogProductInText,
-  normalizeCatalogText,
 } from './beautyCatalog'
 import type {
   CommercialConfig,
@@ -47,15 +46,7 @@ export function getConfiguredCommercialProducts(config: CommercialConfig): Resol
 }
 
 export function findActiveLookName(pageText: string): string | null {
-  if (!pageText) return null
-
-  const normalized = normalizeCatalogText(pageText)
-  const match = Object.keys(LOOK_PRODUCT_IDS).find((lookName) => {
-    const normalizedLook = normalizeCatalogText(lookName)
-    return normalizedLook.length > 0 && normalized.includes(normalizedLook)
-  })
-
-  return match ?? null
+  return findCanonicalLookNameInText(pageText)
 }
 
 export function getActiveCommercialProducts(
