@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ShieldCheck, X } from 'lucide-react'
 import { loadCommercialConfig, type CommercialConfig } from './lib/commercialConfig'
+import './commercial-trust.css'
 
 type UiLanguage = 'he' | 'en'
 
