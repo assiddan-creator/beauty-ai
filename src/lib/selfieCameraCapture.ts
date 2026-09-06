@@ -111,6 +111,7 @@ async function openSelfieCamera(input: HTMLInputElement) {
     'width:100%',
     'height:100%',
     'object-fit:cover',
+    'transform:scaleX(-1)',
     'display:none',
   ].join(';')
 
@@ -265,8 +266,9 @@ async function openSelfieCamera(input: HTMLInputElement) {
       const context = canvas.getContext('2d', { alpha: false })
       if (!context) throw new Error('Could not create capture canvas')
 
-      // Preview is mirrored like a normal selfie camera, but save the photo in
-      // the camera's natural orientation so AI analysis receives a true image.
+      // Keep the saved file in the camera's natural orientation for AI analysis.
+      // The review image stays mirrored so the customer sees the same orientation
+      // before and after pressing the shutter, avoiding a jarring visual flip.
       context.drawImage(video, 0, 0, width, height)
       const blob = await canvasBlob(canvas)
       showReview(blob)
