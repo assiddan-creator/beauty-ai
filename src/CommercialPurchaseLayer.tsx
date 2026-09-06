@@ -3,8 +3,11 @@ import { ExternalLink, ShoppingBag, X } from 'lucide-react'
 import {
   loadCommercialConfig,
   type CommercialConfig,
-  type CommercialProductLink,
 } from './lib/commercialConfig'
+import {
+  matchesCatalogProductInText,
+  normalizeCatalogText,
+} from './lib/beautyCatalog'
 import './commercial-purchase.css'
 
 type UiLanguage = 'he' | 'en'
@@ -14,16 +17,6 @@ function detectLanguage(): UiLanguage {
   if (htmlLang.startsWith('he')) return 'he'
   if (htmlLang.startsWith('en')) return 'en'
   return navigator.language.toLowerCase().startsWith('he') ? 'he' : 'en'
-}
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[·•|]/g, ' ')
-    .replace(/[™®©]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 function collectAppText(): string {
@@ -48,22 +41,7 @@ function collectAppText(): string {
     current = walker.nextNode()
   }
 
-  return normalizeText(parts.join(' '))
-}
-
-function matchesProduct(pageText: string, product: CommercialProductLink): boolean {
-  const brand = normalizeText(product.brand)
-  const productName = normalizeText(product.productName)
-  const shadeName = normalizeText(product.shadeName)
-
-  return Boolean(
-    brand
-    && productName
-    && shadeName
-    && pageText.includes(brand)
-    && pageText.includes(productName)
-    && pageText.includes(shadeName)
-  )
+  return normalizeCatalogText(parts.join(' '))
 }
 
 const COPY = {
@@ -138,14 +116,16 @@ export default function CommercialPurchaseLayer() {
 
   const activeProducts = useMemo(() => {
     if (!config || !pageText) return []
-    return config.products.filter((product) => matchesProduct(pageText, product)).slice(0, 8)
+    return config.products
+      .filter((product) => matchesCatalogProductInText(pageText, product))
+      .slice(0, 8)
   }, [config, pageText])
 
   const activeLook = useMemo(() => {
     if (!config || !pageText) return null
 
     const match = Object.entries(config.lookLinks).find(([lookName]) => {
-      const normalizedLook = normalizeText(lookName)
+      const normalizedLook = normalizeCatalogText(lookName)
       return normalizedLook.length > 0 && pageText.includes(normalizedLook)
     })
 
