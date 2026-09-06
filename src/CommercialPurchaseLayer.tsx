@@ -117,6 +117,7 @@ export default function CommercialPurchaseLayer() {
   const activeProducts = useMemo(() => {
     if (!config || !pageText) return []
     return config.products
+      .filter((product) => product.availability !== 'out_of_stock')
       .filter((product) => matchesCatalogProductInText(pageText, product))
       .slice(0, 8)
   }, [config, pageText])
@@ -235,6 +236,8 @@ export default function CommercialPurchaseLayer() {
                       onClick={() => emitCommerceClick({
                         type: 'product',
                         productId: product.id,
+                        retailerSku: product.retailerSku,
+                        availability: product.availability,
                         brand: product.brand,
                         productName: product.productName,
                         shadeName: product.shadeName,

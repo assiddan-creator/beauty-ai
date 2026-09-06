@@ -26,7 +26,7 @@ Retailer configuration should use these stable IDs when the retailer item corres
 
 ## Retailer mappings are canonical-ID first
 
-For a product that already exists in the Beauty AI canonical catalog, retailer configuration only needs the stable product ID, retailer URL, and optionally a price label. The app takes the visible brand, product name, and shade name from the canonical catalog instead of trusting duplicate retailer text.
+For a product that already exists in the Beauty AI canonical catalog, retailer configuration only needs the stable product ID, retailer URL, and optionally commercial metadata. The app takes the visible brand, product name, and shade name from the canonical catalog instead of trusting duplicate retailer text.
 
 Example shape using a non-production placeholder URL:
 
@@ -34,11 +34,23 @@ Example shape using a non-production placeholder URL:
 {
   "id": "mac-velvet-teddy",
   "url": "https://example.com/products/mac-velvet-teddy",
-  "priceLabel": ""
+  "priceLabel": "",
+  "retailerSku": "SKU-EXAMPLE-001",
+  "availability": "in_stock"
 }
 ```
 
-This prevents a retailer feed typo or formatting difference from changing the identity shown to the shopper while still allowing each retailer to own its URL and pricing metadata.
+Supported availability states are:
+
+- `in_stock`
+- `out_of_stock`
+- `unknown`
+
+If availability is missing or invalid, the app treats it as `unknown`. Products explicitly marked `out_of_stock` are not offered as purchase links in the Beauty AI commerce layer, and `getPurchaseUrl()` also refuses to return their URL. This keeps a stale product page from being presented as a currently purchasable shade.
+
+`retailerSku` is optional metadata for retailer reconciliation and conversion events. It is not used as the Beauty AI product identity; the stable canonical ID remains authoritative.
+
+This prevents a retailer feed typo or formatting difference from changing the identity shown to the shopper while still allowing each retailer to own its URL, SKU, availability, and pricing metadata.
 
 Retailer-specific products that are not yet in the canonical Beauty AI catalog remain supported. For those unknown IDs, the retailer configuration must include the full exact identity (`brand`, `productName`, `shadeName`) together with the URL so the commerce layer does not guess.
 
@@ -60,8 +72,9 @@ The safe migration order is:
 
 1. establish stable canonical IDs and alias-aware commerce matching;
 2. make retailer mappings canonical-ID first;
-3. verify production behavior;
-4. move the legacy look and direct-product definitions to the canonical module without changing prompts or UI behavior;
-5. add retailer SKU imports and availability data only after the catalog source of truth is unified.
+3. add retailer SKU and stock-state support without inventing retailer data;
+4. verify production behavior;
+5. move the legacy look and direct-product definitions to the canonical module without changing prompts or UI behavior;
+6. add automated retailer catalog imports only after the catalog source of truth is unified.
 
 This staged approach keeps the live try-on flow stable while the commercial catalog architecture is improved.
