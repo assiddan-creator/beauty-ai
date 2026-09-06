@@ -1638,6 +1638,7 @@ function App() {
       // Silent failure — user can still select manually
     } finally {
       setIsAnalyzing(false)
+      setShowAnalyzingScreen(false)
     }
   }
 
