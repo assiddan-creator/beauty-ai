@@ -5,9 +5,10 @@ import {
   type CommercialConfig,
 } from './lib/commercialConfig'
 import {
-  matchesCatalogProductInText,
-  normalizeCatalogText,
-} from './lib/beautyCatalog'
+  findActiveLookName,
+  getActiveCommercialProducts,
+} from './lib/commercialCatalog'
+import { normalizeCatalogText } from './lib/beautyCatalog'
 import './commercial-purchase.css'
 
 type UiLanguage = 'he' | 'en'
@@ -67,6 +68,12 @@ const COPY = {
   },
 } as const
 
+function hasCommercialLinks(config: CommercialConfig): boolean {
+  return config.products.length > 0
+    || Object.keys(config.purchaseLinks).length > 0
+    || Object.keys(config.lookLinks).length > 0
+}
+
 export default function CommercialPurchaseLayer() {
   const [config, setConfig] = useState<CommercialConfig | null>(null)
   const [lang, setLang] = useState<UiLanguage>(() => detectLanguage())
@@ -91,7 +98,7 @@ export default function CommercialPurchaseLayer() {
   }, [])
 
   useEffect(() => {
-    if (!config || (config.products.length === 0 && Object.keys(config.lookLinks).length === 0)) return
+    if (!config || !hasCommercialLinks(config)) return
 
     const root = document.getElementById('root')
     if (!root) return
@@ -114,24 +121,18 @@ export default function CommercialPurchaseLayer() {
     }
   }, [config])
 
+  const activeLookName = useMemo(() => findActiveLookName(pageText), [pageText])
+
   const activeProducts = useMemo(() => {
     if (!config || !pageText) return []
-    return config.products
-      .filter((product) => product.availability !== 'out_of_stock')
-      .filter((product) => matchesCatalogProductInText(pageText, product))
-      .slice(0, 8)
-  }, [config, pageText])
+    return getActiveCommercialProducts(config, pageText, activeLookName, 8)
+  }, [config, pageText, activeLookName])
 
   const activeLook = useMemo(() => {
-    if (!config || !pageText) return null
-
-    const match = Object.entries(config.lookLinks).find(([lookName]) => {
-      const normalizedLook = normalizeCatalogText(lookName)
-      return normalizedLook.length > 0 && pageText.includes(normalizedLook)
-    })
-
-    return match ? { name: match[0], url: match[1] } : null
-  }, [config, pageText])
+    if (!config || !activeLookName) return null
+    const url = config.lookLinks[activeLookName]
+    return url ? { name: activeLookName, url } : null
+  }, [config, activeLookName])
 
   useEffect(() => {
     if (activeProducts.length === 0 && !activeLook) setOpen(false)
@@ -150,7 +151,10 @@ export default function CommercialPurchaseLayer() {
   const openCommerce = () => {
     setOpen(true)
     window.dispatchEvent(new CustomEvent('beauty:commerce-open', {
-      detail: { visibleItems: activeProducts.length + (activeLook ? 1 : 0) },
+      detail: {
+        visibleItems: activeProducts.length + (activeLook ? 1 : 0),
+        ...(activeLookName ? { lookName: activeLookName } : {}),
+      },
     }))
   }
 
