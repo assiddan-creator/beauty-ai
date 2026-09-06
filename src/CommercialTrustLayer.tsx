@@ -21,6 +21,7 @@ const COPY = {
       'היסטוריית תוצאות יכולה להישמר מקומית בדפדפן במכשיר שלך. ספקי ה-AI עשויים לעבד מידע בהתאם למדיניות השירות שלהם.',
       'שמות מותגים ומוצרים משמשים לזיהוי מוצרים ולהדגמת חוויית קנייה. אין בכך הצהרה על שותפות, חסות או אישור מצד המותגים.',
     ],
+    details: 'מידע מלא על טיפול בנתונים',
     close: 'הבנתי',
   },
   en: {
@@ -33,6 +34,7 @@ const COPY = {
       'Result history may be stored locally in your browser on this device. AI providers may process data under their own service policies.',
       'Brand and product names are used for product identification and shopping-demo purposes. They do not imply partnership, sponsorship, or endorsement.',
     ],
+    details: 'Full data-handling notice',
     close: 'Got it',
   },
 } as const
@@ -102,6 +104,10 @@ export default function CommercialTrustLayer() {
                 </div>
               ))}
             </div>
+
+            <a className="beauty-trust-details" href="/privacy.html" target="_blank" rel="noreferrer">
+              {copy.details}
+            </a>
 
             <button type="button" className="beauty-trust-primary" onClick={() => setOpen(false)}>
               {copy.close}
