@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import CommercialTrustLayer from './CommercialTrustLayer.tsx'
 
 const MAX_INLINE_IMAGE_CHARS = 320_000
 
@@ -132,5 +133,6 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
+    <CommercialTrustLayer />
   </StrictMode>,
 )
