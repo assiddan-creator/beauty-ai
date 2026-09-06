@@ -1,69 +1,129 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Hebrew:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
   html {
     @apply scroll-smooth;
+    background: #0a0408;
+    min-height: 100%;
   }
+
   body {
     @apply bg-surface text-gray-100 antialiased;
+    min-height: 100dvh;
+    margin: 0;
+    font-family: Inter, "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    touch-action: manipulation;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+
+  ::selection {
+    background: rgba(255, 107, 71, 0.32);
+    color: white;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(255, 125, 88, 0.9);
+    outline-offset: 3px;
+  }
+
   /* Hide scrollbars globally while keeping scroll functionality */
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+
   *::-webkit-scrollbar {
     display: none;
   }
 }
 
-/*
- * bg-cinematic: combines a one-shot fade-in with a perpetual Ken Burns
- * slow-zoom/pan. Applied to the background image div so every preset
- * change fades in while the image continuously drifts.
- */
+/* Cinematic movement used by the existing preset presentation. */
 @keyframes bgFade {
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
 
 @keyframes kenBurns {
-  0%   { transform: scale(1.0)  translate(0%,     0%);    }
-  25%  { transform: scale(1.06) translate(-1.2%, -0.8%);  }
-  50%  { transform: scale(1.1)  translate(1%,     0.6%);  }
-  75%  { transform: scale(1.05) translate(0.8%,  -1%);    }
-  100% { transform: scale(1.0)  translate(0%,     0%);    }
+  0%   { transform: scale(1) translate(0%, 0%); }
+  25%  { transform: scale(1.06) translate(-1.2%, -0.8%); }
+  50%  { transform: scale(1.1) translate(1%, 0.6%); }
+  75%  { transform: scale(1.05) translate(0.8%, -1%); }
+  100% { transform: scale(1) translate(0%, 0%); }
 }
 
 .bg-cinematic {
   animation:
-    bgFade    1.2s ease-in-out forwards,
-    kenBurns  26s  ease-in-out infinite;
+    bgFade 1.2s ease-in-out forwards,
+    kenBurns 26s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .bg-cinematic {
+    animation: none;
+  }
 }
 
 @layer utilities {
-  /* Legacy helpers kept for any residual references */
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
   .glass {
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+
   .glass-dark {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     border: 1px solid rgba(255, 255, 255, 0.07);
   }
-  /*
-   * The top inner highlight (inset 0 1px 0 …) is the single ingredient
-   * that makes glassmorphism look physically real — it simulates light
-   * refracting through the top edge of the glass panel.
-   */
+
   .glass-panel {
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(28px);
@@ -73,6 +133,7 @@
       0 8px 32px rgba(0, 0, 0, 0.35),
       inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
+
   .glass-panel-sm {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
