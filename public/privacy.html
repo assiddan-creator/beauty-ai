@@ -19,6 +19,8 @@
       h2 { margin: 0 0 10px; font-size: 17px; }
       p, li { color: rgba(255,255,255,.58); line-height: 1.75; font-size: 14px; }
       ul { padding-right: 18px; }
+      .en ul { padding-right: 0; padding-left: 18px; }
+      .fine { color: rgba(255,255,255,.36); font-size: 12px; }
       a { color: #ff8969; }
       footer { margin-top: 32px; color: rgba(255,255,255,.28); font-size: 12px; line-height: 1.7; }
       .en { direction: ltr; text-align: left; margin-top: 48px; padding-top: 34px; border-top: 1px solid rgba(255,255,255,.08); }
@@ -32,7 +34,7 @@
       <h1>פרטיות ושקיפות</h1>
       <p class="lead">המסמך הזה מתאר איך גרסת המוצר הנוכחית מטפלת בתמונות ובנתונים. הוא נועד לשקיפות מוצרית ואינו מחליף מדיניות פרטיות משפטית מלאה של מפעיל מסחרי.</p>
 
-      <div class="notice">לפני השקה מסחרית ללקוחות אמיתיים צריך להוסיף למסמך הזה את שם הישות המפעילה, פרטי קשר, אזור פעילות, תקופות שמירה, זכויות משתמשים וכל דרישה משפטית רלוונטית.</div>
+      <div class="notice">לפני השקה מסחרית ללקוחות אמיתיים צריך להשלים את שם הישות המפעילה, פרטי קשר, אזור פעילות, מדיניות שמירה ומחיקה, זכויות משתמשים וכל גילוי משפטי שנדרש בשוק שבו המוצר פועל.</div>
 
       <section>
         <h2>מה האפליקציה עושה</h2>
@@ -42,15 +44,33 @@
       <section>
         <h2>מה קורה לסלפי</h2>
         <ul>
-          <li>התמונה נשלחת לספקי ה-AI שמפעילים את התכונה שבחרת, לצורך ניתוח או יצירת ההדמיה.</li>
+          <li>התמונה מעובדת בדפדפן כדי להקטין את גודל ההעברה כאשר נדרש.</li>
+          <li>לניתוח התאמה, התמונה נשלחת דרך שרת האפליקציה ל-Anthropic API.</li>
+          <li>ליצירת הדמיית האיפור, התמונה נשלחת דרך שרת האפליקציה ל-Replicate, שמפעילה את מודל עריכת התמונה שנבחר.</li>
           <li>בקוד הנוכחי של האפליקציה אין מסד נתונים ייעודי לשמירת סלפי.</li>
-          <li>ספקי ה-AI עשויים לעבד נתונים בהתאם לתנאי השירות ולמדיניות הפרטיות שלהם.</li>
         </ul>
       </section>
 
       <section>
-        <h2>היסטוריית תוצאות</h2>
-        <p>האפליקציה יכולה לשמור היסטוריית תוצאות מקומית בדפדפן במכשיר. לפני מכירה מסחרית נוסיף שליטה ברורה יותר למחיקת היסטוריה ולניהול שמירה.</p>
+        <h2>מחזור החיים אצל ספקי ה-AI</h2>
+        <p>לפי מדיניות הספקים הרלוונטית לגרסה הנוכחית, נכון לספטמבר 2026:</p>
+        <ul>
+          <li>Replicate מוחקת כברירת מחדל נתוני Prediction וקבצי פלט שנוצרו דרך ה-API לאחר כשעה.</li>
+          <li>Anthropic מוחקת כברירת מחדל קלט ופלט של ה-API בתוך 30 יום. ייתכנו חריגים לצורכי בטיחות, חוק או הסכם מסחרי אחר.</li>
+          <li>Anthropic אינה משתמשת כברירת מחדל בקלט ובפלט של מוצרי ה-API המסחריים לאימון המודלים שלה, אלא אם הלקוח בוחר במפורש לאפשר זאת או שולח משוב בדרך שמוגדרת לכך.</li>
+        </ul>
+        <p class="fine">מדיניות ספקי צד שלישי יכולה להשתנות. לפני השקה מסחרית יש לאמת מחדש את תנאי הספקים ואת ההסכמים של החשבון המפעיל.</p>
+      </section>
+
+      <section>
+        <h2>היסטוריית תוצאות במכשיר</h2>
+        <p>האפליקציה יכולה לשמור בדפדפן הפניה מקומית לתוצאות האחרונות. מאחר שקישורי הפלט של Replicate קצרים בזמן, הגרסה הנוכחית מנקה אוטומטית הפניות מקומיות ישנות לפני שהן הופכות לכרטיסי תוצאה שפג תוקפם. בנוסף יש באפליקציה כפתור למחיקת ההיסטוריה המקומית מהמכשיר.</p>
+        <p class="fine">התמונה או התוצאה שמוצגות כרגע בזיכרון של המסך יכולות להישאר מוצגות עד לרענון או מעבר מסך גם לאחר מחיקת ההיסטוריה המקומית.</p>
+      </section>
+
+      <section>
+        <h2>אם נרצה היסטוריה קבועה בעתיד</h2>
+        <p>גרסה מסחרית שתציע חשבון משתמש או גלריה קבועה תצטרך לשמור את התוצאה באחסון שבשליטת המפעיל, להגדיר תקופת שמירה ברורה, מנגנון מחיקה, הרשאות גישה והסכמה מתאימה. הגרסה הנוכחית אינה מוסיפה אחסון קבוע כזה.</p>
       </section>
 
       <section>
@@ -68,7 +88,7 @@
         <h1>Privacy & transparency</h1>
         <p class="lead">This page describes how the current product build handles images and data. It is a product-transparency notice, not a complete legal privacy policy for a commercial operator.</p>
 
-        <div class="notice">Before a commercial launch, add the operator's legal identity, contact details, service region, retention periods, user rights, and any required legal disclosures.</div>
+        <div class="notice">Before a commercial launch, complete the operator's legal identity, contact details, service region, retention and deletion policy, user rights, and any disclosures required in the markets where the product operates.</div>
 
         <section>
           <h2>What the app does</h2>
@@ -78,15 +98,33 @@
         <section>
           <h2>What happens to a selfie</h2>
           <ul>
-            <li>The image is sent to the AI providers powering the selected analysis or try-on feature.</li>
+            <li>The image is processed in the browser to reduce transport size when needed.</li>
+            <li>For matching analysis, the image is sent through the app server to the Anthropic API.</li>
+            <li>For makeup generation, the image is sent through the app server to Replicate, which runs the selected image-editing model.</li>
             <li>The current application code does not include a dedicated selfie database.</li>
-            <li>AI providers may process data under their own service and privacy terms.</li>
           </ul>
         </section>
 
         <section>
-          <h2>Result history</h2>
-          <p>The app may keep result history locally in the browser on the device. A commercial release should provide clearer retention and deletion controls.</p>
+          <h2>AI-provider data lifecycle</h2>
+          <p>Under the provider policies relevant to the current build, as of September 2026:</p>
+          <ul>
+            <li>Replicate deletes API prediction data and output files by default after about one hour.</li>
+            <li>Anthropic deletes API inputs and outputs by default within 30 days. Exceptions may apply for safety, legal requirements, or different commercial agreements.</li>
+            <li>Anthropic does not use commercial API inputs and outputs for model training by default unless the customer explicitly opts in or submits qualifying feedback.</li>
+          </ul>
+          <p class="fine">Third-party provider policies can change. Re-verify provider terms and the operator account agreements before commercial launch.</p>
+        </section>
+
+        <section>
+          <h2>Result history on this device</h2>
+          <p>The app may store local references to recent results in this browser. Because Replicate output URLs are short-lived, the current build automatically prunes old local references before they become expired-result cards. The app also provides a control to clear local result history from the device.</p>
+          <p class="fine">An image or result already held in the current screen's memory may remain visible until refresh or navigation even after local history is cleared.</p>
+        </section>
+
+        <section>
+          <h2>If persistent history is added later</h2>
+          <p>A commercial account or persistent gallery would require copying results into operator-controlled storage with a defined retention period, deletion controls, access permissions, and appropriate consent. The current build does not add that persistent storage.</p>
         </section>
 
         <section>
@@ -100,7 +138,7 @@
         </section>
       </div>
 
-      <footer>Beauty AI · Product transparency notice · September 2026</footer>
+      <footer>Beauty AI · Product transparency notice · Updated September 2026</footer>
     </main>
   </body>
 </html>

@@ -6,6 +6,54 @@ import CommercialTrustLayer from './CommercialTrustLayer.tsx'
 import CommercialPurchaseLayer from './CommercialPurchaseLayer.tsx'
 
 const MAX_INLINE_IMAGE_CHARS = 320_000
+const HISTORY_STORAGE_KEY = 'beauty-tryon-history-v1'
+const LOCAL_RESULT_TTL_MS = 50 * 60 * 1000
+const MAX_LOCAL_HISTORY = 12
+
+type LocalHistoryCandidate = {
+  timestamp?: unknown
+}
+
+function pruneExpiredLocalResultHistory() {
+  try {
+    const raw = window.localStorage.getItem(HISTORY_STORAGE_KEY)
+    if (!raw) return
+
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) {
+      window.localStorage.removeItem(HISTORY_STORAGE_KEY)
+      return
+    }
+
+    const now = Date.now()
+    const freshEntries = parsed
+      .filter((entry): entry is LocalHistoryCandidate & Record<string, unknown> => {
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false
+        const timestamp = (entry as LocalHistoryCandidate).timestamp
+        return typeof timestamp === 'number'
+          && Number.isFinite(timestamp)
+          && timestamp > 0
+          && now - timestamp >= 0
+          && now - timestamp < LOCAL_RESULT_TTL_MS
+      })
+      .slice(0, MAX_LOCAL_HISTORY)
+
+    if (freshEntries.length === 0) {
+      window.localStorage.removeItem(HISTORY_STORAGE_KEY)
+      return
+    }
+
+    if (freshEntries.length !== parsed.length) {
+      window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(freshEntries))
+    }
+  } catch (error) {
+    console.warn('[result history] could not prune local history', error)
+  }
+}
+
+// Replicate API output URLs are short-lived. Prune local references before the
+// React tree reads them so users do not accumulate dead "Preview expired" cards.
+pruneExpiredLocalResultHistory()
 
 async function imageBitmapFromBlob(blob: Blob): Promise<ImageBitmap | HTMLImageElement> {
   if ('createImageBitmap' in window) {
