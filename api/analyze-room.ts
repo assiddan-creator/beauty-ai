@@ -12,10 +12,64 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const CLAUDE_VISION_MODEL = process.env.CLAUDE_VISION_MODEL || 'claude-sonnet-5'
 const CLAUDE_FAST_MODEL = process.env.CLAUDE_FAST_MODEL || 'claude-haiku-4-5-20251001'
+const MAX_IMAGE_DATA_URL_CHARS = 5_500_000
+const MAX_STYLE_NAMES_CHARS = 8_000
+const MAX_CHAT_MESSAGES = 12
 
 type ClaudeCallOptions = {
   model: string
   maxTokens: number
+}
+
+function firstHeader(value: string | string[] | undefined): string | null {
+  if (Array.isArray(value)) return value[0] ?? null
+  return value ?? null
+}
+
+function requestHost(req: VercelRequest): string | null {
+  return firstHeader(req.headers['x-forwarded-host']) || firstHeader(req.headers.host)
+}
+
+function sameSiteOrigin(req: VercelRequest): string | null {
+  const host = requestHost(req)
+  if (!host) return null
+
+  const origin = firstHeader(req.headers.origin)
+  if (origin) {
+    try {
+      const parsed = new URL(origin)
+      return parsed.host === host ? parsed.origin : null
+    } catch {
+      return null
+    }
+  }
+
+  const referer = firstHeader(req.headers.referer)
+  if (referer) {
+    try {
+      const parsed = new URL(referer)
+      return parsed.host === host ? parsed.origin : null
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
+function setCors(req: VercelRequest, res: VercelResponse): boolean {
+  const allowedOrigin = sameSiteOrigin(req)
+  res.setHeader('Vary', 'Origin')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Cache-Control', 'no-store')
+
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+    return true
+  }
+
+  return false
 }
 
 async function parseClaudeError(res: Response): Promise<string> {
@@ -55,9 +109,9 @@ async function callClaudeChat(
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   options: ClaudeCallOptions,
 ) {
-  const apiMessages = messages.map((m) => ({
+  const apiMessages = messages.slice(-MAX_CHAT_MESSAGES).map((m) => ({
     role: m.role,
-    content: [{ type: 'text' as const, text: m.content }],
+    content: [{ type: 'text' as const, text: m.content.slice(0, 1500) }],
   }))
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -153,13 +207,19 @@ Return ONLY valid JSON, no markdown, no preamble:
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-  res.setHeader('Cache-Control', 'no-store')
+  const corsAllowed = setCors(req, res)
 
-  if (req.method === 'OPTIONS') return res.status(200).end()
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (req.method === 'OPTIONS') {
+    return corsAllowed ? res.status(204).end() : res.status(403).end()
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  if (!corsAllowed) {
+    return res.status(403).json({ error: { message: 'Cross-site Beauty AI requests are not allowed.' } })
+  }
 
   const key = process.env.ANTHROPIC_API_KEY
   if (!key) {
@@ -169,6 +229,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ─── Prompt-builder mode (product try-on) ───────────────────────────────────
   const body = req.body as { mode?: string; product?: Record<string, unknown> }
   if (body.mode === 'prompt-builder' && body.product) {
+    const productJson = JSON.stringify(body.product)
+    if (productJson.length > 10_000) {
+      return res.status(413).json({ error: { message: 'Product request is too large.' } })
+    }
+
     const systemPrompt = `You are an expert makeup prompt engineer for a virtual try-on app powered by an AI image editing model called Nano Banana. Your job is to write precise, photorealistic editing prompts that apply makeup products to selfies with maximum product fidelity and minimum identity distortion.
 
 You will receive product details and return ONLY a single editing prompt string. No explanation. No preamble. No markdown.
@@ -187,7 +252,7 @@ For blush products: describe placement on the cheeks, blended upward, with reali
 
 Keep the prompt under 80 words.`
 
-    const userContent = [{ type: 'text' as const, text: JSON.stringify(body.product) }]
+    const userContent = [{ type: 'text' as const, text: productJson }]
 
     try {
       const data = await callClaude(systemPrompt, userContent, {
@@ -206,9 +271,10 @@ Keep the prompt under 80 words.`
   // ─── Result-description mode (after try-on) ──────────────────────────────────
   const bodyDesc = req.body as { mode?: string; lookName?: string; imageUrl?: string; lang?: 'he' | 'en' }
   if (bodyDesc.mode === 'result-description' && bodyDesc.lookName) {
+    const lookName = bodyDesc.lookName.slice(0, 180)
     const langDesc = bodyDesc.lang ?? 'en'
     const systemPrompt = `You are a warm, premium beauty advisor writing short descriptions for a virtual makeup try-on app. You will receive a look name. Write ONE short sentence (maximum 18 words) describing the makeup styling direction in a positive, neutral, beauty-native tone. Do not judge attractiveness or physical traits. Do not mention AI. Do not say 'the image shows'. Return only the sentence, no preamble. Respond in Hebrew if lang is 'he', in English if lang is 'en'.`
-    const userMessage = `Look applied: ${bodyDesc.lookName}. Lang: ${langDesc}. Describe the makeup styling direction.`
+    const userMessage = `Look applied: ${lookName}. Lang: ${langDesc}. Describe the makeup styling direction.`
     const userContent = [{ type: 'text' as const, text: userMessage }]
 
     try {
@@ -242,7 +308,7 @@ Keep the prompt under 80 words.`
   }
 
   if (bodyChat.mode === 'beauty-chat' && bodyChat.lookName && Array.isArray(bodyChat.messages)) {
-    const products = Array.isArray(bodyChat.products) ? bodyChat.products : []
+    const products = Array.isArray(bodyChat.products) ? bodyChat.products.slice(0, 10) : []
     const productsContext = products.length > 0
       ? `\n\nThe products used in this look are:\n${products
           .map(
@@ -257,7 +323,7 @@ If lang is 'he': respond in Hebrew only. Use correct, natural Israeli Hebrew. Ad
 
 If lang is 'en': respond in English only.
 
-The look currently applied is: ${bodyChat.lookName}.${productsContext}`
+The look currently applied is: ${bodyChat.lookName.slice(0, 180)}.${productsContext}`
 
     try {
       const data = await callClaudeChat(systemPrompt, bodyChat.messages, {
@@ -282,6 +348,14 @@ The look currently applied is: ${bodyChat.lookName}.${productsContext}`
 
   if (!imageDataUrl || !styleNames) {
     return res.status(400).json({ error: 'Missing required fields' })
+  }
+
+  if (imageDataUrl.length > MAX_IMAGE_DATA_URL_CHARS) {
+    return res.status(413).json({ error: { message: 'Selfie payload is too large.' } })
+  }
+
+  if (styleNames.length > MAX_STYLE_NAMES_CHARS) {
+    return res.status(413).json({ error: { message: 'Style list is too large.' } })
   }
 
   const match = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/)
