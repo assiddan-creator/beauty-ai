@@ -1,3 +1,5 @@
+import { recordCommercialFunnelEvent } from './commercialAnalytics'
+
 function uiLanguage(): 'he' | 'en' {
   return document.documentElement.lang.toLowerCase().startsWith('he') ? 'he' : 'en'
 }
@@ -41,6 +43,7 @@ function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 async function openSelfieCamera(input: HTMLInputElement) {
   const stream = await preferredSelfieStream()
   const lang = uiLanguage()
+  recordCommercialFunnelEvent('selfie_camera_opened')
 
   const overlay = document.createElement('div')
   overlay.setAttribute('role', 'dialog')
@@ -238,13 +241,20 @@ async function openSelfieCamera(input: HTMLInputElement) {
     overlay.remove()
   }
 
-  close.addEventListener('click', cleanup, { once: true })
+  close.addEventListener('click', () => {
+    recordCommercialFunnelEvent('selfie_cancelled')
+    cleanup()
+  }, { once: true })
 
-  retake.addEventListener('click', showCamera)
+  retake.addEventListener('click', () => {
+    recordCommercialFunnelEvent('selfie_retaken')
+    showCamera()
+  })
 
   usePhoto.addEventListener('click', () => {
     if (!capturedBlob) return
 
+    recordCommercialFunnelEvent('selfie_confirmed')
     const file = new File([capturedBlob], `beauty-selfie-${Date.now()}.jpg`, { type: 'image/jpeg' })
     const transfer = new DataTransfer()
     transfer.items.add(file)
@@ -271,6 +281,7 @@ async function openSelfieCamera(input: HTMLInputElement) {
       // before and after pressing the shutter, avoiding a jarring visual flip.
       context.drawImage(video, 0, 0, width, height)
       const blob = await canvasBlob(canvas)
+      recordCommercialFunnelEvent('selfie_captured')
       showReview(blob)
     } catch (error) {
       console.warn('[selfie camera] capture failed', error)
@@ -301,6 +312,7 @@ export function installSelfieCameraCapture() {
 
     void openSelfieCamera(target).catch((error) => {
       console.warn('[selfie camera] preferred front camera unavailable; using native capture', error)
+      recordCommercialFunnelEvent('selfie_native_fallback')
       nativeFallback.add(target)
       target.click()
     })
