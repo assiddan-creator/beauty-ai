@@ -25,6 +25,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
+import ProductTryOnPicker from './components/ProductTryOnPicker'
+import type { BeautyProductView } from './lib/productCatalogFacade'
 
 const ENGINES = [
   {
@@ -894,7 +896,7 @@ const PRODUCT_CATALOG = [
   { id: 'rare-beauty-joy', category: 'blush', productType: 'blush', brand: 'Rare Beauty', productName: 'Soft Pinch Liquid Blush', shadeName: 'Joy', shadeFamily: 'peach coral', finish: 'dewy', swatchColor: '#E8805A', tryOnPrompt: 'Beauty makeup virtual try-on. Apply Rare Beauty Soft Pinch Liquid Blush in Joy — a fresh peach-coral liquid blush — high on the cheeks with softly diffused lifted placement for a breezy warm flush. Photorealistic. Preserve exact face position, framing, identity, skin, hair, background, and camera angle completely.' },
 ]
 
-type ProductItem = (typeof PRODUCT_CATALOG)[0]
+type ProductItem = BeautyProductView
 
 const BEAUTY_INTENT_ROLE_LABELS: Record<SearchResult['role'], string> = {
   best: 'הכי מתאים למה שחיפשת',
@@ -1593,11 +1595,6 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
-  const [productStep, setProductStep] = useState<'category' | 'brand' | 'product' | 'shade'>('category')
-  const [selectedProductCategory, setSelectedProductCategory] = useState<string | null>(null)
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
-  const [selectedProductName, setSelectedProductName] = useState<string | null>(null)
-  const [, setSelectedProduct] = useState<ProductItem | null>(null)
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
@@ -1668,11 +1665,6 @@ function App() {
     setShowLookProducts(false)
     setShowPathScreen(false)
     setAppMode('looks')
-    setProductStep('category')
-    setSelectedProductCategory(null)
-    setSelectedBrand(null)
-    setSelectedProductName(null)
-    setSelectedProduct(null)
   }
 
   // ── Download ─────────────────────────────────────────────────────────────────
@@ -1950,131 +1942,13 @@ function App() {
     </div>
   )
 
-  const ProductTryOnMode = () => {
-    const categories = [
-      { id: 'lips', labelHe: 'שפתיים', labelEn: 'Lips', emoji: '💋' },
-      { id: 'blush', labelHe: 'סומק', labelEn: 'Blush', emoji: '🌸' },
-    ]
-    const filteredByCategory = PRODUCT_CATALOG.filter(p => p.category === selectedProductCategory)
-    const brands = [...new Set(filteredByCategory.map(p => p.brand))]
-    const filteredByBrand = filteredByCategory.filter(p => p.brand === selectedBrand)
-    const productNames = [...new Set(filteredByBrand.map(p => p.productName))]
-    const filteredByProductName = selectedProductName
-      ? filteredByBrand.filter(p => p.productName === selectedProductName)
-      : []
-
-    return (
-      <div className="mt-6">
-        {productStep === 'category' && (
-          <div>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-              {lang === 'he' ? 'בחרי קטגוריה' : 'Choose a category'}
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => { setSelectedProductCategory(cat.id); setProductStep('brand') }}
-                  className="flex flex-col items-center justify-center gap-2 rounded-2xl py-8 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-3xl">{cat.emoji}</span>
-                  <span className="text-sm font-bold text-white">{lang === 'he' ? cat.labelHe : cat.labelEn}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {productStep === 'brand' && (
-          <div>
-            <button type="button" onClick={() => setProductStep('category')} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
-              <ChevronRight className="h-3 w-3 rotate-180" />
-              {lang === 'he' ? 'חזרה' : 'Back'}
-            </button>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-              {lang === 'he' ? 'בחרי מותג' : 'Choose a brand'}
-            </p>
-            <div className="flex flex-col gap-2">
-              {brands.map(brand => (
-                <button
-                  key={brand}
-                  type="button"
-                  onClick={() => { setSelectedBrand(brand); setProductStep('product') }}
-                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all hover:opacity-80 focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-sm font-semibold text-white">{brand}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {productStep === 'product' && (
-          <div>
-            <button type="button" onClick={() => { setSelectedBrand(null); setProductStep('brand') }} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
-              <ChevronRight className="h-3 w-3 rotate-180" />
-              {lang === 'he' ? 'חזרה' : 'Back'}
-            </button>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-              {lang === 'he' ? 'בחרי מוצר' : 'Choose a product'}
-            </p>
-            <div className="flex flex-col gap-2">
-              {productNames.map(name => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => { setSelectedProductName(name); setProductStep('shade') }}
-                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all hover:opacity-80 focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <span className="text-sm font-semibold text-white">{name}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {productStep === 'shade' && (
-          <div>
-            <button type="button" onClick={() => { setSelectedProductName(null); setProductStep('product') }} className="mb-4 flex items-center gap-1.5 text-[11px] focus:outline-none" style={{ color: 'rgba(255,107,71,0.7)' }}>
-              <ChevronRight className="h-3 w-3 rotate-180" />
-              {lang === 'he' ? 'חזרה' : 'Back'}
-            </button>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
-              {lang === 'he' ? 'בחרי גוון' : 'Choose a shade'}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {filteredByProductName.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleProductTryOn(item)}
-                  disabled={isGenerating}
-                  className="flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 focus:outline-none"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <div
-                    className="h-10 w-10 shrink-0 rounded-lg"
-                    style={{ background: item.swatchColor, border: '1px solid rgba(255,255,255,0.15)' }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-white truncate">{item.shadeName}</p>
-                    <p className="text-[10px] text-gray-400 truncate">{item.shadeFamily} · {item.finish}</p>
-                  </div>
-                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-coral" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
+  const ProductTryOnMode = () => (
+    <ProductTryOnPicker
+      lang={lang}
+      disabled={isGenerating}
+      onTryOn={handleProductTryOn}
+    />
+  )
 
   const SplashScreen = () => {
     const [pulse, setPulse] = React.useState(false)
