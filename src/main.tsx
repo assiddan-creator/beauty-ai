@@ -4,6 +4,10 @@ import './index.css'
 import App from './App.tsx'
 import CommercialTrustLayer from './CommercialTrustLayer.tsx'
 import CommercialPurchaseLayer from './CommercialPurchaseLayer.tsx'
+import {
+  installCommercialFunnelTracking,
+  recordCommercialFunnelEvent,
+} from './lib/commercialAnalytics'
 
 const MAX_INLINE_IMAGE_CHARS = 320_000
 const HISTORY_STORAGE_KEY = 'beauty-tryon-history-v1'
@@ -54,6 +58,7 @@ function pruneExpiredLocalResultHistory() {
 // Replicate API output URLs are short-lived. Prune local references before the
 // React tree reads them so users do not accumulate dead "Preview expired" cards.
 pruneExpiredLocalResultHistory()
+installCommercialFunnelTracking()
 
 async function imageBitmapFromBlob(blob: Blob): Promise<ImageBitmap | HTMLImageElement> {
   if ('createImageBitmap' in window) {
@@ -151,14 +156,18 @@ async function compactInlineImages(value: unknown): Promise<unknown> {
 // large phone selfies small enough for the Vercel JSON transport. Once App.tsx
 // is split into services, this logic can move into the dedicated image client.
 const nativeFetch = window.fetch.bind(window)
+const trackedPredictionOutcomes = new Set<string>()
+
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const rawUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
   const url = new URL(rawUrl, window.location.href)
   const isSameOrigin = url.origin === window.location.origin
   const isReplicateProxy = isSameOrigin && url.pathname.startsWith('/api/replicate')
   const isBeautyApi = isSameOrigin && url.pathname === '/api/analyze-room'
+  const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
 
   let nextInit = init ? { ...init } : undefined
+  let parsedBody: unknown = undefined
 
   if (isReplicateProxy) {
     const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
@@ -168,15 +177,71 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 
   if ((isReplicateProxy || isBeautyApi) && typeof init?.body === 'string') {
     try {
-      const parsed = JSON.parse(init.body) as unknown
-      const compacted = await compactInlineImages(parsed)
+      parsedBody = JSON.parse(init.body) as unknown
+      const compacted = await compactInlineImages(parsedBody)
+      parsedBody = compacted
       nextInit = { ...(nextInit ?? {}), body: JSON.stringify(compacted) }
     } catch {
       // Not JSON — let the original request continue unchanged.
     }
   }
 
-  return nativeFetch(input, nextInit)
+  const beautyMode = parsedBody && typeof parsedBody === 'object' && !Array.isArray(parsedBody)
+    ? (parsedBody as Record<string, unknown>).mode
+    : undefined
+  const tracksBeautyAnalysis = isBeautyApi && method === 'POST' && beautyMode === 'beauty'
+  const tracksTryOnSubmission = isReplicateProxy && method === 'POST'
+
+  if (tracksBeautyAnalysis) {
+    recordCommercialFunnelEvent('beauty_analysis_requested', { mode: 'beauty' })
+  }
+  if (tracksTryOnSubmission) {
+    recordCommercialFunnelEvent('tryon_requested')
+  }
+
+  let response: Response
+  try {
+    response = await nativeFetch(input, nextInit)
+  } catch (error) {
+    if (tracksBeautyAnalysis) recordCommercialFunnelEvent('beauty_analysis_failed', { status: 'network' })
+    if (tracksTryOnSubmission) recordCommercialFunnelEvent('tryon_failed', { status: 'network' })
+    throw error
+  }
+
+  if (tracksBeautyAnalysis) {
+    recordCommercialFunnelEvent(
+      response.ok ? 'beauty_analysis_succeeded' : 'beauty_analysis_failed',
+      { status: response.status },
+    )
+  }
+
+  if (isReplicateProxy) {
+    if (tracksTryOnSubmission && !response.ok) {
+      recordCommercialFunnelEvent('tryon_failed', { status: response.status })
+    } else if (response.ok) {
+      try {
+        const prediction = await response.clone().json() as {
+          id?: unknown
+          status?: unknown
+        }
+        const predictionId = typeof prediction.id === 'string' ? prediction.id : ''
+        const predictionStatus = typeof prediction.status === 'string' ? prediction.status : ''
+        const isTerminal = ['succeeded', 'failed', 'canceled'].includes(predictionStatus)
+
+        if (predictionId && isTerminal && !trackedPredictionOutcomes.has(predictionId)) {
+          trackedPredictionOutcomes.add(predictionId)
+          recordCommercialFunnelEvent(
+            predictionStatus === 'succeeded' ? 'tryon_succeeded' : 'tryon_failed',
+            { status: predictionStatus },
+          )
+        }
+      } catch {
+        // Some proxy responses are not prediction JSON. Ignore for metrics.
+      }
+    }
+  }
+
+  return response
 }
 
 createRoot(document.getElementById('root')!).render(
