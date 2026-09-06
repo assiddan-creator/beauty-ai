@@ -26,7 +26,9 @@ import {
 } from 'lucide-react'
 import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
 import ProductTryOnPicker from './components/ProductTryOnPicker'
+import CustomRequestTryOn from './components/CustomRequestTryOn'
 import type { BeautyProductView } from './lib/productCatalogFacade'
+import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
 
 const ENGINES = [
   {
@@ -1636,6 +1638,7 @@ function App() {
       // Silent failure — user can still select manually
     } finally {
       setIsAnalyzing(false)
+      setShowAnalyzingScreen(false)
     }
   }
 
@@ -1703,7 +1706,6 @@ function App() {
 
     try {
       const presetName = selectedPreset ?? BEAUTY_PRESETS[0].name
-      const customNote = customInstructions.trim()
       const activePreset = BEAUTY_PRESETS.find(p => p.name === presetName) ?? BEAUTY_PRESETS[0]
 
       // Optionally layer in category-specific instruction
@@ -1715,7 +1717,6 @@ function App() {
         'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo. Output dimensions and framing must be identical to the input.',
         activePreset.prompt,
         categoryNote,
-        customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
@@ -1760,8 +1761,6 @@ function App() {
     setIsGenerating(true)
 
     try {
-      const customNote = customInstructions.trim()
-
       const prompt = [
         'STRICT EDITING RULE: Do not zoom in, crop, reframe, or change the field of view in any way. The face must appear at the exact same size and position as in the original photo. Output dimensions and framing must be identical to the input.',
         'Beauty makeup removal edit. Edit the uploaded selfie and remove existing visible makeup from the face while preserving the person exactly.',
@@ -1769,7 +1768,6 @@ function App() {
         'IMPORTANT: Preserve the person\'s exact identity, face shape, facial proportions, skin texture, natural features, hair, clothing, background, framing, lighting, camera angle, and facial expression. Keep the original photo composition unchanged so the edited image aligns exactly with the original photo.',
         'DO NOT CHANGE: Do not beautify the face. Do not retouch or over-smooth the skin. Do not remove natural skin texture. Do not reshape the eyes, lips, nose, jaw, eyebrows, or skin. Do not change hairstyle, clothing, background, lighting, composition, or camera perspective. Do not add new makeup. Do not make the result look airbrushed, filtered, or AI-generated.',
         'DESIRED RESULT: A photorealistic clean-face result with natural bare skin, natural lips, and natural cheeks, as if the makeup has been gently removed while preserving the real person exactly.',
-        customNote ? `Additional request: ${customNote}` : null,
       ].filter(Boolean).join('\n\n')
 
       const imageDataUrl = await blobUrlToDataUrl(originalImage)
@@ -1795,6 +1793,55 @@ function App() {
       setActiveHistoryId(entry.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Refinement failed.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleCustomTryOn = async () => {
+    if (!originalImage) return
+
+    const request = customInstructions.trim()
+    if (!request) {
+      setError(lang === 'he' ? 'כתבי קודם מה תרצי לנסות.' : 'Describe the makeup you want to try first.')
+      return
+    }
+
+    const token = import.meta.env.VITE_REPLICATE_API_TOKEN
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+      setError('Replicate API token not found. Add VITE_REPLICATE_API_TOKEN to your .env file.')
+      return
+    }
+
+    setError(null)
+    setResultDescription(null)
+    setSelectedPreset(null)
+    setIsGenerating(true)
+
+    try {
+      const prompt = buildCustomTryOnPrompt(request)
+      const imageDataUrl = await blobUrlToDataUrl(originalImage)
+      const outputUrl = await runReplicatePrediction(prompt, imageDataUrl, activeEngine)
+
+      setGeneratedImage(outputUrl)
+      setSliderPosition(50)
+
+      const customLookName = lang === 'he' ? 'בקשה חופשית' : 'Custom Request'
+      const entry: HistoryEntry = {
+        id: crypto.randomUUID(),
+        originalUrl: originalImage,
+        generatedUrl: outputUrl,
+        lookName: customLookName,
+        timestamp: Date.now(),
+      }
+      setHistory((prev) => {
+        const updated = [entry, ...prev].slice(0, MAX_HISTORY)
+        saveHistoryToStorage(updated)
+        return updated
+      })
+      setActiveHistoryId(entry.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Custom makeup try-on failed.')
     } finally {
       setIsGenerating(false)
     }
@@ -4200,20 +4247,13 @@ function App() {
                   />
                 )}
 
-                {/* ── Custom Instructions ── */}
-                <section className="mt-7">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">{t.customInstructions}</h2>
-                    <span className="text-xs text-gray-600">{t.optional}</span>
-                  </div>
-                  <textarea
-                    value={customInstructions}
-                    onChange={(e) => setCustomInstructions(e.target.value)}
-                    placeholder={t.customPlaceholder}
-                    rows={3}
-                    className="w-full resize-none rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 placeholder-gray-500 backdrop-blur-3xl transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/25"
-                  />
-                </section>
+                <CustomRequestTryOn
+                  lang={lang}
+                  value={customInstructions}
+                  disabled={isGenerating}
+                  onChange={setCustomInstructions}
+                  onSubmit={handleCustomTryOn}
+                />
 
                 {/* ── History Gallery (post-upload) ── */}
                 {history.length > 0 && (
