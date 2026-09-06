@@ -8,6 +8,7 @@ import {
   installCommercialFunnelTracking,
   recordCommercialFunnelEvent,
 } from './lib/commercialAnalytics'
+import { installSelfieCameraCapture } from './lib/selfieCameraCapture'
 
 const MAX_INLINE_IMAGE_CHARS = 320_000
 const HISTORY_STORAGE_KEY = 'beauty-tryon-history-v1'
@@ -59,6 +60,7 @@ function pruneExpiredLocalResultHistory() {
 // React tree reads them so users do not accumulate dead "Preview expired" cards.
 pruneExpiredLocalResultHistory()
 installCommercialFunnelTracking()
+installSelfieCameraCapture()
 
 async function imageBitmapFromBlob(blob: Blob): Promise<ImageBitmap | HTMLImageElement> {
   if ('createImageBitmap' in window) {
