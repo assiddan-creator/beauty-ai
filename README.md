@@ -1,33 +1,45 @@
-# Real Estate AI
+# Beauty AI
 
-Modern React app with **Vite**, **TypeScript**, and **Tailwind CSS**.
+Beauty AI is a mobile-first virtual makeup try-on product built for beauty retail and brand experiences.
 
-## Prerequisites
+## Product flow
 
-- [Node.js](https://nodejs.org/) (v18 or later) with npm
+1. Upload or capture a selfie.
+2. Get a beauty recommendation or browse looks/products.
+3. Apply a selected look with an image-editing model.
+4. Compare before/after results.
+5. Review the exact products and shades used.
 
-## Setup and run
+## Current AI stack
 
-From this folder in your terminal (PowerShell, Command Prompt, or VS Code terminal):
+- Claude API — beauty recommendation, product prompt building, result copy, and advisor chat.
+- Replicate — server-side image generation proxy.
+- Nano Banana 2 — primary production image-editing model.
+
+Secrets are server-side only. Required Vercel environment variables:
+
+- `ANTHROPIC_API_KEY`
+- `REPLICATE_API_TOKEN`
+
+Do not expose either secret with a `VITE_` prefix.
+
+## App stack
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Vercel Functions
+
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open **http://localhost:5173** in your browser.
+The local Vite proxy reads `REPLICATE_API_TOKEN` on the development server so the secret does not enter the browser bundle.
 
-## Scripts
+## Production direction
 
-| Command       | Description              |
-|---------------|--------------------------|
-| `npm run dev` | Start dev server (HMR)   |
-| `npm run build` | Production build       |
-| `npm run preview` | Preview production build |
-
-## Stack
-
-- **Vite** – build tool and dev server  
-- **React 18** – UI library  
-- **TypeScript** – type checking  
-- **Tailwind CSS** – utility-first CSS  
+The commercial target is a white-label beauty try-on layer for retailers and brands: real catalog products and shades, personalized discovery, virtual try-on, product-level conversion actions, analytics, and privacy-conscious selfie handling.
