@@ -90,6 +90,32 @@ export const LOOK_PRODUCT_IDS: Record<string, string[]> = {
   'Local Chic': ['gade-crystal-lights-sunstone', 'maybelline-lifter-liner-big-lift', 'gade-idyllic-blush-46-pacific-pink'],
 }
 
+// Visible look names are bilingual in the legacy app. Keep the canonical English
+// key stable for commerce/catalog mapping, while allowing the currently rendered
+// Hebrew label to resolve to that same key.
+export const LOOK_NAME_ALIASES: Record<string, string[]> = {
+  'Natural Everyday': ['טבעי יומיומי'],
+  'Clean Glow': ['זוהר נקי'],
+  'Office Polished': ['מלוטשת למשרד'],
+  'Soft Glam': ['גלאם עדין'],
+  'Classic Red Lip': ['שפתון אדום קלאסי'],
+  'Warm Bronze': ['ברונז חם'],
+  'Cool Chic': ['קול שיק'],
+  'Minimal Grooming': ['גרומינג מינימלי'],
+  'Date Night Romantic': ['רומנטי ליל דייט'],
+  'Evening Luxury': ['יוקרה ערב'],
+  'Fresh Rosy': ['ורדרד רענן'],
+  'Nude Sculpt': ['מפוסל ניוד'],
+  'Peach Pop': ['אפרסק פופ'],
+  'Rosewood Satin': ['סאטן וודרוז'],
+  'Berry Chic': ['ברי שיק'],
+  'Terracotta Nude': ['ניוד טרקוטה'],
+  'Glass Nude': ['ניוד זכוכית'],
+  'Coral Breeze': ['בריז קורל'],
+  'Power Nude': ['ניוד עוצמה'],
+  'Local Chic': ['שיק לוקל'],
+}
+
 const PRODUCT_BY_ID = new Map(CANONICAL_BEAUTY_PRODUCTS.map((product) => [product.id, product]))
 
 export function normalizeCatalogText(value: string): string {
@@ -106,6 +132,18 @@ export function normalizeCatalogText(value: string): string {
 function textContains(pageText: string, value: string): boolean {
   const normalized = normalizeCatalogText(value)
   return normalized.length > 0 && pageText.includes(normalized)
+}
+
+export function findCanonicalLookNameInText(pageText: string): string | null {
+  const normalizedPage = normalizeCatalogText(pageText)
+  if (!normalizedPage) return null
+
+  for (const lookName of Object.keys(LOOK_PRODUCT_IDS)) {
+    const candidates = [lookName, ...(LOOK_NAME_ALIASES[lookName] ?? [])]
+    if (candidates.some((candidate) => textContains(normalizedPage, candidate))) return lookName
+  }
+
+  return null
 }
 
 export function getCanonicalBeautyProduct(productId: string): CanonicalBeautyProduct | null {
