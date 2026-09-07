@@ -1573,6 +1573,13 @@ function App() {
       setAppMode('looks')
       return
     }
+    if (preview === 'result-request') {
+      setGeneratedImage(VESTI_PREVIEW_RESULT_IMAGE)
+      setSelectedPreset(null)
+      setRevealProduct(null)
+      setAppMode('looks')
+      return
+    }
     if (preview === 'recommendation') {
       setFaceAnalysis(VESTI_PREVIEW_ANALYSIS)
       setShowAnalysisPanel(true)
@@ -1694,6 +1701,7 @@ function App() {
     setAppMode('looks')
     setFocusRequest(false)
     setRevealProduct(null)
+    setResultDescription(null)
     setCaptureStep('entry')
   }
 
@@ -1730,11 +1738,14 @@ function App() {
     setError(null)
     setResultDescription(null)
     setRevealProduct(null)
+
+    const activePreset = BEAUTY_PRESETS.find((preset) => preset.name === selectedPreset)
+    if (!activePreset) return
+
     setIsGenerating(true)
 
     try {
-      const presetName = selectedPreset ?? BEAUTY_PRESETS[0].name
-      const activePreset = BEAUTY_PRESETS.find(p => p.name === presetName) ?? BEAUTY_PRESETS[0]
+      const presetName = activePreset.name
 
       // Optionally layer in category-specific instruction
       const categoryNote = selectedCategory && selectedCategory !== 'Full Look'
@@ -3136,6 +3147,8 @@ function App() {
                     onTryLook={() => {
                       setGeneratedImage(null)
                       setRevealProduct(null)
+                      setSelectedPreset(null)
+                      setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
                       setAppMode('looks')
@@ -3143,6 +3156,8 @@ function App() {
                     onTryShade={() => {
                       setGeneratedImage(null)
                       setRevealProduct(null)
+                      setSelectedPreset(null)
+                      setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
                       setAppMode('product')
@@ -3333,7 +3348,7 @@ function App() {
                 </>
                 )}
 
-                {resultDescription && !vestiRevealActive && (
+                {resultDescription && !hideLegacyChrome && (
                   <p className="mt-3 text-center text-sm text-white/70 italic px-4">
                     {resultDescription}
                   </p>
