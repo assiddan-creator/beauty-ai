@@ -28,8 +28,13 @@ import ProductTryOnPicker from './components/ProductTryOnPicker'
 import CustomRequestTryOn from './components/CustomRequestTryOn'
 import RecommendationScreen from './vesti/RecommendationScreen'
 import LookGallery from './vesti/LookGallery'
+import EntryScreen from './vesti/EntryScreen'
+import CaptureChoice from './vesti/CaptureChoice'
+import CameraCapture from './vesti/CameraCapture'
+import PhotoConfirm from './vesti/PhotoConfirm'
+import CaptureIssue from './vesti/CaptureIssue'
 import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE } from './vesti/preview'
-import type { LookCardModel } from './vesti/types'
+import type { CaptureStep, LookCardModel } from './vesti/types'
 import type { BeautyProductView } from './lib/productCatalogFacade'
 import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
 
@@ -1505,8 +1510,6 @@ function App() {
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
   const [showPathScreen, setShowPathScreen] = useState(false)
-  const [showSplash, setShowSplash] = useState(true)
-  const [showUploadChoice, setShowUploadChoice] = useState(false)
   const [showAnalyzingScreen, setShowAnalyzingScreen] = useState(false)
   const [showLookProducts, setShowLookProducts] = useState(false)
   const [activeEngine, setActiveEngine] = useState<Engine>(ENGINES[0])
@@ -1514,15 +1517,34 @@ function App() {
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [vestiPreview, setVestiPreview] = useState<string | null>(null)
+  const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
+  const cameraBackStepRef = useRef<CaptureStep>('entry')
 
   React.useEffect(() => {
     if (!import.meta.env.DEV) return
     const preview = new URLSearchParams(window.location.search).get('vesti-preview')
     if (!preview) return
     setVestiPreview(preview)
-    setShowSplash(false)
-    setShowUploadChoice(false)
     setShowPathScreen(false)
+
+    const capturePreviews: Record<string, CaptureStep> = {
+      entry: 'entry',
+      'capture-choice': 'choice',
+      camera: 'camera',
+      'photo-confirm': 'confirm',
+      preparing: 'preparing',
+      'camera-error': 'camera-permission',
+      'camera-unavailable': 'camera-unavailable',
+      'upload-error': 'upload-error',
+    }
+    if (preview in capturePreviews) {
+      setIsUploaded(false)
+      setCaptureStep(capturePreviews[preview])
+      if (preview === 'photo-confirm') setOriginalImage(VESTI_PREVIEW_IMAGE)
+      return
+    }
+
+    setCaptureStep(null)
     setIsUploaded(true)
     setOriginalImage(VESTI_PREVIEW_IMAGE)
     if (preview === 'recommendation') {
@@ -1547,18 +1569,41 @@ function App() {
 
   // ── File upload ──────────────────────────────────────────────────────────────
   const handleFileSelect = async (file: File) => {
-    if (!file.type.startsWith('image/')) return
+    const isImage = file.type.startsWith('image/')
+    const withinSize = file.size > 0 && file.size <= 10 * 1024 * 1024
+    if (!isImage || !withinSize) {
+      setCaptureStep('upload-error')
+      setShowPathScreen(false)
+      return
+    }
+    setCaptureStep('preparing')
     if (originalImage) URL.revokeObjectURL(originalImage)
 
     const blobUrl = URL.createObjectURL(file)
     setOriginalImage(blobUrl)
-    setIsUploaded(true)
-    setShowPathScreen(true)
     setGeneratedImage(null)
     setActiveHistoryId(null)
     setError(null)
     setFaceAnalysis(null)
     setAnalysisDismissed(false)
+    setShowPathScreen(false)
+    setCaptureStep('confirm')
+  }
+
+  const handleConfirmPhoto = () => {
+    if (!originalImage) return
+    setIsUploaded(true)
+    setCaptureStep(null)
+    setShowPathScreen(false)
+  }
+
+  const handleReplacePhoto = () => {
+    if (originalImage) {
+      URL.revokeObjectURL(originalImage)
+      setOriginalImage(null)
+    }
+    setIsUploaded(false)
+    setCaptureStep('choice')
   }
 
   // ── Claude Vision trigger ────────────────────────────────────────────────────
@@ -1606,12 +1651,11 @@ function App() {
     setAnalysisDismissed(false)
     setShowAnalysisPanel(false)
     setIsAnalyzing(false)
-    setShowSplash(true)
-    setShowUploadChoice(false)
     setShowAnalyzingScreen(false)
     setShowLookProducts(false)
     setShowPathScreen(false)
     setAppMode('looks')
+    setCaptureStep('entry')
   }
 
   // ── Download ─────────────────────────────────────────────────────────────────
@@ -1940,199 +1984,6 @@ function App() {
       onTryOn={handleProductTryOn}
     />
   )
-
-  const SplashScreen = () => {
-    const [pulse, setPulse] = React.useState(false)
-    React.useEffect(() => {
-      const t = setInterval(() => setPulse(p => !p), 2000)
-      return () => clearInterval(t)
-    }, [])
-
-    const floatingItems = [
-      { emoji: '💋', top: '8%', left: '6%', size: 44, delay: '0s', brand: 'MAC' },
-      { emoji: '🌸', top: '12%', right: '8%', size: 38, delay: '0.4s', brand: 'NARS' },
-      { emoji: '✨', top: '28%', left: '3%', size: 32, delay: '0.8s', brand: 'Dior' },
-      { emoji: '💄', top: '22%', right: '5%', size: 42, delay: '0.3s', brand: 'Charlotte Tilbury' },
-      { emoji: '🌹', top: '55%', left: '4%', size: 36, delay: '1s', brand: 'Fenty' },
-      { emoji: '💅', top: '60%', right: '6%', size: 40, delay: '0.6s', brand: 'YSL' },
-      { emoji: '✨', top: '75%', left: '8%', size: 28, delay: '1.2s', brand: 'Rare Beauty' },
-      { emoji: '🌷', top: '78%', right: '9%', size: 34, delay: '0.9s', brand: 'Bobbi Brown' },
-    ]
-
-    return (
-      <div
-        className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden cursor-pointer select-none"
-        style={{ background: 'linear-gradient(160deg, #0a0408 0%, #0d0610 40%, #080410 100%)' }}
-        onClick={() => setShowUploadChoice(true)}
-      >
-        <div className="pointer-events-none absolute" style={{ top: '15%', left: '20%', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,107,71,0.06)', filter: 'blur(80px)' }} />
-        <div className="pointer-events-none absolute" style={{ bottom: '20%', right: '15%', width: 250, height: 250, borderRadius: '50%', background: 'rgba(180,80,180,0.05)', filter: 'blur(80px)' }} />
-
-        {floatingItems.map((item, i) => (
-          <div
-            key={i}
-            className="pointer-events-none absolute flex flex-col items-center gap-1"
-            style={{
-              top: item.top,
-              left: (item as { left?: string }).left,
-              right: (item as { right?: string }).right,
-              animation: `float ${3 + i * 0.4}s ease-in-out infinite alternate`,
-              animationDelay: item.delay,
-            }}
-          >
-            <div
-              className="flex items-center justify-center rounded-2xl"
-              style={{ width: item.size, height: item.size, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontSize: item.size * 0.5 }}
-            >
-              {item.emoji}
-            </div>
-            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', fontWeight: 600, letterSpacing: '0.05em' }}>
-              {item.brand}
-            </span>
-          </div>
-        ))}
-
-        <div className="relative z-10 flex flex-col items-center text-center px-8">
-          <div
-            className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
-            style={{ background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 40px rgba(255,107,71,0.4), 0 0 80px rgba(255,107,71,0.15)' }}
-          >
-            <span style={{ fontSize: 36 }}>✨</span>
-          </div>
-          <p className="text-4xl font-extrabold text-white mb-2" style={{ letterSpacing: '-0.03em' }}>
-            Beauty AI
-          </p>
-          <p className="text-sm mb-12" style={{ color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em' }}>
-            VIRTUAL MAKEUP TRY-ON
-          </p>
-          <div className="flex flex-col items-center gap-3" style={{ opacity: pulse ? 1 : 0.4, transition: 'opacity 0.8s ease' }}>
-            <div
-              className="flex h-16 w-16 items-center justify-center rounded-full"
-              style={{ border: '1.5px solid rgba(255,107,71,0.5)', boxShadow: '0 0 20px rgba(255,107,71,0.2)' }}
-            >
-              <span style={{ fontSize: 28 }}>👆</span>
-            </div>
-            <p className="text-base font-semibold" style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em' }}>
-              {lang === 'he' ? 'לחצי להתחיל' : 'TAP TO BEGIN'}
-            </p>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 flex items-center gap-6" style={{ opacity: 0.18 }}>
-          {['MAC', 'Dior', 'NARS', 'Charlotte Tilbury', 'Fenty Beauty', 'YSL', 'Rare Beauty', 'Bobbi Brown'].map(b => (
-            <span key={b} className="shrink-0 text-xs font-bold text-white tracking-widest uppercase">{b}</span>
-          ))}
-        </div>
-
-        <style>{`
-          @keyframes float {
-            from { transform: translateY(0px) rotate(-2deg); }
-            to { transform: translateY(-12px) rotate(2deg); }
-          }
-        `}</style>
-      </div>
-    )
-  }
-
-  const UploadChoiceModal = () => {
-    const [visible, setVisible] = React.useState(false)
-    React.useEffect(() => {
-      const t = setTimeout(() => setVisible(true), 30)
-      return () => clearTimeout(t)
-    }, [])
-
-    return (
-      <div
-        className="fixed inset-0 z-[110] flex items-center justify-center px-6"
-        style={{
-          background: 'rgba(4,2,6,0.85)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          opacity: visible ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }}
-        onClick={(e) => { if (e.target === e.currentTarget) setShowUploadChoice(false) }}
-      >
-        <div
-          className="w-full max-w-sm overflow-hidden rounded-3xl"
-          style={{
-            background: 'linear-gradient(180deg, #0e0810 0%, #080508 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 30px 80px rgba(0,0,0,0.7)',
-            transform: visible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(16px)',
-            transition: 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
-          }}
-        >
-          <div className="px-6 pb-8 pt-6">
-            <p className="mb-1.5 text-center text-xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>
-              {lang === 'he' ? 'איך תרצי להתחיל?' : 'How would you like to start?'}
-            </p>
-            <p className="mb-7 text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              {lang === 'he' ? 'בחרי תמונה שלך להמשיך' : 'Choose your photo to continue'}
-            </p>
-
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
-                style={{ background: 'rgba(255,107,71,0.1)', border: '1px solid rgba(255,107,71,0.2)' }}
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl" style={{ background: 'rgba(255,107,71,0.12)' }}>
-                  📸
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-white">{lang === 'he' ? 'צלמי עכשיו' : 'Take a photo'}</p>
-                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{lang === 'he' ? 'פתחי את המצלמה לסלפי' : 'Open camera for a selfie'}</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-4 rounded-2xl p-4 text-left transition-all hover:opacity-80 active:scale-[0.98] focus:outline-none"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                  🖼️
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-white">{lang === 'he' ? 'העלי תמונה' : 'Upload a photo'}</p>
-                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{lang === 'he' ? 'בחרי תמונה מהגלריה' : 'Choose from your gallery'}</p>
-                </div>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowUploadChoice(false)}
-              className="mt-4 flex w-full items-center justify-center py-2 text-xs focus:outline-none"
-              style={{ color: 'rgba(255,255,255,0.18)' }}
-            >
-              {lang === 'he' ? 'ביטול' : 'Cancel'}
-            </button>
-          </div>
-        </div>
-
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="user"
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (file) {
-              handleFileSelect(file)
-              setShowUploadChoice(false)
-              setShowSplash(false)
-            }
-            e.target.value = ''
-          }}
-          className="sr-only"
-        />
-      </div>
-    )
-  }
 
   const LookProductsScreen = () => {
     const [visible, setVisible] = React.useState(false)
@@ -2916,7 +2767,8 @@ function App() {
   }
 
   const vestiSelectionActive = isUploaded && !generatedImage
-  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive
+  const vestiEntryActive = captureStep !== null
+  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive || vestiEntryActive
 
   React.useEffect(() => {
     document.body.classList.toggle('vesti-core-active', hideLegacyChrome)
@@ -2926,11 +2778,98 @@ function App() {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className={`relative min-h-screen text-gray-100 ${hideLegacyChrome ? 'font-vesti' : 'font-sans'}`}>
-      {showSplash && <SplashScreen />}
+      {captureStep === 'entry' && (
+        <EntryScreen
+          lang={lang}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onCapture={() => {
+            cameraBackStepRef.current = 'entry'
+            setCaptureStep('camera')
+          }}
+          onUpload={() => fileInputRef.current?.click()}
+        />
+      )}
+      {captureStep === 'choice' && (
+        <CaptureChoice
+          lang={lang}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onCapture={() => {
+            cameraBackStepRef.current = 'choice'
+            setCaptureStep('camera')
+          }}
+          onUpload={() => fileInputRef.current?.click()}
+          onBack={() => setCaptureStep(originalImage && !isUploaded ? 'confirm' : 'entry')}
+        />
+      )}
+      {captureStep === 'camera' && (
+        <CameraCapture
+          lang={lang}
+          simulate={import.meta.env.DEV && vestiPreview === 'camera'}
+          previewImage={VESTI_PREVIEW_IMAGE}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onClose={() => setCaptureStep(cameraBackStepRef.current)}
+          onCaptureFile={handleFileSelect}
+          onPermissionDenied={() => setCaptureStep('camera-permission')}
+          onUnavailable={() => setCaptureStep('camera-unavailable')}
+          onNativeFallback={() => {
+            if (import.meta.env.DEV && vestiPreview === 'camera') {
+              setOriginalImage(VESTI_PREVIEW_IMAGE)
+              setCaptureStep('confirm')
+              return
+            }
+            cameraInputRef.current?.click()
+          }}
+        />
+      )}
+      {captureStep === 'confirm' && originalImage && (
+        <PhotoConfirm
+          lang={lang}
+          imageSrc={originalImage}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onContinue={handleConfirmPhoto}
+          onReplace={handleReplacePhoto}
+        />
+      )}
+      {(captureStep === 'preparing' || captureStep === 'camera-permission' || captureStep === 'camera-unavailable' || captureStep === 'upload-error') && (
+        <CaptureIssue
+          lang={lang}
+          step={captureStep}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onRetry={() => setCaptureStep(captureStep === 'upload-error' ? 'choice' : 'camera')}
+          onUpload={() => fileInputRef.current?.click()}
+          onBack={() => setCaptureStep('entry')}
+        />
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFileSelect(file)
+          e.target.value = ''
+        }}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleFileSelect(file)
+          e.target.value = ''
+        }}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
       {showAnalyzingScreen && <AnalyzingScreen />}
       {showLookProducts && <LookProductsScreen />}
       {showAdminPanel && <AdminPanel />}
-      {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
 
       {/* ── Cinematic dynamic background (no /looks/ images to avoid 404) ── */}
@@ -2940,16 +2879,16 @@ function App() {
           className="absolute bg-cover bg-center"
           style={{
             inset: '-8%',
-            background: vestiSelectionActive
+            background: vestiSelectionActive || vestiEntryActive
               ? 'linear-gradient(180deg, #050505 0%, #0B0B0D 100%)'
               : 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)',
           }}
         />
       </div>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />
+      {!vestiEntryActive && <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />}
 
       {/* ── Header ── */}
-      {hideLegacyChrome ? (
+      {!vestiEntryActive && (hideLegacyChrome ? (
         <header className="relative z-20 bg-onyx">
           <div className="mx-auto flex max-w-3xl items-baseline justify-between gap-4 px-4 py-5 sm:px-8">
             <p className="text-[11px] font-medium tracking-[0.32em] text-ivory uppercase">Vesti Beauty</p>
@@ -3017,33 +2956,18 @@ function App() {
           </div>
         </div>
       </header>
-      )}
+      ))}
 
+      {!vestiEntryActive && (
       <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'overflow-x-hidden pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
         <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
           <div className={hideLegacyChrome ? 'px-0 py-2' : 'p-5 sm:p-6'}>
 
-            {/* ── Upload Dropzone ── */}
-            {!isUploaded && (
+            {/* ── Upload Dropzone (legacy shell only) ── */}
+            {!isUploaded && !vestiEntryActive && (
               <section className="mt-8">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      handleFileSelect(file)
-                      setShowSplash(false)
-                      setShowUploadChoice(false)
-                    }
-                    e.target.value = ''
-                  }}
-                  className="sr-only"
-                  aria-label="Upload selfie photo"
-                />
                 <div
                   role="button"
                   tabIndex={0}
@@ -3521,7 +3445,7 @@ function App() {
             )}
 
             {/* ── History gallery on upload screen ── */}
-            {!isUploaded && history.length > 0 && (
+            {!isUploaded && !vestiEntryActive && history.length > 0 && (
               <section className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -3539,6 +3463,7 @@ function App() {
           </div>
         </div>
       </main>
+      )}
 
       {/* ── Fixed Bottom Bar (hidden on path selection and Vesti core screens) ── */}
       {!showPathScreen && !hideLegacyChrome && (
