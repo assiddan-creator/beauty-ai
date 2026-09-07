@@ -17,7 +17,6 @@ import {
   Droplets,
   Gem,
   ArrowLeftRight,
-  Brain,
   CheckCircle2,
   ChevronRight,
   Palette,
@@ -1335,104 +1334,6 @@ function saveHistoryToStorage(entries: HistoryEntry[]) {
   localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stored))
 }
 
-const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: string, onSelect: (name: string) => void, lang: 'he' | 'en' }) => {
-  const nav = LOOK_NAVIGATION[currentLookName]
-  if (!nav) return null
-
-  const suggestions = [
-    {
-      lookName: nav.moreNatural,
-      labelHe: 'יותר טבעי',
-      labelEn: 'More natural',
-    },
-    {
-      lookName: nav.moreGlam,
-      labelHe: 'יותר ערב',
-      labelEn: 'More evening',
-    },
-    {
-      lookName: nav.moreWarm,
-      labelHe: 'גוונים חמים',
-      labelEn: 'Warmer tones',
-    },
-    {
-      lookName: nav.moreCool,
-      labelHe: 'גוונים קרירים',
-      labelEn: 'Cooler tones',
-    },
-    {
-      lookName: nav.saferOption,
-      labelHe: 'בטוח יותר',
-      labelEn: 'Safer option',
-    },
-    {
-      lookName: nav.bolderOption,
-      labelHe: 'יותר נוכח',
-      labelEn: 'More statement',
-    },
-  ].filter((s, i, arr) =>
-    s.lookName !== currentLookName &&
-    arr.findIndex(x => x.lookName === s.lookName) === i
-  )
-
-  return (
-    <div className="mt-5">
-      <p
-        className="mb-3 text-[10px] font-medium tracking-[0.12em] uppercase"
-        style={{ color: 'rgba(255,255,255,0.22)' }}
-      >
-        {lang === 'he' ? 'רוצה לנסות כיוון אחר?' : 'Want to try a different direction?'}
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        {suggestions.map((s) => {
-          const preset = BEAUTY_PRESETS.find(p => p.name === s.lookName)
-          if (!preset) return null
-          const displayName = lang === 'he' ? preset.nameHe : preset.name
-          const label = lang === 'he' ? s.labelHe : s.labelEn
-
-          return (
-            <button
-              key={s.lookName}
-              type="button"
-              onClick={() => onSelect(s.lookName)}
-              className="group flex flex-col items-start rounded-xl px-3 py-2 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                minWidth: 90,
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,107,71,0.08)'
-                el.style.borderColor = 'rgba(255,107,71,0.2)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,255,255,0.04)'
-                el.style.borderColor = 'rgba(255,255,255,0.08)'
-              }}
-            >
-              <span
-                className="text-[9px] font-medium tracking-wide"
-                style={{ color: 'rgba(255,255,255,0.28)' }}
-              >
-                {label}
-              </span>
-              <span
-                className="mt-0.5 text-[11px] font-bold leading-tight text-white"
-                style={{ letterSpacing: '-0.01em' }}
-              >
-                {displayName}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ─── Beauty Advisor Chat (result screen) ──────────────────────────────────────
 type BeautyAdvisorChatProduct = {
   brand: string
@@ -1612,11 +1513,13 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
+  const [vestiPreview, setVestiPreview] = useState<string | null>(null)
 
   React.useEffect(() => {
     if (!import.meta.env.DEV) return
     const preview = new URLSearchParams(window.location.search).get('vesti-preview')
     if (!preview) return
+    setVestiPreview(preview)
     setShowSplash(false)
     setShowUploadChoice(false)
     setShowPathScreen(false)
@@ -1630,12 +1533,15 @@ function App() {
     }
     if (preview === 'product') {
       setAppMode('product')
+      window.setTimeout(() => {
+        document.getElementById('vesti-product')?.scrollIntoView({ behavior: 'auto', block: 'start' })
+      }, 80)
       return
     }
     setAppMode('looks')
     if (preview === 'request') {
       window.setTimeout(() => {
-        document.getElementById('free-request')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        document.getElementById('free-request')?.scrollIntoView({ behavior: 'auto', block: 'start' })
       }, 80)
     }
   }, [])
@@ -3013,6 +2919,9 @@ function App() {
     document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const vestiSelectionActive = isUploaded && !generatedImage
+  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
@@ -3022,19 +2931,51 @@ function App() {
       {showAdminPanel && <AdminPanel />}
       {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
-      <AnalysisPanel />
 
       {/* ── Cinematic dynamic background (no /looks/ images to avoid 404) ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div
           key={selectedPreset ?? 'default'}
           className="absolute bg-cover bg-center"
-          style={{ inset: '-8%', background: 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)' }}
+          style={{
+            inset: '-8%',
+            background: vestiSelectionActive
+              ? 'linear-gradient(180deg, #050505 0%, #0B0B0D 100%)'
+              : 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)',
+          }}
         />
       </div>
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />
 
       {/* ── Header ── */}
+      {hideLegacyChrome ? (
+        <header className="relative z-20 border-b border-white/10 bg-onyx">
+          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium tracking-[0.28em] text-lacquer uppercase">Vesti Beauty</p>
+              <p className="mt-1 text-[11px] text-silver">
+                {lang === 'he' ? 'סטודיו לאיפור וירטואלי' : 'Virtual makeup atelier'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
+                className="border border-white/15 px-3 py-2 text-xs font-medium text-silver hover:text-ivory"
+              >
+                {lang === 'he' ? 'EN' : 'עב'}
+              </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="border border-white/15 px-3 py-2 text-xs font-medium text-silver hover:text-ivory"
+              >
+                {lang === 'he' ? 'התחלי מחדש' : 'Start over'}
+              </button>
+            </div>
+          </div>
+        </header>
+      ) : (
       <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
           <div className="flex items-center gap-4">
@@ -3080,12 +3021,13 @@ function App() {
           </div>
         </div>
       </header>
+      )}
 
-      <main className="relative z-10 mx-auto max-w-3xl px-4 pb-36 pt-6 sm:px-8 md:px-12 md:pt-10">
+      <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
-        <div className="rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl">
-          <div className="p-5 sm:p-6">
+        <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
+          <div className={hideLegacyChrome ? 'px-0 py-2' : 'p-5 sm:p-6'}>
 
             {/* ── Upload Dropzone ── */}
             {!isUploaded && (
@@ -3166,8 +3108,22 @@ function App() {
 
             {/* ── Main Editor (uploaded) ── */}
             {isUploaded && (
-              <div className="mt-8">
+              <div className={hideLegacyChrome ? '' : 'mt-8'}>
 
+                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && (
+                <div className="mb-4 flex items-center gap-3 border border-white/10 bg-carbon px-3 py-2.5">
+                  {originalImage && (
+                    <img src={originalImage} alt="" className="h-12 w-12 object-cover" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs text-silver">
+                      {lang === 'he' ? 'התמונה שלך מוכנה לבחירה' : 'Your photo is ready'}
+                    </p>
+                  </div>
+                </div>
+                )}
+                {(!vestiSelectionActive || isGenerating) && (
+                <>
                 {/* ── Image Viewer ── */}
                 <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur-3xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="relative w-full overflow-hidden aspect-[3/4] max-h-[72vh]">
@@ -3314,6 +3270,8 @@ function App() {
                       : t.originalPhoto}
                   </p>
                 </div>
+                </>
+                )}
 
                 {resultDescription && (
                   <p className="mt-3 text-center text-sm text-white/70 italic px-4">
@@ -3322,9 +3280,11 @@ function App() {
                 )}
 
                 {/* ── Disclaimer ── */}
+                {!vestiSelectionActive && (
                 <p className="mt-3 text-center text-[11px] text-gray-600">
                   ✦ {t.disclaimer}
                 </p>
+                )}
 
                 {generatedImage && !isGenerating && (() => {
                   const chatEntry = history.find(h => h.id === activeHistoryId)
@@ -3480,173 +3440,37 @@ function App() {
                 )}
 
                 {/* ── Mode: Looks | Product ── */}
-                <div className="mt-4 flex gap-2 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                {vestiPreview !== 'request' && (
+                <div className="mt-4 flex gap-2 border border-white/10 p-1">
                   <button
                     type="button"
                     onClick={() => setAppMode('looks')}
-                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
-                    style={appMode === 'looks' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                    className="flex-1 py-2.5 text-xs font-medium transition-colors focus:outline-none"
+                    style={appMode === 'looks' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
                   >
                     {lang === 'he' ? 'לוקים' : 'Looks'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setAppMode('product')}
-                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
-                    style={appMode === 'product' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                    className="flex-1 py-2.5 text-xs font-medium transition-colors focus:outline-none"
+                    style={appMode === 'product' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
                   >
                     {lang === 'he' ? 'מוצר' : 'Product'}
                   </button>
                 </div>
-
-                {appMode === 'looks' && (
-                <>
-                {/* ── Manual Claude Vision trigger ── */}
-                {originalImage && !isGenerating && (
-                  <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                    {faceAnalysis && !showAnalysisPanel && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAnalysisPanel(true)}
-                        className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-coral/30 bg-coral/10 px-4 py-2 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        {lang === 'he' ? 'הניתוח שלי' : 'My Analysis'}
-                      </button>
-                    )}
-                  </div>
                 )}
 
-                {/* ── Claude Vision Beauty Analysis Banner ── */}
-                {(isAnalyzing || (faceAnalysis && !analysisDismissed)) && (
-                  <div
-                    className="mt-4 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-3xl transition-all duration-500"
-                    style={{
-                      background: isAnalyzing
-                        ? 'rgba(255,107,71,0.05)'
-                        : 'linear-gradient(135deg, rgba(255,107,71,0.08) 0%, rgba(139,92,246,0.06) 100%)',
-                      borderColor: isAnalyzing ? 'rgba(255,107,71,0.2)' : 'rgba(255,107,71,0.25)',
-                    }}
+                {appMode === 'looks' && vestiPreview !== 'request' && (
+                <>
+                {faceAnalysis && !showAnalysisPanel && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAnalysisPanel(true)}
+                    className="mt-4 text-sm text-silver hover:text-ivory"
                   >
-                    {isAnalyzing ? (
-                      <div className="flex items-center gap-3 px-5 py-4">
-                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
-                          <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
-                          <Brain className="relative h-4 w-4 text-coral animate-pulse" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-white">{t.aiBeautyAnalysis}</p>
-                          <p className="text-[11px] text-gray-500 mt-0.5">
-                            {lang === 'he'
-                              ? 'מנתח גוון עור ומציע כיוון להתחיל ממנו...'
-                              : 'Reading the visible tones · Preparing a direction to begin with...'}
-                          </p>
-                        </div>
-                      </div>
-                    ) : faceAnalysis ? (
-                      <div className="px-5 py-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3">
-                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/20 to-purple-500/20 ring-1 ring-coral/30">
-                              <CheckCircle2 className="h-4 w-4 text-coral" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-bold text-white">{t.aiBeautyAnalysis}</p>
-                                <span className="rounded-full border border-coral/30 bg-coral/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
-                                  Claude Vision
-                                </span>
-                              </div>
-                              <div className="mt-2 flex flex-wrap gap-3">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.skinTone}:</span>
-                                  <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                    {faceAnalysis.skinTone}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.undertone}:</span>
-                                  <span className="rounded-lg bg-coral/15 px-2 py-0.5 text-[11px] font-semibold text-coral">
-                                    {faceAnalysis.undertone}
-                                  </span>
-                                </div>
-                                {faceAnalysis.lipColorFamily && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">Lips:</span>
-                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                      {faceAnalysis.lipColorFamily}
-                                    </span>
-                                  </div>
-                                )}
-                                {faceAnalysis.blushColorFamily && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">Blush:</span>
-                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                      {faceAnalysis.blushColorFamily}
-                                    </span>
-                                  </div>
-                                )}
-                                {faceAnalysis.avoidPreset && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">{lang === 'he' ? 'להמנע' : 'Avoid'}:</span>
-                                    <span className="rounded-lg bg-red-500/20 px-2 py-0.5 text-[11px] font-semibold text-red-400">
-                                      {faceAnalysis.avoidPreset}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
-                                {faceAnalysis.reasoning}
-                              </p>
-                              {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
-                                <div className="mt-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-                                    {lang === 'he' ? 'טיפים לך' : 'Beauty Tips'}
-                                  </p>
-                                  <ul className="space-y-1">
-                                    {faceAnalysis.beautyTips.slice(0, 2).map((tip, i) => (
-                                      <li key={i} className="flex gap-2 text-[11px] text-gray-300">
-                                        <span className="text-coral mt-0.5">•</span>
-                                        <span>{tip}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setAnalysisDismissed(true)
-                                  document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
-                                }}
-                                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
-                              >
-                                {t.changeStyle}
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setAnalysisDismissed(true)}
-                              className="flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
-                            >
-                              {t.changeStyle}
-                              <ChevronRight className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setAnalysisDismissed(true)}
-                              className="rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-300 focus:outline-none"
-                              aria-label="Dismiss analysis"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
+                    {lang === 'he' ? 'כיוון להתחיל ממנו' : 'A direction to begin with'}
+                  </button>
                 )}
 
                 <LookGallery
@@ -3654,100 +3478,27 @@ function App() {
                   looks={vestiLookCards()}
                   selectedLookName={selectedPreset}
                   recommendedLookName={faceAnalysis && !analysisDismissed ? faceAnalysis.recommendedPreset : null}
+                  applying={isGenerating}
                   onSelect={setSelectedPreset}
+                  onApply={handleApplyEdit}
                 />
-
-                {selectedPreset && (
-                  <LookNavigator
-                    currentLookName={selectedPreset}
-                    onSelect={(name) => setSelectedPreset(name)}
-                    lang={lang}
-                  />
-                )}
-
-                {/* ── Product Category Filter ── */}
-                <section className="mt-6">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">{t.categoryLabel}</h2>
-                    <span className="text-xs font-medium text-coral">{t.optional}</span>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {PRODUCT_CATEGORIES.map((cat) => {
-                      const isActive = selectedCategory === cat
-                      const isAiDetected = faceAnalysis && !analysisDismissed && (
-                        (cat === 'Lips' && ['Classic Red Lip', 'Soft Glam'].includes(faceAnalysis.recommendedPreset)) ||
-                        (cat === 'Blush' && ['Clean Glow', 'Warm Bronze'].includes(faceAnalysis.recommendedPreset)) ||
-                        (cat === 'Full Look' && ['Natural Everyday', 'Office Polished'].includes(faceAnalysis.recommendedPreset))
-                      )
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setSelectedCategory(isActive ? null : cat)}
-                          className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
-                            isActive
-                              ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                              : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
-                          }`}
-                          style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
-                        >
-                          {cat}
-                          {isAiDetected && !isActive && (
-                            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-coral align-middle" />
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-
-                {/* ── Refine Only ── */}
-                <section className="mt-5">
-                  <button
-                    type="button"
-                    onClick={handleRefineOnly}
-                    disabled={isGenerating}
-                    className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
-                  >
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                      style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
-                    />
-                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40">
-                      <Trash2 className="h-4 w-4 text-coral" />
-                    </div>
-                    <div className="relative">
-                      <p className="text-sm font-semibold text-white">{lang === 'he' ? 'הסרת איפור' : 'Remove Makeup'}</p>
-                      <p className="mt-0.5 text-[11px] text-gray-500">{t.refineOnlySub}</p>
-                    </div>
-                    <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
-                      <Send className="h-4 w-4" />
-                    </div>
-                  </button>
-                </section>
 
                 </>
                 )}
                 {appMode === 'product' && <ProductTryOnMode />}
 
-                {/* ── Beauty intent search (mood/occasion) ── */}
-                {appMode === 'looks' && (
-                  <BeautyIntentSearchBar
-                    onSelectLook={handleIntentSelectLook}
-                    metadata={LOOK_METADATA}
-                    navigation={LOOK_NAVIGATION}
+                {appMode === 'looks' && vestiPreview !== 'looks' && (
+                  <CustomRequestTryOn
+                    lang={lang}
+                    value={customInstructions}
+                    disabled={isGenerating}
+                    onChange={setCustomInstructions}
+                    onSubmit={handleCustomTryOn}
                   />
                 )}
 
-                <CustomRequestTryOn
-                  lang={lang}
-                  value={customInstructions}
-                  disabled={isGenerating}
-                  onChange={setCustomInstructions}
-                  onSubmit={handleCustomTryOn}
-                />
-
                 {/* ── History Gallery (post-upload) ── */}
-                {history.length > 0 && (
+                {!vestiSelectionActive && history.length > 0 && (
                   <section className="mt-10">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -3785,8 +3536,8 @@ function App() {
         </div>
       </main>
 
-      {/* ── Fixed Bottom Bar (hidden on path selection screen) ── */}
-      {!showPathScreen && (
+      {/* ── Fixed Bottom Bar (hidden on path selection and Vesti core screens) ── */}
+      {!showPathScreen && !hideLegacyChrome && (
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-4 py-4 sm:px-8">
           {error && (
@@ -3846,6 +3597,7 @@ function App() {
         </div>
       </div>
       )}
+      <AnalysisPanel />
     </div>
   )
 }

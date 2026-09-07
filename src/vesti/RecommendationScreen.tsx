@@ -5,6 +5,7 @@ import {
   colorDirectionLabel,
   finishLabel,
   intensityLabel,
+  lookCardTreatment,
 } from './lookDirection'
 
 type RecommendationScreenProps = {
@@ -61,121 +62,106 @@ export default function RecommendationScreen({
   const recommended = looks.find((look) => look.name === analysis.recommendedPreset)
   const alternatives = buildLookAlternatives(analysis, looks, navigation)
 
+  const treatment = recommended ? lookCardTreatment(recommended) : null
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/90"
-      onClick={(event) => { if (event.target === event.currentTarget) onClose() }}
-    >
-      <section
-        className="flex h-[min(92vh,820px)] w-full max-w-3xl flex-col overflow-hidden rounded-t-[28px] border-t border-white/[0.06] bg-carbon"
-        aria-label={copy.title}
-      >
-        <div className="flex justify-center pt-3.5">
-          <div className="h-[2px] w-10 rounded-full bg-ivory/15" />
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 pb-8 pt-4">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div>
-              <p className="font-display text-[11px] tracking-[0.28em] text-lacquer uppercase">
-                {copy.kicker}
-              </p>
-              <h2 className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
-                {copy.title}
-              </h2>
-              <p className="mt-2 max-w-md text-sm leading-relaxed text-silver">
-                {copy.intro}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-silver transition-colors hover:text-ivory"
-              aria-label={copy.close}
-            >
-              <span className="text-lg leading-none">×</span>
-            </button>
+    <div className="fixed inset-0 z-[400] flex flex-col overflow-hidden" style={{ background: '#050505' }}>
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium tracking-[0.28em] text-lacquer uppercase">
+              {copy.kicker}
+            </p>
+            <h1 className={`mt-3 text-[28px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
+              {copy.title}
+            </h1>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-silver">
+              {copy.intro}
+            </p>
           </div>
-
-          <dl className="mb-5 grid grid-cols-3 gap-px overflow-hidden border border-white/[0.06] bg-white/[0.04]">
-            <div className="bg-shadow px-4 py-3">
-              <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-silver/70">{copy.color}</dt>
-              <dd className="mt-2 text-sm font-medium leading-snug text-ivory">{colorDirectionLabel(analysis, lang)}</dd>
-            </div>
-            <div className="bg-shadow px-4 py-4">
-              <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-silver/70">{copy.finish}</dt>
-              <dd className="mt-2 text-sm font-medium leading-snug text-ivory">{finishLabel(recommended?.vibe, lang)}</dd>
-            </div>
-            <div className="bg-shadow px-4 py-4">
-              <dt className="text-[10px] font-medium uppercase tracking-[0.16em] text-silver/70">{copy.intensity}</dt>
-              <dd className="mt-2 text-sm font-medium leading-snug text-ivory">{intensityLabel(recommended?.presenceLevel, lang)}</dd>
-            </div>
-          </dl>
-
-          {recommended && (
-            <article className="mb-5 border border-white/[0.07] bg-shadow px-5 py-5">
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-silver/70">
-                {copy.recommended}
-              </p>
-              <h3 className="mt-2 font-display text-[30px] leading-none text-ivory">
-                {recommended.name}
-              </h3>
-              <p className="mt-2 font-hebrew text-base text-ivory/80">
-                {recommended.nameHe}
-              </p>
-              {recommended.vibe && (
-                <p className="mt-2 text-sm text-silver">{recommended.vibe}</p>
-              )}
-            </article>
-          )}
-
-          {alternatives.length > 0 && (
-            <div className="mb-5">
-              <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-silver/70">
-                {copy.alternatives}
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                {alternatives.map(({ kind, look }) => (
-                  <button
-                    key={`${kind}-${look.id}`}
-                    type="button"
-                    onClick={() => onSelectLook(look.name)}
-                    className="border border-white/[0.07] bg-shadow px-4 py-4 text-start transition-colors hover:border-lacquer/50"
-                  >
-                    <span className="text-[10px] uppercase tracking-[0.14em] text-silver/70">
-                      {alternativeLabel(kind, lang)}
-                    </span>
-                    <span className="mt-2 block font-display text-lg leading-tight text-ivory">
-                      {look.name}
-                    </span>
-                    <span className="mt-1 block text-[11px] text-silver">
-                      {look.nameHe}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {recommended && (
-            <button
-              type="button"
-              onClick={() => onSelectLook(recommended.name)}
-              className="flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory transition-colors hover:bg-deepRose"
-            >
-              {copy.tryLook}
-            </button>
-          )}
-
           <button
             type="button"
             onClick={onClose}
-            className="mt-5 flex w-full items-center justify-center py-3 text-xs tracking-[0.12em] text-silver/70 transition-colors hover:text-ivory"
+            className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/15 text-silver hover:text-ivory"
+            aria-label={copy.close}
           >
-            {copy.chooseMyself}
+            <span className="text-lg leading-none">×</span>
           </button>
         </div>
-      </section>
+
+        <dl className="mb-5 grid grid-cols-3 border border-white/10">
+          <div className="border-e border-white/10 px-2.5 py-2.5">
+            <dt className="text-[10px] font-medium tracking-wide text-silver">{copy.color}</dt>
+            <dd className="mt-1 text-[11px] font-medium leading-snug text-ivory">{colorDirectionLabel(analysis, lang)}</dd>
+          </div>
+          <div className="border-e border-white/10 px-2.5 py-2.5">
+            <dt className="text-[10px] font-medium tracking-wide text-silver">{copy.finish}</dt>
+            <dd className="mt-1 text-[11px] font-medium leading-snug text-ivory">{finishLabel(recommended?.vibe, lang)}</dd>
+          </div>
+          <div className="px-2.5 py-2.5">
+            <dt className="text-[10px] font-medium tracking-wide text-silver">{copy.intensity}</dt>
+            <dd className="mt-1 text-[11px] font-medium leading-snug text-ivory">{intensityLabel(recommended?.presenceLevel, lang)}</dd>
+          </div>
+        </dl>
+
+        {recommended && treatment && (
+          <article
+            className="relative mb-5 overflow-hidden border border-white/10 px-5 py-8"
+            style={{ background: treatment.wash }}
+          >
+            <span className="absolute inset-y-0 start-0 w-[3px]" style={{ background: treatment.rule }} />
+            <p className="text-[10px] font-medium tracking-wide text-silver">{copy.recommended}</p>
+            <h2 className="mt-3 font-display text-[36px] leading-[0.92] text-ivory">
+              {recommended.name}
+            </h2>
+            <p className={`mt-3 text-lg text-ivory ${lang === 'he' ? 'font-hebrew' : ''}`}>
+              {recommended.nameHe}
+            </p>
+            <p className="mt-4 text-sm text-silver">
+              {finishLabel(recommended.vibe, lang)} · {intensityLabel(recommended.presenceLevel, lang)}
+            </p>
+          </article>
+        )}
+
+        {alternatives.length > 0 && (
+          <div className="mb-4">
+            <p className="mb-2 text-[10px] font-medium tracking-wide text-silver">{copy.alternatives}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {alternatives.map(({ kind, look }) => (
+                <button
+                  key={`${kind}-${look.id}`}
+                  type="button"
+                  onClick={() => onSelectLook(look.name)}
+                  className="border border-white/10 bg-carbon px-3 py-3 text-start hover:border-white/25"
+                >
+                  <span className="block text-[10px] text-silver">{alternativeLabel(kind, lang)}</span>
+                  <span className="mt-1 block text-[13px] font-medium leading-snug text-ivory">{look.name}</span>
+                  <span className="mt-0.5 block text-[11px] text-silver">{look.nameHe}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="shrink-0 border-t border-white/10 px-5 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]" style={{ background: '#050505' }}>
+        {recommended && (
+          <button
+            type="button"
+            onClick={() => onSelectLook(recommended.name)}
+            className="flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
+          >
+            {copy.tryLook}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-3 flex w-full items-center justify-center py-2 text-sm text-silver hover:text-ivory"
+        >
+          {copy.chooseMyself}
+        </button>
+      </div>
     </div>
   )
 }

@@ -20,7 +20,7 @@ export default {
         carbon:   '#0B0B0D',
         shadow:   '#121214',
         ivory:    '#F3F1EE',
-        silver:   '#A7A7AC',
+        silver:   '#C5C5C9',
       },
       fontFamily: {
         sans: ['Heebo', 'system-ui', 'ui-sans-serif', 'sans-serif'],

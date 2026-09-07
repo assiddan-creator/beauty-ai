@@ -58,6 +58,42 @@ export function colorDirectionLabel(analysis: BeautyAnalysisView, lang: VestiLan
   return parts.join(' · ')
 }
 
+export function lookCardTreatment(look: LookCardModel): { wash: string; rule: string; swatches: string[] } {
+  if (look.presenceLevel === 'high' || look.name === 'Classic Red Lip') {
+    return {
+      wash: 'linear-gradient(165deg, #1e0d12 0%, #0B0B0D 62%)',
+      rule: '#B50E1C',
+      swatches: ['#7A0B14', '#B50E1C', '#E43743'],
+    }
+  }
+  if (look.category === 'ערב ודומיננטי' || EVENING_NAMES.has(look.name)) {
+    return {
+      wash: 'linear-gradient(165deg, #121018 0%, #0B0B0D 64%)',
+      rule: '#A7A7AC',
+      swatches: ['#1d1b24', '#6f6c78', '#F3F1EE'],
+    }
+  }
+  if (look.name === 'Office Polished' || look.presenceLevel === 'medium-high') {
+    return {
+      wash: 'linear-gradient(165deg, #15120f 0%, #0B0B0D 62%)',
+      rule: '#C5C5C9',
+      swatches: ['#2a2420', '#8a7d72', '#E7DFD6'],
+    }
+  }
+  if (NATURAL_CATEGORIES.has(look.category) || look.presenceLevel === 'low' || look.presenceLevel === 'low-medium') {
+    return {
+      wash: 'linear-gradient(165deg, #121614 0%, #0B0B0D 64%)',
+      rule: '#F3F1EE',
+      swatches: ['#2e322e', '#8f938c', '#F3F1EE'],
+    }
+  }
+  return {
+    wash: 'linear-gradient(165deg, #161310 0%, #0B0B0D 64%)',
+    rule: '#C5C5C9',
+    swatches: ['#3a322c', '#8a7a70', '#D8D0C8'],
+  }
+}
+
 export function lookDisplayName(look: LookCardModel | undefined, lang: VestiLang): string {
   if (!look) return ''
   return lang === 'he' ? look.nameHe : look.name
