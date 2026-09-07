@@ -17,7 +17,6 @@ import {
   Droplets,
   Gem,
   ArrowLeftRight,
-  Brain,
   CheckCircle2,
   ChevronRight,
   Palette,
@@ -27,6 +26,10 @@ import {
 import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
 import ProductTryOnPicker from './components/ProductTryOnPicker'
 import CustomRequestTryOn from './components/CustomRequestTryOn'
+import RecommendationScreen from './vesti/RecommendationScreen'
+import LookGallery from './vesti/LookGallery'
+import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE } from './vesti/preview'
+import type { LookCardModel } from './vesti/types'
 import type { BeautyProductView } from './lib/productCatalogFacade'
 import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
 
@@ -609,6 +612,18 @@ const LOOK_NAVIGATION: Record<string, {
   'Coral Breeze': { moreNatural: 'Peach Pop', moreGlam: 'Warm Bronze', moreWarm: 'Terracotta Nude', moreCool: 'Fresh Rosy', saferOption: 'Peach Pop', bolderOption: 'Warm Bronze' },
   'Power Nude': { moreNatural: 'Office Polished', moreGlam: 'Nude Sculpt', moreWarm: 'Terracotta Nude', moreCool: 'Cool Chic', saferOption: 'Office Polished', bolderOption: 'Nude Sculpt' },
   'Local Chic': { moreNatural: 'Glass Nude', moreGlam: 'Power Nude', moreWarm: 'Peach Pop', moreCool: 'Office Polished', saferOption: 'Glass Nude', bolderOption: 'Power Nude' },
+}
+
+function vestiLookCards(): LookCardModel[] {
+  return BEAUTY_PRESETS.map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    nameHe: preset.nameHe,
+    category: LOOK_METADATA[preset.name]?.category ?? '',
+    vibe: LOOK_METADATA[preset.name]?.vibe ?? '',
+    salesLine: LOOK_METADATA[preset.name]?.salesLine ?? '',
+    presenceLevel: LOOK_METADATA[preset.name]?.presenceLevel ?? 'medium',
+  }))
 }
 
 const LOOK_PRODUCTS: Record<string, Array<{ brand: string; productName: string; shadeName: string; category: string }>> = {
@@ -1319,104 +1334,6 @@ function saveHistoryToStorage(entries: HistoryEntry[]) {
   localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stored))
 }
 
-const LookNavigator = ({ currentLookName, onSelect, lang }: { currentLookName: string, onSelect: (name: string) => void, lang: 'he' | 'en' }) => {
-  const nav = LOOK_NAVIGATION[currentLookName]
-  if (!nav) return null
-
-  const suggestions = [
-    {
-      lookName: nav.moreNatural,
-      labelHe: 'יותר טבעי',
-      labelEn: 'More natural',
-    },
-    {
-      lookName: nav.moreGlam,
-      labelHe: 'יותר ערב',
-      labelEn: 'More evening',
-    },
-    {
-      lookName: nav.moreWarm,
-      labelHe: 'גוונים חמים',
-      labelEn: 'Warmer tones',
-    },
-    {
-      lookName: nav.moreCool,
-      labelHe: 'גוונים קרירים',
-      labelEn: 'Cooler tones',
-    },
-    {
-      lookName: nav.saferOption,
-      labelHe: 'בטוח יותר',
-      labelEn: 'Safer option',
-    },
-    {
-      lookName: nav.bolderOption,
-      labelHe: 'יותר נוכח',
-      labelEn: 'More statement',
-    },
-  ].filter((s, i, arr) =>
-    s.lookName !== currentLookName &&
-    arr.findIndex(x => x.lookName === s.lookName) === i
-  )
-
-  return (
-    <div className="mt-5">
-      <p
-        className="mb-3 text-[10px] font-medium tracking-[0.12em] uppercase"
-        style={{ color: 'rgba(255,255,255,0.22)' }}
-      >
-        {lang === 'he' ? 'רוצה לנסות כיוון אחר?' : 'Want to try a different direction?'}
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        {suggestions.map((s) => {
-          const preset = BEAUTY_PRESETS.find(p => p.name === s.lookName)
-          if (!preset) return null
-          const displayName = lang === 'he' ? preset.nameHe : preset.name
-          const label = lang === 'he' ? s.labelHe : s.labelEn
-
-          return (
-            <button
-              key={s.lookName}
-              type="button"
-              onClick={() => onSelect(s.lookName)}
-              className="group flex flex-col items-start rounded-xl px-3 py-2 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                minWidth: 90,
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,107,71,0.08)'
-                el.style.borderColor = 'rgba(255,107,71,0.2)'
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget
-                el.style.background = 'rgba(255,255,255,0.04)'
-                el.style.borderColor = 'rgba(255,255,255,0.08)'
-              }}
-            >
-              <span
-                className="text-[9px] font-medium tracking-wide"
-                style={{ color: 'rgba(255,255,255,0.28)' }}
-              >
-                {label}
-              </span>
-              <span
-                className="mt-0.5 text-[11px] font-bold leading-tight text-white"
-                style={{ letterSpacing: '-0.01em' }}
-              >
-                {displayName}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ─── Beauty Advisor Chat (result screen) ──────────────────────────────────────
 type BeautyAdvisorChatProduct = {
   brand: string
@@ -1587,7 +1504,6 @@ function App() {
   const [faceAnalysis, setFaceAnalysis] = useState<FaceAnalysis | null>(null)
   const [analysisDismissed, setAnalysisDismissed] = useState(false)
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
-  const [looksCarouselCategory, setLooksCarouselCategory] = useState('all')
   const [showPathScreen, setShowPathScreen] = useState(false)
   const [showSplash, setShowSplash] = useState(true)
   const [showUploadChoice, setShowUploadChoice] = useState(false)
@@ -1597,6 +1513,34 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
 
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
+  const [vestiPreview, setVestiPreview] = useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (!import.meta.env.DEV) return
+    const preview = new URLSearchParams(window.location.search).get('vesti-preview')
+    if (!preview) return
+    setVestiPreview(preview)
+    setShowSplash(false)
+    setShowUploadChoice(false)
+    setShowPathScreen(false)
+    setIsUploaded(true)
+    setOriginalImage(VESTI_PREVIEW_IMAGE)
+    if (preview === 'recommendation') {
+      setFaceAnalysis(VESTI_PREVIEW_ANALYSIS)
+      setShowAnalysisPanel(true)
+      setAppMode('looks')
+      return
+    }
+    if (preview === 'product') {
+      setAppMode('product')
+      window.scrollTo(0, 0)
+      return
+    }
+    setAppMode('looks')
+    if (preview === 'request') {
+      window.scrollTo(0, 0)
+    }
+  }, [])
 
   const markBroken = (key: string) =>
     setBrokenImgs((prev) => { const next = new Set(prev); next.add(key); return next })
@@ -2809,303 +2753,21 @@ function App() {
     )
   }
 
-  const AnalysisPanel = () => {
-    if (!faceAnalysis || !showAnalysisPanel) return null
-
-    const recommendedPreset = BEAUTY_PRESETS.find(p => p.name === faceAnalysis.recommendedPreset)
-    const alternatePresets = (faceAnalysis.alternatePresets ?? [])
-      .map(name => BEAUTY_PRESETS.find(p => p.name === name))
-      .filter(Boolean) as typeof BEAUTY_PRESETS
-
-    return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      onClick={(e) => { if (e.target === e.currentTarget) setShowAnalysisPanel(false) }}
-      style={{ background: 'rgba(4,2,6,0.88)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
-    >
-      <div
-        className="w-full max-w-3xl overflow-y-auto"
-        style={{
-          background: 'linear-gradient(180deg, #0a0608 0%, #080408 60%, #060306 100%)',
-          borderTop: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: '28px 28px 0 0',
-          maxHeight: '92vh',
-          boxShadow: '0 -30px 80px rgba(0,0,0,0.8)',
-        }}
-      >
-        {/* Top glow line */}
-        <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.4), transparent)' }} />
-
-        {/* Handle */}
-        <div className="flex justify-center pt-3.5 pb-1">
-          <div className="h-[3px] w-8 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }} />
-        </div>
-
-        <div className="px-6 pb-16 pt-4">
-
-          {/* Close button */}
-          <div className="flex justify-end mb-4">
-            <button
-              type="button"
-              onClick={() => setShowAnalysisPanel(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-full focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              <X className="h-3.5 w-3.5 text-gray-500" />
-            </button>
-          </div>
-
-          {/* Personal greeting */}
-          <div className="mb-8">
-            <p
-              className="text-2xl font-extrabold text-white mb-3 leading-snug"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              {lang === 'he'
-                ? 'מצאנו את הלוק שיכול להחמיא לך ✨'
-                : 'We found a look that could flatter you ✨'}
-            </p>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {lang === 'he'
-                ? 'לפי הגוונים הטבעיים שלך — הנה הכיוון שיכול לשבת עלייך הכי יפה:'
-                : 'Based on your natural tones — here\'s the direction that could suit you best:'}
-            </p>
-          </div>
-
-          {/* What we saw — personal cards */}
-          <div
-            className="mb-8 rounded-2xl p-5"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] mb-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              {lang === 'he' ? 'הגוונים שלך' : 'Your tones'}
-            </p>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {faceAnalysis.skinTone && (
-                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(255,255,255,0.22)' }}>
-                    {lang === 'he' ? 'גוון עור' : 'Skin tone'}
-                  </p>
-                  <p className="text-sm font-bold text-white">{faceAnalysis.skinTone}</p>
-                </div>
-              )}
-              {faceAnalysis.undertone && (
-                <div className="rounded-xl p-3" style={{ background: 'rgba(255,107,71,0.06)', border: '1px solid rgba(255,107,71,0.12)' }}>
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(255,107,71,0.5)' }}>
-                    {lang === 'he' ? 'אנדרטון' : 'Undertone'}
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(255,140,100,0.95)' }}>{faceAnalysis.undertone}</p>
-                </div>
-              )}
-              {faceAnalysis.lipColorFamily && (
-                <div className="rounded-xl p-3" style={{ background: 'rgba(236,72,153,0.05)', border: '1px solid rgba(236,72,153,0.1)' }}>
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(236,72,153,0.5)' }}>
-                    {lang === 'he' ? 'גוני שפתיים' : 'Lip tones'}
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(240,150,190,0.95)' }}>{faceAnalysis.lipColorFamily}</p>
-                </div>
-              )}
-              {faceAnalysis.blushColorFamily && (
-                <div className="rounded-xl p-3" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.1)' }}>
-                  <p className="text-[9px] uppercase tracking-wide mb-1" style={{ color: 'rgba(249,115,22,0.5)' }}>
-                    {lang === 'he' ? 'גוני סומק' : 'Blush tones'}
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(255,180,120,0.95)' }}>{faceAnalysis.blushColorFamily}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Beauty tips */}
-            {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
-              <div className="space-y-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                {faceAnalysis.beautyTips.map((tip, i) => (
-                  <div key={i} className="flex gap-2.5 text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                    <span className="shrink-0 mt-0.5" style={{ color: 'rgba(255,107,71,0.4)' }}>✦</span>
-                    <span>{tip}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* The recommendation — personal and warm */}
-          {recommendedPreset && (
-            <div className="mb-8">
-              <p className="text-lg font-extrabold text-white mb-2 leading-snug" style={{ letterSpacing: '-0.02em' }}>
-                {lang === 'he'
-                  ? 'הלוק שהכי מתאים לך —'
-                  : 'The look that suits you most —'}
-              </p>
-
-              {/* Look name — hero */}
-              <div
-                className="relative mb-4 overflow-hidden rounded-2xl p-5"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,107,71,0.1) 0%, rgba(80,20,60,0.15) 100%)',
-                  border: '1px solid rgba(255,107,71,0.2)',
-                  boxShadow: '0 0 40px rgba(255,107,71,0.06)',
-                }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,107,71,0.4), transparent)' }} />
-
-                <div className="flex items-start gap-4">
-                  {/* Preset preview */}
-                  <div
-                    className="h-20 w-16 shrink-0 overflow-hidden rounded-xl flex items-center justify-center"
-                    style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(160deg, rgba(255,107,71,0.12) 0%, rgba(20,10,20,0.9) 100%)' }}
-                    aria-hidden
-                  >
-                    <span className="text-[10px] font-bold text-white/80 text-center leading-tight px-1 line-clamp-4">{lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}</span>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white mb-2"
-                      style={{ background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)', boxShadow: '0 0 10px rgba(255,107,71,0.4)' }}
-                    >
-                      <Brain className="h-2.5 w-2.5" />
-                      {lang === 'he' ? 'הבחירה שלנו' : 'Our pick'}
-                    </span>
-
-                    <p
-                      className="text-xl font-extrabold text-white leading-tight"
-                      style={{ letterSpacing: '-0.02em' }}
-                    >
-                      {lang === 'he' ? recommendedPreset.nameHe : recommendedPreset.name}
-                    </p>
-
-                    {LOOK_METADATA[recommendedPreset.name]?.salesLine && (
-                      <p className="mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                        {LOOK_METADATA[recommendedPreset.name].salesLine}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Personal reasoning */}
-                {faceAnalysis.reasoning && (
-                  <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                      {faceAnalysis.reasoning.split('.')[0] + '.'}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      {lang === 'he'
-                        ? 'זה לוק שיכול לשבת עלייך בצורה טבעית וקלה.'
-                        : 'This look can sit on you naturally and effortlessly.'}
-                    </p>
-                  </div>
-                )}
-
-                {/* CTA */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPreset(recommendedPreset.name)
-                    setShowAnalysisPanel(false)
-                    setAnalysisDismissed(true)
-                  }}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] focus:outline-none"
-                  style={{
-                    background: 'linear-gradient(135deg, #FF6B47 0%, #FF9D6E 100%)',
-                    boxShadow: '0 0 24px rgba(255,107,71,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
-                  }}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {lang === 'he' ? 'נסי את הלוק הזה' : 'Try this look'}
-                </button>
-              </div>
-
-              {/* Safer / Bolder */}
-              {(faceAnalysis.saferOption || faceAnalysis.bolderOption) && (
-                <div className="mb-2">
-                  <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                    {lang === 'he'
-                      ? 'ואם תרצי, יש לנו גם עוד כיוונים שיכולים להתאים לך —'
-                      : 'And if you want, we have more directions that could suit you —'}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {faceAnalysis.saferOption && (() => {
-                      const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.saferOption)
-                      if (!p) return null
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
-                          className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
-                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-                        >
-                          <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>🕊️ {lang === 'he' ? 'רך יותר' : 'Softer'}</span>
-                          <span className="text-xs font-bold text-white">{lang === 'he' ? p.nameHe : p.name}</span>
-                          <span className="text-[9px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[p.name]?.salesLine ?? ''}</span>
-                        </button>
-                      )
-                    })()}
-                    {faceAnalysis.bolderOption && (() => {
-                      const p = BEAUTY_PRESETS.find(x => x.name === faceAnalysis.bolderOption)
-                      if (!p) return null
-                      return (
-                        <button
-                          type="button"
-                          onClick={() => { setSelectedPreset(p.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
-                          className="flex flex-col items-start rounded-xl p-3 text-left transition-all hover:opacity-80 focus:outline-none"
-                          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-                        >
-                          <span className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>🔥 {lang === 'he' ? 'יותר נוכח' : 'Bolder'}</span>
-                          <span className="text-xs font-bold text-white">{lang === 'he' ? p.nameHe : p.name}</span>
-                          <span className="text-[9px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[p.name]?.salesLine ?? ''}</span>
-                        </button>
-                      )
-                    })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Alternate looks */}
-          {alternatePresets.length > 0 && (
-            <div className="mb-6">
-              <p className="text-[9px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                {lang === 'he' ? 'כיוונים נוספים לגלות' : 'More directions to explore'}
-              </p>
-              <div className="flex flex-col gap-2">
-                {alternatePresets.map((preset) => (
-                  <div
-                    key={preset.id}
-                    className="flex items-center gap-3 rounded-xl p-3 cursor-pointer transition-all hover:opacity-80"
-                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
-                    onClick={() => { setSelectedPreset(preset.name); setShowAnalysisPanel(false); setAnalysisDismissed(true) }}
-                  >
-                    <div className="h-11 w-9 shrink-0 overflow-hidden rounded-lg flex items-center justify-center" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'linear-gradient(160deg, rgba(255,107,71,0.1) 0%, rgba(20,10,20,0.85) 100%)' }} aria-hidden>
-                      <span className="text-[8px] font-bold text-white/70 text-center leading-tight px-0.5 line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-white">{lang === 'he' ? preset.nameHe : preset.name}</p>
-                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{LOOK_METADATA[preset.name]?.salesLine ?? ''}</p>
-                    </div>
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0" style={{ color: 'rgba(255,255,255,0.18)' }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Bottom CTA */}
-          <button
-            type="button"
-            onClick={() => setShowAnalysisPanel(false)}
-            className="flex w-full items-center justify-center rounded-xl py-3 text-xs transition-all hover:opacity-60 focus:outline-none"
-            style={{ color: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.05)' }}
-          >
-            {lang === 'he' ? 'אני מעדיפה לבחור בעצמי' : 'I prefer to choose myself'}
-          </button>
-
-        </div>
-      </div>
-    </div>
+  const AnalysisPanel = () => (
+    <RecommendationScreen
+      open={Boolean(faceAnalysis && showAnalysisPanel)}
+      lang={lang}
+      analysis={faceAnalysis}
+      looks={vestiLookCards()}
+      navigation={LOOK_NAVIGATION}
+      onClose={() => setShowAnalysisPanel(false)}
+      onSelectLook={(lookName) => {
+        setSelectedPreset(lookName)
+        setShowAnalysisPanel(false)
+        setAnalysisDismissed(true)
+      }}
+    />
   )
-  }
 
   const AdminPanel = () => {
     const [visible, setVisible] = React.useState(false)
@@ -3253,28 +2915,63 @@ function App() {
     document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const vestiSelectionActive = isUploaded && !generatedImage
+  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive
+
+  React.useEffect(() => {
+    document.body.classList.toggle('vesti-core-active', hideLegacyChrome)
+    return () => document.body.classList.remove('vesti-core-active')
+  }, [hideLegacyChrome])
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className={`relative min-h-screen text-gray-100 ${hideLegacyChrome ? 'font-vesti' : 'font-sans'}`}>
       {showSplash && <SplashScreen />}
       {showAnalyzingScreen && <AnalyzingScreen />}
       {showLookProducts && <LookProductsScreen />}
       {showAdminPanel && <AdminPanel />}
       {showUploadChoice && <UploadChoiceModal />}
       {showPathScreen && <PathScreen />}
-      <AnalysisPanel />
 
       {/* ── Cinematic dynamic background (no /looks/ images to avoid 404) ── */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div
           key={selectedPreset ?? 'default'}
           className="absolute bg-cover bg-center"
-          style={{ inset: '-8%', background: 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)' }}
+          style={{
+            inset: '-8%',
+            background: vestiSelectionActive
+              ? 'linear-gradient(180deg, #050505 0%, #0B0B0D 100%)'
+              : 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)',
+          }}
         />
       </div>
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />
 
       {/* ── Header ── */}
+      {hideLegacyChrome ? (
+        <header className="relative z-20 bg-onyx">
+          <div className="mx-auto flex max-w-3xl items-baseline justify-between gap-4 px-4 py-5 sm:px-8">
+            <p className="text-[11px] font-medium tracking-[0.32em] text-ivory uppercase">Vesti Beauty</p>
+            <div className="flex items-center gap-5">
+              <button
+                type="button"
+                onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
+                className="vesti-focus min-h-11 text-[11px] tracking-wide text-silver hover:text-ivory"
+              >
+                {lang === 'he' ? 'EN' : 'עב'}
+              </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="vesti-focus min-h-11 text-[11px] tracking-wide text-silver hover:text-ivory"
+              >
+                {lang === 'he' ? 'התחלי מחדש' : 'Start over'}
+              </button>
+            </div>
+          </div>
+        </header>
+      ) : (
       <header className="relative z-20 border-b border-white/10" style={{ background: 'rgba(0,0,0,0.22)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)' }}>
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
           <div className="flex items-center gap-4">
@@ -3320,12 +3017,13 @@ function App() {
           </div>
         </div>
       </header>
+      )}
 
-      <main className="relative z-10 mx-auto max-w-3xl px-4 pb-36 pt-6 sm:px-8 md:px-12 md:pt-10">
+      <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'overflow-x-hidden pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
-        <div className="rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl">
-          <div className="p-5 sm:p-6">
+        <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
+          <div className={hideLegacyChrome ? 'px-0 py-2' : 'p-5 sm:p-6'}>
 
             {/* ── Upload Dropzone ── */}
             {!isUploaded && (
@@ -3406,8 +3104,20 @@ function App() {
 
             {/* ── Main Editor (uploaded) ── */}
             {isUploaded && (
-              <div className="mt-8">
+              <div className={hideLegacyChrome ? '' : 'mt-8'}>
 
+                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && (
+                <div className="mb-6 flex items-center gap-3">
+                  {originalImage && (
+                    <img src={originalImage} alt="" className="h-8 w-8 object-cover opacity-80" />
+                  )}
+                  <p className="text-[11px] text-silver">
+                    {lang === 'he' ? 'התמונה שלך מוכנה לבחירה' : 'Your photo is ready'}
+                  </p>
+                </div>
+                )}
+                {(!vestiSelectionActive || isGenerating) && (
+                <>
                 {/* ── Image Viewer ── */}
                 <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur-3xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="relative w-full overflow-hidden aspect-[3/4] max-h-[72vh]">
@@ -3554,6 +3264,8 @@ function App() {
                       : t.originalPhoto}
                   </p>
                 </div>
+                </>
+                )}
 
                 {resultDescription && (
                   <p className="mt-3 text-center text-sm text-white/70 italic px-4">
@@ -3562,9 +3274,11 @@ function App() {
                 )}
 
                 {/* ── Disclaimer ── */}
+                {!vestiSelectionActive && (
                 <p className="mt-3 text-center text-[11px] text-gray-600">
                   ✦ {t.disclaimer}
                 </p>
+                )}
 
                 {generatedImage && !isGenerating && (() => {
                   const chatEntry = history.find(h => h.id === activeHistoryId)
@@ -3720,543 +3434,75 @@ function App() {
                 )}
 
                 {/* ── Mode: Looks | Product ── */}
-                <div className="mt-4 flex gap-2 rounded-xl p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                {vestiPreview !== 'request' && (
+                <nav className="mt-2 flex gap-8" aria-label={lang === 'he' ? 'מצב בחירה' : 'Selection mode'}>
                   <button
                     type="button"
                     onClick={() => setAppMode('looks')}
-                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
-                    style={appMode === 'looks' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                    className={`vesti-focus min-h-11 border-b text-[13px] tracking-wide transition-colors ${
+                      appMode === 'looks'
+                        ? 'border-lacquer text-ivory'
+                        : 'border-transparent text-silver hover:text-ivory'
+                    }`}
                   >
                     {lang === 'he' ? 'לוקים' : 'Looks'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAppMode('product')}
-                    className="flex-1 rounded-lg py-2.5 text-xs font-semibold transition-all focus:outline-none"
-                    style={appMode === 'product' ? { background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)', color: 'white', boxShadow: '0 0 16px rgba(255,107,71,0.3)' } : { color: 'rgba(255,255,255,0.5)' }}
+                    onClick={() => {
+                      setAppMode('product')
+                      window.scrollTo(0, 0)
+                    }}
+                    className={`vesti-focus min-h-11 border-b text-[13px] tracking-wide transition-colors ${
+                      appMode === 'product'
+                        ? 'border-lacquer text-ivory'
+                        : 'border-transparent text-silver hover:text-ivory'
+                    }`}
                   >
                     {lang === 'he' ? 'מוצר' : 'Product'}
                   </button>
-                </div>
+                </nav>
+                )}
 
-                {appMode === 'looks' && (
+                {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && (
                 <>
-                {/* ── Manual Claude Vision trigger ── */}
-                {originalImage && !isGenerating && (
-                  <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                    {faceAnalysis && !showAnalysisPanel && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAnalysisPanel(true)}
-                        className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-coral/30 bg-coral/10 px-4 py-2 text-xs font-semibold text-coral transition-all hover:bg-coral/20 focus:outline-none"
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        {lang === 'he' ? 'הניתוח שלי' : 'My Analysis'}
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* ── Claude Vision Beauty Analysis Banner ── */}
-                {(isAnalyzing || (faceAnalysis && !analysisDismissed)) && (
-                  <div
-                    className="mt-4 overflow-hidden rounded-2xl border border-white/10 backdrop-blur-3xl transition-all duration-500"
-                    style={{
-                      background: isAnalyzing
-                        ? 'rgba(255,107,71,0.05)'
-                        : 'linear-gradient(135deg, rgba(255,107,71,0.08) 0%, rgba(139,92,246,0.06) 100%)',
-                      borderColor: isAnalyzing ? 'rgba(255,107,71,0.2)' : 'rgba(255,107,71,0.25)',
-                    }}
-                  >
-                    {isAnalyzing ? (
-                      <div className="flex items-center gap-3 px-5 py-4">
-                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
-                          <div className="absolute inset-0 animate-ping rounded-full bg-coral/20" />
-                          <Brain className="relative h-4 w-4 text-coral animate-pulse" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-white">{t.aiBeautyAnalysis}</p>
-                          <p className="text-[11px] text-gray-500 mt-0.5">
-                            {lang === 'he'
-                              ? 'מנתח גוון עור ומציע לוק מותאם אישית...'
-                              : 'Analyzing skin tone · Recommending best look...'}
-                          </p>
-                        </div>
-                      </div>
-                    ) : faceAnalysis ? (
-                      <div className="px-5 py-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3">
-                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/20 to-purple-500/20 ring-1 ring-coral/30">
-                              <CheckCircle2 className="h-4 w-4 text-coral" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-bold text-white">{t.aiBeautyAnalysis}</p>
-                                <span className="rounded-full border border-coral/30 bg-coral/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
-                                  Claude Vision
-                                </span>
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                                    faceAnalysis.confidence === 'high'
-                                      ? 'bg-green-500/15 text-green-400 border border-green-500/25'
-                                      : faceAnalysis.confidence === 'medium'
-                                      ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
-                                      : 'bg-gray-500/15 text-gray-400 border border-gray-500/25'
-                                  }`}
-                                >
-                                  {faceAnalysis.confidence === 'high'
-                                    ? t.highConfidence
-                                    : faceAnalysis.confidence === 'medium'
-                                    ? t.medConfidence
-                                    : t.lowConfidence}
-                                </span>
-                              </div>
-                              <div className="mt-2 flex flex-wrap gap-3">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.skinTone}:</span>
-                                  <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                    {faceAnalysis.skinTone}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] text-gray-500">{t.undertone}:</span>
-                                  <span className="rounded-lg bg-coral/15 px-2 py-0.5 text-[11px] font-semibold text-coral">
-                                    {faceAnalysis.undertone}
-                                  </span>
-                                </div>
-                                {faceAnalysis.lipColorFamily && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">Lips:</span>
-                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                      {faceAnalysis.lipColorFamily}
-                                    </span>
-                                  </div>
-                                )}
-                                {faceAnalysis.blushColorFamily && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">Blush:</span>
-                                    <span className="rounded-lg bg-white/8 px-2 py-0.5 text-[11px] font-semibold text-gray-200">
-                                      {faceAnalysis.blushColorFamily}
-                                    </span>
-                                  </div>
-                                )}
-                                {faceAnalysis.avoidPreset && (
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-gray-500">{lang === 'he' ? 'להמנע' : 'Avoid'}:</span>
-                                    <span className="rounded-lg bg-red-500/20 px-2 py-0.5 text-[11px] font-semibold text-red-400">
-                                      {faceAnalysis.avoidPreset}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
-                                {faceAnalysis.reasoning}
-                              </p>
-                              {faceAnalysis.beautyTips && faceAnalysis.beautyTips.length > 0 && (
-                                <div className="mt-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
-                                    {lang === 'he' ? 'טיפים לך' : 'Beauty Tips'}
-                                  </p>
-                                  <ul className="space-y-1">
-                                    {faceAnalysis.beautyTips.slice(0, 2).map((tip, i) => (
-                                      <li key={i} className="flex gap-2 text-[11px] text-gray-300">
-                                        <span className="text-coral mt-0.5">•</span>
-                                        <span>{tip}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setAnalysisDismissed(true)
-                                  document.getElementById('looks-carousel')?.scrollIntoView({ behavior: 'smooth' })
-                                }}
-                                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
-                              >
-                                {t.changeStyle}
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setAnalysisDismissed(true)}
-                              className="flex items-center gap-1.5 rounded-xl border border-coral/40 bg-coral/10 px-3 py-2 text-xs font-semibold text-coral transition-colors hover:bg-coral/20 focus:outline-none"
-                            >
-                              {t.changeStyle}
-                              <ChevronRight className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setAnalysisDismissed(true)}
-                              className="rounded-lg p-1.5 text-gray-600 transition-colors hover:bg-white/10 hover:text-gray-300 focus:outline-none"
-                              aria-label="Dismiss analysis"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-
-                {/* ── Looks Carousel ── */}
-                <section id="looks-carousel" className="mt-5">
-                  {(() => {
-                    const categories = [
-                      { id: 'all', label: lang === 'he' ? 'הכל' : 'All' },
-                      { id: 'טבעי וקל', label: lang === 'he' ? 'טבעי וקל' : 'Natural & Easy' },
-                      { id: 'זוהר ורענן', label: lang === 'he' ? 'זוהר ורענן' : 'Glow & Fresh' },
-                      { id: 'מסודר ויוקרתי', label: lang === 'he' ? 'מסודר ויוקרתי' : 'Polished & Luxury' },
-                      { id: 'חם וקייצי', label: lang === 'he' ? 'חם וקייצי' : 'Warm & Sunny' },
-                      { id: 'ערב ודומיננטי', label: lang === 'he' ? 'ערב ודומיננטי' : 'Evening & Bold' },
-                    ]
-                    const activeCategory = looksCarouselCategory
-                    const setActiveCategory = setLooksCarouselCategory
-                    const filteredPresets = activeCategory === 'all'
-                      ? BEAUTY_PRESETS
-                      : BEAUTY_PRESETS.filter(p => LOOK_METADATA[p.name]?.category === activeCategory)
-                    const groupedPresets = activeCategory === 'all'
-                      ? [
-                          { id: 'טבעי וקל', label: lang === 'he' ? 'טבעי וקל' : 'Natural & Easy', sublabel: lang === 'he' ? 'מחמיא, קל ובטוח' : 'Flattering, easy and safe' },
-                          { id: 'זוהר ורענן', label: lang === 'he' ? 'זוהר ורענן' : 'Glow & Fresh', sublabel: lang === 'he' ? 'רענן, זוהר ומחיה' : 'Fresh, glowing and alive' },
-                          { id: 'מסודר ויוקרתי', label: lang === 'he' ? 'מסודר ויוקרתי' : 'Polished & Luxury', sublabel: lang === 'he' ? 'אלגנטי, מדויק ויקר' : 'Elegant, precise and expensive' },
-                          { id: 'חם וקייצי', label: lang === 'he' ? 'חם וקייצי' : 'Warm & Sunny', sublabel: lang === 'he' ? 'חם, שזוף ומזהיר' : 'Warm, tanned and radiant' },
-                          { id: 'ערב ודומיננטי', label: lang === 'he' ? 'ערב ודומיננטי' : 'Evening & Bold', sublabel: lang === 'he' ? 'נוכחות, עוצמה וסטייל' : 'Presence, power and style' },
-                        ].map(group => ({
-                          ...group,
-                          presets: BEAUTY_PRESETS.filter(p => LOOK_METADATA[p.name]?.category === group.id)
-                        })).filter(g => g.presets.length > 0)
-                      : null
-                    return (
-                      <>
-                        <div className="mb-5 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                          {categories.map(cat => {
-                            const isActive = activeCategory === cat.id
-                            return (
-                              <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => setActiveCategory(cat.id)}
-                                className="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none"
-                                style={isActive ? {
-                                  background: 'linear-gradient(135deg, #FF6B47, #FF9D6E)',
-                                  color: 'white',
-                                  boxShadow: '0 0 16px rgba(255,107,71,0.4)',
-                                  border: 'none',
-                                } : {
-                                  background: 'rgba(255,255,255,0.04)',
-                                  color: 'rgba(255,255,255,0.45)',
-                                  border: '1px solid rgba(255,255,255,0.08)',
-                                }}
-                              >
-                                {cat.label}
-                              </button>
-                            )
-                          })}
-                        </div>
-                        {groupedPresets ? (
-                          <div className="space-y-8">
-                            {groupedPresets.map(group => (
-                              <div key={group.id}>
-                                <div className="mb-3">
-                                  <div className="flex items-baseline gap-2">
-                                    <h3 className="text-sm font-extrabold text-white" style={{ letterSpacing: '-0.01em' }}>
-                                      {group.label}
-                                    </h3>
-                                    <span className="text-[10px] text-gray-600">{group.sublabel}</span>
-                                  </div>
-                                  <div className="mt-1.5 h-px w-8" style={{ background: 'linear-gradient(90deg, rgba(255,107,71,0.5), transparent)' }} />
-                                </div>
-                                <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                                  {group.presets.map(preset => {
-                                    const meta = LOOK_METADATA[preset.name]
-                                    const isSelected = selectedPreset === preset.name
-                                    const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
-                                    return (
-                                      <button
-                                        key={preset.id}
-                                        type="button"
-                                        onClick={() => setSelectedPreset(preset.name)}
-                                        className="group relative flex shrink-0 w-44 h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] focus:outline-none"
-                                        style={{
-                                          border: isSelected ? '1.5px solid rgba(255,107,71,0.6)' : '1px solid rgba(255,255,255,0.07)',
-                                          boxShadow: isSelected
-                                            ? '0 0 30px rgba(255,107,71,0.35), 0 0 60px rgba(255,107,71,0.12), inset 0 1px 0 rgba(255,107,71,0.2)'
-                                            : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
-                                        }}
-                                      >
-                                        {/* Placeholder only: no /looks/ image to avoid 404 */}
-                                        <div
-                                          className="absolute inset-0"
-                                          style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
-                                        >
-                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-                                            <ImageIcon className="h-6 w-6 text-gray-800 mb-1" />
-                                            <span className="text-[10px] font-bold text-white/70 text-center leading-tight line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
-                                          </div>
-                                        </div>
-                                        <div
-                                          className="absolute inset-0"
-                                          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
-                                        />
-                                        {isSelected && (
-                                          <div
-                                            className="absolute inset-0 transition-opacity duration-300"
-                                            style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.1) 0%, transparent 60%)' }}
-                                          />
-                                        )}
-                                        {isRecommended && (
-                                          <div
-                                            className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
-                                            style={{
-                                              background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)',
-                                              boxShadow: '0 0 12px rgba(255,107,71,0.6)',
-                                            }}
-                                          >
-                                            <Brain className="h-2.5 w-2.5 text-white" />
-                                            <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
-                                          </div>
-                                        )}
-                                        <div className="relative z-10 mt-auto flex flex-col p-3.5">
-                                          {meta?.vibe && (
-                                            <span
-                                              className="mb-1 text-[9px] font-medium tracking-[0.08em] uppercase line-clamp-1"
-                                              style={{ color: 'rgba(255,255,255,0.35)' }}
-                                            >
-                                              {meta.vibe.split(',')[0].trim()}
-                                            </span>
-                                          )}
-                                          <p
-                                            className="text-sm font-extrabold leading-tight text-white"
-                                            style={{ letterSpacing: '-0.02em' }}
-                                          >
-                                            {lang === 'he' ? preset.nameHe : preset.name}
-                                          </p>
-                                          {meta?.salesLine && (
-                                            <p
-                                              className="mt-1 text-[10px] leading-relaxed line-clamp-2"
-                                              style={{ color: 'rgba(255,255,255,0.45)' }}
-                                            >
-                                              {meta.salesLine}
-                                            </p>
-                                          )}
-                                          {isSelected && (
-                                            <div className="mt-2 flex items-center gap-1.5">
-                                              <div
-                                                className="h-1.5 w-1.5 rounded-full"
-                                                style={{ background: '#FF6B47', boxShadow: '0 0 6px rgba(255,107,71,0.8)' }}
-                                              />
-                                              <span
-                                                className="text-[9px] font-semibold tracking-wide"
-                                                style={{ color: 'rgba(255,107,71,0.8)' }}
-                                              >
-                                                {lang === 'he' ? 'נבחר' : 'Selected'}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </button>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                            {filteredPresets.map(preset => {
-                              const meta = LOOK_METADATA[preset.name]
-                              const isSelected = selectedPreset === preset.name
-                              const isRecommended = faceAnalysis && !analysisDismissed && faceAnalysis.recommendedPreset === preset.name
-                              return (
-                                <button
-                                  key={preset.id}
-                                  type="button"
-                                  onClick={() => setSelectedPreset(preset.name)}
-                                  className="group relative flex shrink-0 w-44 h-64 snap-center flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] focus:outline-none"
-                                  style={{
-                                    border: isSelected ? '1.5px solid rgba(255,107,71,0.6)' : '1px solid rgba(255,255,255,0.07)',
-                                    boxShadow: isSelected
-                                      ? '0 0 30px rgba(255,107,71,0.35), 0 0 60px rgba(255,107,71,0.12), inset 0 1px 0 rgba(255,107,71,0.2)'
-                                      : '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
-                                  }}
-                                >
-                                  {/* Placeholder only: no /looks/ image to avoid 404 */}
-                                  <div
-                                    className="absolute inset-0"
-                                    style={{ background: `linear-gradient(160deg, rgba(255,107,71,0.06) 0%, rgba(20,10,20,0.95) 100%)` }}
-                                  >
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-                                      <ImageIcon className="h-6 w-6 text-gray-800 mb-1" />
-                                      <span className="text-[10px] font-bold text-white/70 text-center leading-tight line-clamp-2">{lang === 'he' ? preset.nameHe : preset.name}</span>
-                                    </div>
-                                  </div>
-                                  <div
-                                    className="absolute inset-0"
-                                    style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.92) 100%)' }}
-                                  />
-                                  {isSelected && (
-                                    <div
-                                      className="absolute inset-0 transition-opacity duration-300"
-                                      style={{ background: 'linear-gradient(180deg, rgba(255,107,71,0.1) 0%, transparent 60%)' }}
-                                    />
-                                  )}
-                                  {isRecommended && (
-                                    <div
-                                      className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
-                                      style={{
-                                        background: 'linear-gradient(90deg, #FF6B47, #FF9D6E)',
-                                        boxShadow: '0 0 12px rgba(255,107,71,0.6)',
-                                      }}
-                                    >
-                                      <Brain className="h-2.5 w-2.5 text-white" />
-                                      <span className="text-[8px] font-bold uppercase tracking-wider text-white">AI Pick</span>
-                                    </div>
-                                  )}
-                                  <div className="relative z-10 mt-auto flex flex-col p-3.5">
-                                    {meta?.vibe && (
-                                      <span
-                                        className="mb-1 text-[9px] font-medium tracking-[0.08em] uppercase line-clamp-1"
-                                        style={{ color: 'rgba(255,255,255,0.35)' }}
-                                      >
-                                        {meta.vibe.split(',')[0].trim()}
-                                      </span>
-                                    )}
-                                    <p
-                                      className="text-sm font-extrabold leading-tight text-white"
-                                      style={{ letterSpacing: '-0.02em' }}
-                                    >
-                                      {lang === 'he' ? preset.nameHe : preset.name}
-                                    </p>
-                                    {meta?.salesLine && (
-                                      <p
-                                        className="mt-1 text-[10px] leading-relaxed line-clamp-2"
-                                        style={{ color: 'rgba(255,255,255,0.45)' }}
-                                      >
-                                        {meta.salesLine}
-                                      </p>
-                                    )}
-                                    {isSelected && (
-                                      <div className="mt-2 flex items-center gap-1.5">
-                                        <div
-                                          className="h-1.5 w-1.5 rounded-full"
-                                          style={{ background: '#FF6B47', boxShadow: '0 0 6px rgba(255,107,71,0.8)' }}
-                                        />
-                                        <span
-                                          className="text-[9px] font-semibold tracking-wide"
-                                          style={{ color: 'rgba(255,107,71,0.8)' }}
-                                        >
-                                          {lang === 'he' ? 'נבחר' : 'Selected'}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </>
-                    )
-                  })()}
-                </section>
-
-                {selectedPreset && (
-                  <LookNavigator
-                    currentLookName={selectedPreset}
-                    onSelect={(name) => setSelectedPreset(name)}
-                    lang={lang}
-                  />
-                )}
-
-                {/* ── Product Category Filter ── */}
-                <section className="mt-6">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-white">{t.categoryLabel}</h2>
-                    <span className="text-xs font-medium text-coral">{t.optional}</span>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {PRODUCT_CATEGORIES.map((cat) => {
-                      const isActive = selectedCategory === cat
-                      const isAiDetected = faceAnalysis && !analysisDismissed && (
-                        (cat === 'Lips' && ['Classic Red Lip', 'Soft Glam'].includes(faceAnalysis.recommendedPreset)) ||
-                        (cat === 'Blush' && ['Clean Glow', 'Warm Bronze'].includes(faceAnalysis.recommendedPreset)) ||
-                        (cat === 'Full Look' && ['Natural Everyday', 'Office Polished'].includes(faceAnalysis.recommendedPreset))
-                      )
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setSelectedCategory(isActive ? null : cat)}
-                          className={`shrink-0 min-h-[40px] rounded-full border px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 focus:outline-none ${
-                            isActive
-                              ? 'border-transparent bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] text-white'
-                              : 'border-white/10 bg-white/5 text-gray-400 backdrop-blur-3xl hover:bg-white/[0.09] hover:text-gray-200'
-                          }`}
-                          style={isActive ? { boxShadow: '0 0 16px rgba(255,107,71,0.4)' } : undefined}
-                        >
-                          {cat}
-                          {isAiDetected && !isActive && (
-                            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-coral align-middle" />
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-
-                {/* ── Refine Only ── */}
-                <section className="mt-5">
+                {faceAnalysis && !showAnalysisPanel && (
                   <button
                     type="button"
-                    onClick={handleRefineOnly}
-                    disabled={isGenerating}
-                    className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur-3xl transition-all duration-300 hover:border-coral/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none"
+                    onClick={() => setShowAnalysisPanel(true)}
+                    className="vesti-focus mt-4 min-h-11 text-sm text-silver hover:text-ivory"
                   >
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                      style={{ background: 'radial-gradient(ellipse at 20% 50%, rgba(255,107,71,0.1) 0%, transparent 65%)' }}
-                    />
-                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B47]/15 to-[#FF9D6E]/15 ring-1 ring-coral/20 transition-all duration-300 group-hover:from-[#FF6B47]/25 group-hover:to-[#FF9D6E]/25 group-hover:ring-coral/40">
-                      <Trash2 className="h-4 w-4 text-coral" />
-                    </div>
-                    <div className="relative">
-                      <p className="text-sm font-semibold text-white">{lang === 'he' ? 'הסרת איפור' : 'Remove Makeup'}</p>
-                      <p className="mt-0.5 text-[11px] text-gray-500">{t.refineOnlySub}</p>
-                    </div>
-                    <div className="relative ml-auto text-gray-600 transition-colors duration-200 group-hover:text-coral">
-                      <Send className="h-4 w-4" />
-                    </div>
+                    {lang === 'he' ? 'כיוון להתחיל ממנו' : 'A direction to begin with'}
                   </button>
-                </section>
+                )}
+
+                <LookGallery
+                  lang={lang}
+                  looks={vestiLookCards()}
+                  selectedLookName={selectedPreset}
+                  recommendedLookName={faceAnalysis && !analysisDismissed ? faceAnalysis.recommendedPreset : null}
+                  applying={isGenerating}
+                  onSelect={setSelectedPreset}
+                  onApply={handleApplyEdit}
+                />
 
                 </>
                 )}
                 {appMode === 'product' && <ProductTryOnMode />}
 
-                {/* ── Beauty intent search (mood/occasion) ── */}
-                {appMode === 'looks' && (
-                  <BeautyIntentSearchBar
-                    onSelectLook={handleIntentSelectLook}
-                    metadata={LOOK_METADATA}
-                    navigation={LOOK_NAVIGATION}
+                {appMode === 'looks' && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
+                  <CustomRequestTryOn
+                    lang={lang}
+                    value={customInstructions}
+                    disabled={isGenerating}
+                    pageHeading={vestiPreview === 'request'}
+                    onChange={setCustomInstructions}
+                    onSubmit={handleCustomTryOn}
                   />
                 )}
 
-                <CustomRequestTryOn
-                  lang={lang}
-                  value={customInstructions}
-                  disabled={isGenerating}
-                  onChange={setCustomInstructions}
-                  onSubmit={handleCustomTryOn}
-                />
-
                 {/* ── History Gallery (post-upload) ── */}
-                {history.length > 0 && (
+                {!vestiSelectionActive && history.length > 0 && (
                   <section className="mt-10">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -4294,8 +3540,8 @@ function App() {
         </div>
       </main>
 
-      {/* ── Fixed Bottom Bar (hidden on path selection screen) ── */}
-      {!showPathScreen && (
+      {/* ── Fixed Bottom Bar (hidden on path selection and Vesti core screens) ── */}
+      {!showPathScreen && !hideLegacyChrome && (
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10" style={{ background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(64px)', WebkitBackdropFilter: 'blur(64px)', boxShadow: '0 -4px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
         <div className="mx-auto flex max-w-3xl flex-col gap-2 px-4 py-4 sm:px-8">
           {error && (
@@ -4355,6 +3601,7 @@ function App() {
         </div>
       </div>
       )}
+      <AnalysisPanel />
     </div>
   )
 }

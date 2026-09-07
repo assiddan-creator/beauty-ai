@@ -1,29 +1,28 @@
-import { Sparkles } from 'lucide-react'
-
 type CustomRequestTryOnProps = {
   lang: 'he' | 'en'
   value: string
   disabled?: boolean
+  pageHeading?: boolean
   onChange: (value: string) => void
   onSubmit: () => void | Promise<void>
 }
 
 const COPY = {
   he: {
+    kicker: 'Atelier',
     title: 'בקשה חופשית',
-    description: 'כתבי בדיוק מה תרצי לנסות על התמונה.',
-    placeholder: 'לדוגמה: שפתון שחור מט',
-    button: 'צרי לפי הבקשה',
-    note: 'הבקשה תיושם כאיפור בלבד, בלי לשנות את תווי הפנים.',
-    examples: ['שפתון שחור מט', 'גלוס ורוד עדין', 'סומק אפרסקי'],
+    description: 'תארו לוק או מוצר בשפה חופשית. הבקשה מיושמת כאיפור בלבד, בלי לשנות את תווי הפנים.',
+    placeholder: 'לדוגמה: שפתון ניוד סאטן, או סומק רך ליום עבודה',
+    label: 'תיאור הבקשה',
+    button: 'שלחי בקשה',
   },
   en: {
-    title: 'Free request',
-    description: 'Describe exactly what makeup you want to try on the photo.',
-    placeholder: 'For example: matte black lipstick',
-    button: 'Create from my request',
-    note: 'The request is applied as makeup only, without changing facial features.',
-    examples: ['Matte black lipstick', 'Soft pink gloss', 'Peach blush'],
+    kicker: 'Atelier',
+    title: 'Free Request',
+    description: 'Describe a look or product in free language. It is applied as makeup only, without changing facial features.',
+    placeholder: 'For example: satin nude lipstick, or a soft daytime blush',
+    label: 'Request description',
+    button: 'Send request',
   },
 } as const
 
@@ -31,53 +30,52 @@ export default function CustomRequestTryOn({
   lang,
   value,
   disabled = false,
+  pageHeading = false,
   onChange,
   onSubmit,
 }: CustomRequestTryOnProps) {
   const copy = COPY[lang]
   const canSubmit = value.trim().length > 0 && !disabled
+  const Heading = pageHeading ? 'h1' : 'h2'
 
   return (
-    <section className="mt-7 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
-      <div className="mb-3">
-        <h2 className="text-sm font-bold text-white">{copy.title}</h2>
-        <p className="mt-1 text-[11px] leading-relaxed text-white/40">{copy.description}</p>
-      </div>
+    <section id="free-request" className="mt-8 overflow-x-hidden border border-white/10 bg-carbon px-5 py-8 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+      <p className="text-[11px] font-medium tracking-[0.22em] text-ivory uppercase">{copy.kicker}</p>
+      <Heading
+        id="vesti-request-title"
+        className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}
+      >
+        {copy.title}
+      </Heading>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-silver">{copy.description}</p>
 
+      <label htmlFor="free-request-text" className="mt-6 block text-sm font-medium text-ivory">
+        {copy.label}
+      </label>
       <textarea
+        id="free-request-text"
+        name="free-request"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={copy.placeholder}
-        rows={3}
+        rows={7}
         maxLength={240}
-        className="w-full resize-none rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 text-sm text-white placeholder:text-white/25 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/20"
+        aria-label={copy.label}
+        className="vesti-focus mt-2 w-full resize-none border border-white/15 bg-onyx px-4 py-4 text-base leading-relaxed text-ivory placeholder:text-[#B7B7BC] focus:border-lacquer"
       />
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {copy.examples.map((example) => (
-          <button
-            key={example}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(example)}
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold text-white/55 transition-all hover:border-coral/25 hover:text-white/80 disabled:opacity-40"
-          >
-            {example}
-          </button>
-        ))}
-      </div>
 
       <button
         type="button"
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-3 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35"
+        className={`vesti-focus mt-5 flex min-h-11 w-full items-center justify-center px-4 text-sm font-semibold ${
+          canSubmit
+            ? 'bg-lacquer text-ivory hover:bg-deepRose'
+            : 'cursor-not-allowed border border-white/10 bg-shadow text-silver'
+        }`}
       >
-        <Sparkles className="h-4 w-4" aria-hidden="true" />
         {copy.button}
       </button>
-
-      <p className="mt-2 text-center text-[10px] leading-relaxed text-white/25">{copy.note}</p>
     </section>
   )
 }

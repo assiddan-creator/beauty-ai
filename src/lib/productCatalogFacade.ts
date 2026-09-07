@@ -92,3 +92,24 @@ export function getBeautyProductShades(
   return getBeautyProductsByBrand(category, brand)
     .filter((product) => product.productName === productName)
 }
+
+export function getAllBeautyBrands(): string[] {
+  return [...new Set(getAllBeautyProductViews().map((product) => product.brand))]
+}
+
+export function getBeautyProductNamesForBrand(brand: string): string[] {
+  return [...new Set(
+    getAllBeautyProductViews()
+      .filter((product) => product.brand === brand)
+      .map((product) => product.productName),
+  )]
+}
+
+export function getBeautyProductShadesForBrand(
+  brand: string,
+  productName: string,
+): BeautyProductView[] {
+  return getAllBeautyProductViews().filter(
+    (product) => product.brand === brand && product.productName === productName,
+  )
+}

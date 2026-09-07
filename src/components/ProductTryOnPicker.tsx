@@ -1,17 +1,15 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, Sparkles } from 'lucide-react'
 import {
-  getBeautyProductBrands,
-  getBeautyProductCategories,
-  getBeautyProductNames,
-  getBeautyProductShades,
+  getAllBeautyBrands,
+  getBeautyProductNamesForBrand,
+  getBeautyProductShadesForBrand,
   type BeautyProductView,
 } from '../lib/productCatalogFacade'
 import { recordCommercialFunnelEvent } from '../lib/commercialAnalytics'
+import { shadeMetaLabel } from '../vesti/lookDirection'
 
 type UiLanguage = 'he' | 'en'
-type ProductCategory = ReturnType<typeof getBeautyProductCategories>[number]
-type Step = 'category' | 'brand' | 'product' | 'shade'
+type Step = 'brand' | 'product' | 'shade'
 
 type ProductTryOnPickerProps = {
   lang: UiLanguage
@@ -21,44 +19,47 @@ type ProductTryOnPickerProps = {
 
 const COPY = {
   he: {
-    category: 'בחרי קטגוריה',
-    brand: 'בחרי מותג',
-    product: 'בחרי מוצר',
-    shade: 'בחרי גוון',
+    kicker: 'Atelier',
+    title: 'מוצר ספציפי',
+    brand: 'מותג',
+    product: 'מוצר',
+    shade: 'גוון',
     back: 'חזרה',
     lips: 'שפתיים',
     blush: 'סומק',
     previewOnly: 'תצוגה וירטואלית משוערת',
     tryOn: 'נסי עליי',
+    selectBrand: 'בחרי מותג',
   },
   en: {
-    category: 'Choose a category',
-    brand: 'Choose a brand',
-    product: 'Choose a product',
-    shade: 'Choose a shade',
+    kicker: 'Atelier',
+    title: 'Specific Product',
+    brand: 'Brand',
+    product: 'Product',
+    shade: 'Shade',
     back: 'Back',
     lips: 'Lips',
     blush: 'Blush',
     previewOnly: 'Approximate virtual preview',
     tryOn: 'Try on me',
+    selectBrand: 'Choose a brand',
   },
 } as const
 
-const CATEGORY_ICON: Record<ProductCategory, string> = {
-  lips: '💋',
-  blush: '🌸',
-}
+const STEPS: Step[] = ['brand', 'product', 'shade']
 
 export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: ProductTryOnPickerProps) {
   const copy = COPY[lang]
-  const [step, setStep] = useState<Step>('category')
-  const [category, setCategory] = useState<ProductCategory | null>(null)
+  const [step, setStep] = useState<Step>('brand')
   const [brand, setBrand] = useState<string | null>(null)
   const [productName, setProductName] = useState<string | null>(null)
 
-  const brands = useMemo(() => category ? getBeautyProductBrands(category) : [], [category])
-  const productNames = useMemo(() => category && brand ? getBeautyProductNames(category, brand) : [], [category, brand])
-  const shades = useMemo(() => category && brand && productName ? getBeautyProductShades(category, brand, productName) : [], [category, brand, productName])
+  const brands = useMemo(() => getAllBeautyBrands(), [])
+  const productNames = useMemo(() => brand ? getBeautyProductNamesForBrand(brand) : [], [brand])
+  const shades = useMemo(
+    () => brand && productName ? getBeautyProductShadesForBrand(brand, productName) : [],
+    [brand, productName],
+  )
 
   const goBack = () => {
     if (step === 'shade') {
@@ -69,96 +70,122 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
     if (step === 'product') {
       setBrand(null)
       setStep('brand')
-      return
-    }
-    if (step === 'brand') {
-      setCategory(null)
-      setStep('category')
     }
   }
 
   return (
-    <section className="mt-6" aria-label={lang === 'he' ? 'בחירת מוצר לאיפור וירטואלי' : 'Virtual try-on product selection'}>
-      {step !== 'category' && (
-        <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1.5 text-[11px] font-semibold text-coral/80 transition-opacity hover:opacity-80 focus:outline-none">
-          <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+    <section id="vesti-product" className="mt-6 overflow-x-hidden pb-8" aria-labelledby="vesti-product-title">
+      <div className="mb-5">
+        <p className="text-[11px] font-medium tracking-[0.22em] text-ivory uppercase">{copy.kicker}</p>
+        <h1 id="vesti-product-title" className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>{copy.title}</h1>
+      </div>
+
+      <ol className="mb-6 grid grid-cols-3 text-center">
+        {STEPS.map((item, index) => {
+          const active = step === item
+          const reached = STEPS.indexOf(step) >= index
+          return (
+            <li
+              key={item}
+              className={`min-h-11 border-b-2 py-2.5 ${
+                active
+                  ? 'border-lacquer text-ivory'
+                  : reached
+                    ? 'border-white/25 text-silver'
+                    : 'border-white/10 text-silver'
+              }`}
+            >
+              <span className="block text-[10px] font-medium tracking-[0.16em] text-silver">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="mt-1 block text-[11px] font-medium">{copy[item]}</span>
+            </li>
+          )
+        })}
+      </ol>
+
+      {step !== 'brand' && (
+        <button
+          type="button"
+          onClick={goBack}
+          className="vesti-focus mb-4 inline-flex min-h-11 min-w-11 items-center px-2 text-sm text-silver hover:text-ivory"
+        >
           {copy.back}
         </button>
       )}
 
-      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">
-        {step === 'category' && copy.category}
-        {step === 'brand' && copy.brand}
-        {step === 'product' && copy.product}
-        {step === 'shade' && copy.shade}
-      </p>
-
-      {step === 'category' && (
-        <div className="grid grid-cols-2 gap-3">
-          {getBeautyProductCategories().map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => {
-                recordCommercialFunnelEvent('product_category_selected', { category: item })
-                setCategory(item)
-                setStep('brand')
-              }}
-              className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-6 transition-all hover:border-coral/25 hover:bg-coral/[0.06] active:scale-[0.98] focus:outline-none"
-            >
-              <span className="text-3xl" aria-hidden="true">{CATEGORY_ICON[item]}</span>
-              <span className="text-sm font-bold text-white">{item === 'lips' ? copy.lips : copy.blush}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {step === 'brand' && (
-        <div className="flex flex-col gap-2">
-          {brands.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => {
-                recordCommercialFunnelEvent('product_brand_selected', { category: category ?? '', brand: item })
-                setBrand(item)
-                setStep('product')
-              }}
-              className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-start transition-all hover:border-white/15 hover:bg-white/[0.06] focus:outline-none"
-            >
-              <span className="text-sm font-semibold text-white">{item}</span>
-              <ChevronLeft className="h-3.5 w-3.5 rotate-180 text-white/30" aria-hidden="true" />
-            </button>
-          ))}
+        <div className="flex flex-col">
+          {brands.map((item) => {
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  recordCommercialFunnelEvent('product_brand_selected', { brand: item })
+                  setBrand(item)
+                  setStep('product')
+                }}
+                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-1 py-4 text-start transition-colors hover:bg-transparent hover:text-ivory"
+              >
+                <span className="block font-display text-[22px] leading-tight text-ivory">{item}</span>
+                <span className="text-lg leading-none text-silver" aria-hidden="true">›</span>
+              </button>
+            )
+          })}
         </div>
       )}
 
       {step === 'product' && (
-        <div className="flex flex-col gap-2">
-          {productNames.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => {
-                recordCommercialFunnelEvent('product_selected', {
-                  category: category ?? '',
-                  brand: brand ?? '',
-                  productName: item,
-                })
-                setProductName(item)
-                setStep('shade')
-              }}
-              className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-start transition-all hover:border-white/15 hover:bg-white/[0.06] focus:outline-none"
-            >
-              <span className="text-sm font-semibold text-white">{item}</span>
-              <ChevronLeft className="h-3.5 w-3.5 rotate-180 text-white/30" aria-hidden="true" />
-            </button>
-          ))}
+        <div className="flex flex-col">
+          {brand && (
+            <div className="mb-4 border border-white/10 bg-shadow px-4 py-4">
+              <p className="text-[10px] font-medium tracking-[0.16em] text-silver uppercase">{copy.brand}</p>
+              <p className="mt-1 font-display text-2xl text-ivory">{brand}</p>
+            </div>
+          )}
+          {productNames.map((item) => {
+            const productSample = getBeautyProductShadesForBrand(brand ?? '', item)[0]
+            const shadeCount = getBeautyProductShadesForBrand(brand ?? '', item).length
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  recordCommercialFunnelEvent('product_selected', {
+                    category: productSample?.category ?? '',
+                    brand: brand ?? '',
+                    productName: item,
+                  })
+                  setProductName(item)
+                  setStep('shade')
+                }}
+                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start hover:bg-shadow"
+              >
+                <span className="min-w-0">
+                  <span className="block text-base font-medium leading-snug text-ivory">{item}</span>
+                  {productSample && (
+                    <span className="mt-1 block text-[11px] font-medium text-silver">
+                      {productSample.category === 'blush' ? copy.blush : copy.lips} · {shadeCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-lg leading-none text-silver group-hover:text-lacquer" aria-hidden="true">›</span>
+              </button>
+            )
+          })}
         </div>
       )}
 
       {step === 'shade' && (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          {productName && (
+            <div className="mb-3 border border-white/10 bg-shadow px-4 py-4">
+              <p className="text-[10px] font-medium tracking-[0.16em] text-silver uppercase">{copy.product}</p>
+              <p className="mt-1 text-sm font-medium text-ivory">{brand}</p>
+              <p className="mt-1 font-display text-xl text-ivory">{productName}</p>
+            </div>
+          )}
           {shades.map((item) => (
             <button
               key={item.id}
@@ -174,16 +201,22 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                 })
                 onTryOn(item)
               }}
-              className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-start transition-all hover:border-coral/25 hover:bg-coral/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none"
+              className="vesti-focus flex min-h-11 items-center gap-4 border border-white/10 bg-carbon p-3 text-start hover:border-white/25 disabled:opacity-45"
             >
-              <span className="h-11 w-11 shrink-0 rounded-xl border border-white/15 shadow-inner" style={{ background: item.swatchColor ?? 'rgba(255,255,255,0.08)' }} aria-hidden="true" />
+              <span
+                className="h-14 w-14 shrink-0 rounded-full border border-white/25"
+                style={{ background: item.swatchColor ?? '#2a2a2e' }}
+                aria-hidden="true"
+              />
               <span className="min-w-0 flex-1">
-                <strong className="block truncate text-xs font-bold text-white">{item.shadeName}</strong>
-                {(item.shadeFamily || item.finish) && <small className="mt-0.5 block truncate text-[10px] text-white/40">{[item.shadeFamily, item.finish].filter(Boolean).join(' · ')}</small>}
-                <small className="mt-1 block text-[9px] text-white/25">{copy.previewOnly}</small>
+                <strong className="block text-base font-medium text-ivory">{item.shadeName}</strong>
+                {(item.shadeFamily || item.finish) && (
+                  <small className="mt-1 block text-[12px] text-silver">
+                    {shadeMetaLabel(item.shadeFamily, item.finish, lang)}
+                  </small>
+                )}
               </span>
-              <span className="flex shrink-0 items-center gap-1 rounded-lg border border-coral/20 bg-coral/10 px-2.5 py-2 text-[10px] font-bold text-coral">
-                <Sparkles className="h-3 w-3" aria-hidden="true" />
+              <span className="flex min-h-11 shrink-0 items-center bg-lacquer px-3 text-[11px] font-semibold text-ivory">
                 {copy.tryOn}
               </span>
             </button>
