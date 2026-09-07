@@ -36,3 +36,14 @@ export type BeautyAnalysisView = {
 }
 
 export type LookAlternativeKind = 'soft' | 'bold' | 'evening'
+
+export type CaptureStep =
+  | 'entry'
+  | 'choice'
+  | 'camera'
+  | 'confirm'
+  | 'direction'
+  | 'preparing'
+  | 'camera-permission'
+  | 'camera-unavailable'
+  | 'upload-error'
