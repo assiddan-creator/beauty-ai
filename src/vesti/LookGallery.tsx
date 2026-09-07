@@ -52,10 +52,10 @@ export default function LookGallery({
                 key={item.id}
                 type="button"
                 onClick={() => setFilter(item.id)}
-                className={`vesti-focus h-11 shrink-0 px-4 text-[12px] font-medium tracking-wide transition-colors ${
+                className={`vesti-focus h-11 shrink-0 px-1 text-[12px] font-medium tracking-wide transition-colors ${
                   active
-                    ? 'bg-lacquer text-ivory'
-                    : 'border border-white/15 bg-transparent text-silver hover:text-ivory'
+                    ? 'border-b border-lacquer text-ivory'
+                    : 'border-b border-transparent text-silver hover:text-ivory'
                 }`}
               >
                 {lang === 'he' ? item.he : item.en}
@@ -115,19 +115,21 @@ export default function LookGallery({
       </div>
 
       {onApply && (
-        <div className="fixed inset-x-0 bottom-0 z-[240] border-t border-white/10 bg-onyx/95 px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={onApply}
-            disabled={!selectedLookName || applying}
-            className={`vesti-focus mx-auto flex min-h-11 w-full max-w-3xl items-center justify-center px-5 text-sm font-semibold ${
-              selectedLookName && !applying
-                ? 'bg-lacquer text-ivory hover:bg-deepRose'
-                : 'cursor-not-allowed border border-white/10 bg-shadow text-silver'
-            }`}
-          >
-            {lang === 'he' ? 'נסי את הלוק' : 'Try this look'}
-          </button>
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[240]">
+          <div className="pointer-events-auto mx-auto w-full max-w-3xl border-t border-white/10 bg-onyx px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] sm:px-8">
+            <button
+              type="button"
+              onClick={onApply}
+              disabled={!selectedLookName || applying}
+              className={`vesti-focus flex min-h-11 w-full items-center justify-center px-5 text-sm font-semibold ${
+                selectedLookName && !applying
+                  ? 'bg-lacquer text-ivory hover:bg-deepRose'
+                  : 'cursor-not-allowed border border-white/10 bg-shadow text-silver'
+              }`}
+            >
+              {lang === 'he' ? 'נסי את הלוק' : 'Try this look'}
+            </button>
+          </div>
         </div>
       )}
     </section>

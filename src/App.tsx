@@ -2925,7 +2925,7 @@ function App() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
+    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen font-sans text-gray-100">
       {showSplash && <SplashScreen />}
       {showAnalyzingScreen && <AnalyzingScreen />}
       {showLookProducts && <LookProductsScreen />}
@@ -2950,26 +2950,21 @@ function App() {
 
       {/* ── Header ── */}
       {hideLegacyChrome ? (
-        <header className="relative z-20 border-b border-white/10 bg-onyx">
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium tracking-[0.28em] text-ivory uppercase">Vesti Beauty</p>
-              <p className="mt-1 text-[11px] text-silver">
-                {lang === 'he' ? 'סטודיו לאיפור וירטואלי' : 'Virtual makeup atelier'}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
+        <header className="relative z-20 bg-onyx">
+          <div className="mx-auto flex max-w-3xl items-baseline justify-between gap-4 px-4 py-5 sm:px-8">
+            <p className="text-[11px] font-medium tracking-[0.32em] text-ivory uppercase">Vesti Beauty</p>
+            <div className="flex items-center gap-5">
               <button
                 type="button"
                 onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
-                className="vesti-focus min-h-11 min-w-11 border border-white/15 px-3 text-xs font-medium text-silver hover:text-ivory"
+                className="vesti-focus min-h-11 text-[11px] tracking-wide text-silver hover:text-ivory"
               >
                 {lang === 'he' ? 'EN' : 'עב'}
               </button>
               <button
                 type="button"
                 onClick={handleClear}
-                className="vesti-focus min-h-11 min-w-11 border border-white/15 px-3 text-xs font-medium text-silver hover:text-ivory"
+                className="vesti-focus min-h-11 text-[11px] tracking-wide text-silver hover:text-ivory"
               >
                 {lang === 'he' ? 'התחלי מחדש' : 'Start over'}
               </button>
@@ -3024,7 +3019,7 @@ function App() {
       </header>
       )}
 
-      <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'pb-36 pt-6 md:pt-10'}`}>
+      <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'overflow-x-hidden pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
         <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
@@ -3112,15 +3107,13 @@ function App() {
               <div className={hideLegacyChrome ? '' : 'mt-8'}>
 
                 {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && (
-                <div className="mb-4 flex items-center gap-3 border border-white/10 bg-carbon px-3 py-2.5">
+                <div className="mb-6 flex items-center gap-3">
                   {originalImage && (
-                    <img src={originalImage} alt="" className="h-12 w-12 object-cover" />
+                    <img src={originalImage} alt="" className="h-8 w-8 object-cover opacity-80" />
                   )}
-                  <div className="min-w-0">
-                    <p className="text-xs text-silver">
-                      {lang === 'he' ? 'התמונה שלך מוכנה לבחירה' : 'Your photo is ready'}
-                    </p>
-                  </div>
+                  <p className="text-[11px] text-silver">
+                    {lang === 'he' ? 'התמונה שלך מוכנה לבחירה' : 'Your photo is ready'}
+                  </p>
                 </div>
                 )}
                 {(!vestiSelectionActive || isGenerating) && (
@@ -3442,12 +3435,15 @@ function App() {
 
                 {/* ── Mode: Looks | Product ── */}
                 {vestiPreview !== 'request' && (
-                <div className="mt-4 flex gap-2 border border-white/10 p-1">
+                <nav className="mt-2 flex gap-8" aria-label={lang === 'he' ? 'מצב בחירה' : 'Selection mode'}>
                   <button
                     type="button"
                     onClick={() => setAppMode('looks')}
-                    className="vesti-focus flex-1 min-h-11 text-xs font-medium transition-colors"
-                    style={appMode === 'looks' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
+                    className={`vesti-focus min-h-11 border-b text-[13px] tracking-wide transition-colors ${
+                      appMode === 'looks'
+                        ? 'border-lacquer text-ivory'
+                        : 'border-transparent text-silver hover:text-ivory'
+                    }`}
                   >
                     {lang === 'he' ? 'לוקים' : 'Looks'}
                   </button>
@@ -3457,12 +3453,15 @@ function App() {
                       setAppMode('product')
                       window.scrollTo(0, 0)
                     }}
-                    className="vesti-focus flex-1 min-h-11 text-xs font-medium transition-colors"
-                    style={appMode === 'product' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
+                    className={`vesti-focus min-h-11 border-b text-[13px] tracking-wide transition-colors ${
+                      appMode === 'product'
+                        ? 'border-lacquer text-ivory'
+                        : 'border-transparent text-silver hover:text-ivory'
+                    }`}
                   >
                     {lang === 'he' ? 'מוצר' : 'Product'}
                   </button>
-                </div>
+                </nav>
                 )}
 
                 {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && (

@@ -117,7 +117,6 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
       {step === 'brand' && (
         <div className="flex flex-col">
           {brands.map((item) => {
-            const count = getBeautyProductNamesForBrand(item).length
             return (
               <button
                 key={item}
@@ -127,15 +126,10 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                   setBrand(item)
                   setStep('product')
                 }}
-                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start transition-colors hover:bg-shadow"
+                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-1 py-4 text-start transition-colors hover:bg-transparent hover:text-ivory"
               >
-                <span className="min-w-0">
-                  <span className="block font-display text-[22px] leading-tight text-ivory group-hover:text-ivory">{item}</span>
-                  <span className="mt-1 block text-[11px] font-medium text-silver">
-                    {copy.selectBrand} · {count}
-                  </span>
-                </span>
-                <span className="text-lg leading-none text-silver group-hover:text-lacquer" aria-hidden="true">›</span>
+                <span className="block font-display text-[22px] leading-tight text-ivory">{item}</span>
+                <span className="text-lg leading-none text-silver" aria-hidden="true">›</span>
               </button>
             )
           })}
