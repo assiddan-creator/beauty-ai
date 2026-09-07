@@ -1,5 +1,3 @@
-import { Sparkles } from 'lucide-react'
-
 type CustomRequestTryOnProps = {
   lang: 'he' | 'en'
   value: string
@@ -10,20 +8,20 @@ type CustomRequestTryOnProps = {
 
 const COPY = {
   he: {
+    kicker: 'Atelier',
     title: 'בקשה חופשית',
-    description: 'כתבי בדיוק מה תרצי לנסות על התמונה.',
-    placeholder: 'לדוגמה: שפתון שחור מט',
-    button: 'צרי לפי הבקשה',
-    note: 'הבקשה תיושם כאיפור בלבד, בלי לשנות את תווי הפנים.',
-    examples: ['שפתון שחור מט', 'גלוס ורוד עדין', 'סומק אפרסקי'],
+    description: 'אפשר לתאר לוק או מוצר רצוי בשפה חופשית. ננסה ליישם את הבקשה כאיפור בלבד, בלי לשנות את תווי הפנים.',
+    placeholder: 'תארו לוק, גוון, או מוצר שתרצו לראות על התמונה',
+    button: 'שלחי בקשה',
+    note: 'הבקשה נשמרת כטקסט חופשי ומועברת למנגנון הקיים.',
   },
   en: {
-    title: 'Free request',
-    description: 'Describe exactly what makeup you want to try on the photo.',
-    placeholder: 'For example: matte black lipstick',
-    button: 'Create from my request',
-    note: 'The request is applied as makeup only, without changing facial features.',
-    examples: ['Matte black lipstick', 'Soft pink gloss', 'Peach blush'],
+    kicker: 'Atelier',
+    title: 'Free Request',
+    description: 'Describe a look or a specific product in free language. The request is applied as makeup only, without changing facial features.',
+    placeholder: 'Describe a look, shade, or product to see on the photo',
+    button: 'Send request',
+    note: 'The request stays as free text and uses the existing try-on path.',
   },
 } as const
 
@@ -38,46 +36,30 @@ export default function CustomRequestTryOn({
   const canSubmit = value.trim().length > 0 && !disabled
 
   return (
-    <section className="mt-7 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
-      <div className="mb-3">
-        <h2 className="text-sm font-bold text-white">{copy.title}</h2>
-        <p className="mt-1 text-[11px] leading-relaxed text-white/40">{copy.description}</p>
-      </div>
+    <section id="free-request" className="mt-10 border border-white/[0.07] bg-carbon px-5 py-8 sm:px-7">
+      <p className="font-display text-[11px] tracking-[0.28em] text-lacquer uppercase">{copy.kicker}</p>
+      <h2 className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>{copy.title}</h2>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-silver">{copy.description}</p>
 
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={copy.placeholder}
-        rows={3}
+        rows={7}
         maxLength={240}
-        className="w-full resize-none rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5 text-sm text-white placeholder:text-white/25 transition-all duration-200 focus:border-coral/50 focus:outline-none focus:ring-2 focus:ring-coral/20"
+        className="mt-7 w-full resize-none border border-white/10 bg-onyx px-5 py-5 text-base leading-relaxed text-ivory placeholder:text-silver/40 focus:border-lacquer focus:outline-none"
       />
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {copy.examples.map((example) => (
-          <button
-            key={example}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(example)}
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-semibold text-white/55 transition-all hover:border-coral/25 hover:text-white/80 disabled:opacity-40"
-          >
-            {example}
-          </button>
-        ))}
-      </div>
 
       <button
         type="button"
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-4 py-3 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35"
+        className="mt-5 flex min-h-12 w-full items-center justify-center bg-lacquer px-4 text-sm font-semibold text-ivory transition-colors hover:bg-deepRose disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-silver/40"
       >
-        <Sparkles className="h-4 w-4" aria-hidden="true" />
         {copy.button}
       </button>
 
-      <p className="mt-2 text-center text-[10px] leading-relaxed text-white/25">{copy.note}</p>
+      <p className="mt-3 text-[11px] leading-relaxed text-silver/60">{copy.note}</p>
     </section>
   )
 }

@@ -7,15 +7,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface:  '#1c1c1e',
-        card:     '#2c2c2e',
-        coral:    '#FF6B47',
-        matte:    '#1c1c1e',
-        charcoal: '#2c2c2e',
-        steel:    '#4A90E2',
+        surface:  '#0B0B0D',
+        card:     '#121214',
+        coral:    '#B50E1C',
+        matte:    '#050505',
+        charcoal: '#121214',
+        steel:    '#A7A7AC',
+        lacquer:  '#B50E1C',
+        deepRose: '#7A0B14',
+        gloss:    '#E43743',
+        onyx:     '#050505',
+        carbon:   '#0B0B0D',
+        shadow:   '#121214',
+        ivory:    '#F3F1EE',
+        silver:   '#A7A7AC',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Heebo', 'system-ui', 'ui-sans-serif', 'sans-serif'],
+        display: ['"Bodoni Moda"', 'Georgia', 'serif'],
+        hebrew: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],
       },
       borderRadius: {
         '4xl': '2rem',
