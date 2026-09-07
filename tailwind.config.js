@@ -7,12 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface:  '#0B0B0D',
-        card:     '#121214',
-        coral:    '#B50E1C',
-        matte:    '#050505',
-        charcoal: '#121214',
-        steel:    '#A7A7AC',
+        surface:  '#1c1c1e',
+        card:     '#2c2c2e',
+        coral:    '#FF6B47',
+        matte:    '#1c1c1e',
+        charcoal: '#2c2c2e',
+        steel:    '#4A90E2',
         lacquer:  '#B50E1C',
         deepRose: '#7A0B14',
         gloss:    '#E43743',
@@ -23,7 +23,8 @@ export default {
         silver:   '#C5C5C9',
       },
       fontFamily: {
-        sans: ['Heebo', 'system-ui', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'ui-sans-serif', 'sans-serif'],
+        vesti: ['Heebo', 'system-ui', 'ui-sans-serif', 'sans-serif'],
         display: ['"Bodoni Moda"', 'Georgia', 'serif'],
         hebrew: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],
       },

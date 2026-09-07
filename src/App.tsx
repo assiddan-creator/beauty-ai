@@ -2925,7 +2925,7 @@ function App() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen font-sans text-gray-100">
+    <div dir={lang === 'he' ? 'rtl' : 'ltr'} className={`relative min-h-screen text-gray-100 ${hideLegacyChrome ? 'font-vesti' : 'font-sans'}`}>
       {showSplash && <SplashScreen />}
       {showAnalyzingScreen && <AnalyzingScreen />}
       {showLookProducts && <LookProductsScreen />}

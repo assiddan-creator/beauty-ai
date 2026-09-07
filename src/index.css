@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700&family=Frank+Ruhl+Libre:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Hebrew:wght@400;500;600;700;800&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700&family=Frank+Ruhl+Libre:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,7 +13,7 @@
 
   html {
     @apply scroll-smooth;
-    background: #050505;
+    background: #0a0408;
     min-height: 100%;
   }
 
@@ -21,9 +21,14 @@
     @apply bg-surface text-gray-100 antialiased;
     min-height: 100dvh;
     margin: 0;
-    font-family: Heebo, "Frank Ruhl Libre", "Bodoni Moda", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-family: Inter, "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
+  }
+
+  body.vesti-core-active {
+    background: #050505;
+    font-family: Heebo, "Noto Sans Hebrew", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   }
 
   button,
@@ -42,13 +47,17 @@
   }
 
   ::selection {
-    background: rgba(181, 14, 28, 0.32);
+    background: rgba(255, 107, 71, 0.32);
     color: white;
   }
 
   :focus-visible {
-    outline: 2px solid rgba(228, 55, 67, 0.9);
+    outline: 2px solid rgba(255, 125, 88, 0.9);
     outline-offset: 3px;
+  }
+
+  body.vesti-core-active ::selection {
+    background: rgba(181, 14, 28, 0.32);
   }
 
   .vesti-focus:focus {
