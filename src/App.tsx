@@ -34,9 +34,11 @@ import CameraCapture from './vesti/CameraCapture'
 import PhotoConfirm from './vesti/PhotoConfirm'
 import DirectionScreen from './vesti/DirectionScreen'
 import CaptureIssue from './vesti/CaptureIssue'
-import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE } from './vesti/preview'
+import ResultReveal, { type RevealProduct } from './vesti/ResultReveal'
+import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE, VESTI_PREVIEW_PRODUCT, VESTI_PREVIEW_RESULT_IMAGE } from './vesti/preview'
 import type { CaptureStep, LookCardModel } from './vesti/types'
 import type { BeautyProductView } from './lib/productCatalogFacade'
+import { getLookProductViews } from './lib/productCatalogFacade'
 import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
 
 const ENGINES = [
@@ -1520,6 +1522,7 @@ function App() {
   const [vestiPreview, setVestiPreview] = useState<string | null>(null)
   const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
   const [focusRequest, setFocusRequest] = useState(false)
+  const [revealProduct, setRevealProduct] = useState<RevealProduct | null>(null)
   const cameraBackStepRef = useRef<CaptureStep>('entry')
 
   React.useEffect(() => {
@@ -1550,6 +1553,26 @@ function App() {
     setCaptureStep(null)
     setIsUploaded(true)
     setOriginalImage(VESTI_PREVIEW_IMAGE)
+    if (preview === 'result' || preview === 'result-buy') {
+      setGeneratedImage(VESTI_PREVIEW_RESULT_IMAGE)
+      setSelectedPreset('Natural Everyday')
+      setFaceAnalysis(VESTI_PREVIEW_ANALYSIS)
+      setAppMode('looks')
+      return
+    }
+    if (preview === 'result-product') {
+      setGeneratedImage(VESTI_PREVIEW_RESULT_IMAGE)
+      setRevealProduct(VESTI_PREVIEW_PRODUCT)
+      setSelectedPreset(`${VESTI_PREVIEW_PRODUCT.brand} ${VESTI_PREVIEW_PRODUCT.shadeName}`)
+      setAppMode('product')
+      return
+    }
+    if (preview === 'result-error') {
+      setError(lang === 'he' ? 'לא ניתן לייצר את התוצאה.' : 'The result could not be created.')
+      setSelectedPreset('Natural Everyday')
+      setAppMode('looks')
+      return
+    }
     if (preview === 'recommendation') {
       setFaceAnalysis(VESTI_PREVIEW_ANALYSIS)
       setShowAnalysisPanel(true)
@@ -1670,6 +1693,7 @@ function App() {
     setShowPathScreen(false)
     setAppMode('looks')
     setFocusRequest(false)
+    setRevealProduct(null)
     setCaptureStep('entry')
   }
 
@@ -1705,6 +1729,7 @@ function App() {
 
     setError(null)
     setResultDescription(null)
+    setRevealProduct(null)
     setIsGenerating(true)
 
     try {
@@ -1761,6 +1786,7 @@ function App() {
 
     setError(null)
     setResultDescription(null)
+    setRevealProduct(null)
     setIsGenerating(true)
 
     try {
@@ -1819,6 +1845,7 @@ function App() {
     setError(null)
     setResultDescription(null)
     setSelectedPreset(null)
+    setRevealProduct(null)
     setIsGenerating(true)
 
     try {
@@ -1857,6 +1884,14 @@ function App() {
     if (!token) { setError('Replicate API token not found.'); return }
     setError(null)
     setResultDescription(null)
+    setRevealProduct({
+      id: product.id,
+      brand: product.brand,
+      productName: product.productName,
+      shadeName: product.shadeName,
+      finish: product.finish,
+    })
+    setSelectedPreset(`${product.brand} ${product.shadeName}`)
     setIsGenerating(true)
     try {
       let tryOnPrompt: string
@@ -1901,6 +1936,7 @@ function App() {
     setOriginalImage(entry.originalUrl)
     setGeneratedImage(entry.generatedUrl)
     setSelectedPreset(entry.lookName)
+    setRevealProduct(null)
     setIsUploaded(true)
     setSliderPosition(50)
     setActiveHistoryId(entry.id)
@@ -2621,7 +2657,7 @@ function App() {
 
   const AnalysisPanel = () => (
     <RecommendationScreen
-      open={Boolean(faceAnalysis && showAnalysisPanel)}
+      open={Boolean(faceAnalysis && showAnalysisPanel && !generatedImage)}
       lang={lang}
       analysis={faceAnalysis}
       looks={vestiLookCards()}
@@ -2782,8 +2818,30 @@ function App() {
   }
 
   const vestiSelectionActive = isUploaded && !generatedImage
+  const vestiRevealActive = Boolean(generatedImage)
   const vestiEntryActive = captureStep !== null
-  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive || vestiEntryActive
+  const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive || vestiEntryActive || vestiRevealActive
+  const revealLook = BEAUTY_PRESETS.find((preset) => preset.name === selectedPreset)
+  const revealProducts: RevealProduct[] = React.useMemo(() => {
+    if (revealProduct) return [revealProduct]
+    if (!revealLook) return []
+    return getLookProductViews(revealLook.name).map((product) => ({
+      id: product.id,
+      brand: product.brand,
+      productName: product.productName,
+      shadeName: product.shadeName,
+      finish: product.finish,
+    }))
+  }, [revealProduct, revealLook])
+  const revealTitle = revealProduct
+    ? revealProduct.productName
+    : lang === 'he'
+      ? (revealLook?.nameHe ?? selectedPreset ?? '')
+      : (selectedPreset ?? '')
+  const revealFromRecommendation = Boolean(
+    faceAnalysis && revealLook && faceAnalysis.recommendedPreset === revealLook.name,
+  )
+  const hideSelectionAfterResult = vestiRevealActive || (vestiPreview === 'result-error' && Boolean(error))
 
   React.useEffect(() => {
     document.body.classList.toggle('vesti-core-active', hideLegacyChrome)
@@ -2908,13 +2966,13 @@ function App() {
           className="absolute bg-cover bg-center"
           style={{
             inset: '-8%',
-            background: vestiSelectionActive || vestiEntryActive
+            background: vestiSelectionActive || vestiEntryActive || vestiRevealActive
               ? 'linear-gradient(180deg, #050505 0%, #0B0B0D 100%)'
               : 'linear-gradient(160deg, rgba(20,8,18,0.98) 0%, rgba(40,15,35,0.95) 50%, rgba(15,5,18,0.99) 100%)',
           }}
         />
       </div>
-      {!vestiEntryActive && <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />}
+      {!vestiEntryActive && !vestiRevealActive && <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" aria-hidden="true" />}
 
       {/* ── Header ── */}
       {!vestiEntryActive && (hideLegacyChrome ? (
@@ -2988,7 +3046,7 @@ function App() {
       ))}
 
       {!vestiEntryActive && (
-      <main className={`relative z-10 mx-auto max-w-3xl px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'overflow-x-hidden pb-36 pt-6 md:pt-10'}`}>
+      <main className={`relative z-10 mx-auto max-w-3xl overflow-x-hidden px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
         <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
@@ -3059,7 +3117,62 @@ function App() {
             {isUploaded && (
               <div className={hideLegacyChrome ? '' : 'mt-8'}>
 
-                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && (
+                {(vestiRevealActive || (vestiPreview === 'result-error' && error)) && (
+                  <ResultReveal
+                    lang={lang}
+                    originalImage={originalImage}
+                    generatedImage={generatedImage}
+                    title={revealTitle || (lang === 'he' ? 'התוצאה' : 'Result')}
+                    lookPurchaseKey={revealLook?.name ?? null}
+                    fromRecommendation={revealFromRecommendation}
+                    products={revealProducts}
+                    sliderPosition={sliderPosition}
+                    generating={isGenerating}
+                    error={error}
+                    previewPurchaseUrl={import.meta.env.DEV && vestiPreview === 'result-buy' ? 'https://example.com/' : null}
+                    onSliderChange={setSliderPosition}
+                    onDownload={handleDownload}
+                    onStartOver={handleClear}
+                    onTryLook={() => {
+                      setGeneratedImage(null)
+                      setRevealProduct(null)
+                      setError(null)
+                      setFocusRequest(false)
+                      setAppMode('looks')
+                    }}
+                    onTryShade={() => {
+                      setGeneratedImage(null)
+                      setRevealProduct(null)
+                      setError(null)
+                      setFocusRequest(false)
+                      setAppMode('product')
+                    }}
+                    onRetry={() => {
+                      setError(null)
+                      if (import.meta.env.DEV && vestiPreview === 'result-error') return
+                      if (revealProduct) return
+                      if (selectedPreset && revealLook) void handleApplyEdit()
+                    }}
+                  />
+                )}
+
+                {vestiSelectionActive && error && !generatedImage && vestiPreview !== 'result-error' && (
+                  <div className="mb-6">
+                    <p className="text-sm text-silver">{error}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError(null)
+                        if (selectedPreset && revealLook) void handleApplyEdit()
+                      }}
+                      className="vesti-focus mt-3 min-h-11 text-sm text-ivory"
+                    >
+                      {lang === 'he' ? 'נסי שוב' : 'Try again'}
+                    </button>
+                  </div>
+                )}
+
+                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && vestiPreview !== 'result-error' && (
                 <div className="mb-6 flex items-center gap-3">
                   {originalImage && (
                     <img src={originalImage} alt="" className="h-8 w-8 object-cover opacity-80" />
@@ -3069,7 +3182,7 @@ function App() {
                   </p>
                 </div>
                 )}
-                {(!vestiSelectionActive || isGenerating) && (
+                {!hideLegacyChrome && (!vestiSelectionActive || isGenerating) && (
                 <>
                 {/* ── Image Viewer ── */}
                 <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur-3xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -3220,20 +3333,20 @@ function App() {
                 </>
                 )}
 
-                {resultDescription && (
+                {resultDescription && !vestiRevealActive && (
                   <p className="mt-3 text-center text-sm text-white/70 italic px-4">
                     {resultDescription}
                   </p>
                 )}
 
                 {/* ── Disclaimer ── */}
-                {!vestiSelectionActive && (
+                {!vestiSelectionActive && !vestiRevealActive && (
                 <p className="mt-3 text-center text-[11px] text-gray-600">
                   ✦ {t.disclaimer}
                 </p>
                 )}
 
-                {generatedImage && !isGenerating && (() => {
+                {generatedImage && !isGenerating && !vestiRevealActive && (() => {
                   const chatEntry = history.find(h => h.id === activeHistoryId)
                   if (!chatEntry) return null
                   const chatProducts = (LOOK_PRODUCTS[chatEntry.lookName] ?? []).map(p => {
@@ -3255,7 +3368,7 @@ function App() {
                   )
                 })()}
 
-                {generatedImage && !isGenerating && (() => {
+                {generatedImage && !isGenerating && !vestiRevealActive && (() => {
                   const activeEntry = history.find(h => h.id === activeHistoryId)
                   const isRemoval = activeEntry?.lookName === 'הסרת איפור' || activeEntry?.lookName === 'Makeup Removed'
                   if (!isRemoval) return null
@@ -3335,7 +3448,7 @@ function App() {
                     </div>
                   )
                 })()}
-                {generatedImage && !isGenerating && (
+                {generatedImage && !isGenerating && !vestiRevealActive && (
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     {/* Button 1 - Try another look */}
                     <button
@@ -3387,7 +3500,7 @@ function App() {
                 )}
 
                 {/* ── Mode: Looks | Product ── */}
-                {vestiPreview !== 'request' && (
+                {vestiPreview !== 'request' && !hideSelectionAfterResult && (
                 <nav className="mt-2 flex gap-8" aria-label={lang === 'he' ? 'מצב בחירה' : 'Selection mode'}>
                   <button
                     type="button"
@@ -3421,7 +3534,7 @@ function App() {
                 </nav>
                 )}
 
-                {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && !focusRequest && (
+                {appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && !focusRequest && (
                 <>
                 {faceAnalysis && !showAnalysisPanel && (
                   <button
@@ -3445,9 +3558,9 @@ function App() {
 
                 </>
                 )}
-                {appMode === 'product' && <ProductTryOnMode />}
+                {appMode === 'product' && !hideSelectionAfterResult && <ProductTryOnMode />}
 
-                {appMode === 'looks' && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
+                {appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
                   <CustomRequestTryOn
                     lang={lang}
                     value={customInstructions}
@@ -3459,7 +3572,7 @@ function App() {
                 )}
 
                 {/* ── History Gallery (post-upload) ── */}
-                {!vestiSelectionActive && history.length > 0 && (
+                {!vestiSelectionActive && !vestiRevealActive && history.length > 0 && (
                   <section className="mt-10">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
