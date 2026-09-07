@@ -51,6 +51,15 @@
     outline-offset: 3px;
   }
 
+  .vesti-focus:focus {
+    outline: none;
+  }
+
+  .vesti-focus:focus-visible {
+    outline: 2px solid rgba(228, 55, 67, 0.9);
+    outline-offset: 3px;
+  }
+
   /* Hide scrollbars globally while keeping scroll functionality */
   * {
     scrollbar-width: none;
@@ -115,6 +124,10 @@
   width: 15px;
   height: 15px;
   color: rgba(255,125,88,0.95);
+}
+
+body.vesti-core-active .beauty-trust-chip {
+  display: none;
 }
 
 .beauty-trust-backdrop {

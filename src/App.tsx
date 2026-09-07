@@ -1533,16 +1533,12 @@ function App() {
     }
     if (preview === 'product') {
       setAppMode('product')
-      window.setTimeout(() => {
-        document.getElementById('vesti-product')?.scrollIntoView({ behavior: 'auto', block: 'start' })
-      }, 80)
+      window.scrollTo(0, 0)
       return
     }
     setAppMode('looks')
     if (preview === 'request') {
-      window.setTimeout(() => {
-        document.getElementById('free-request')?.scrollIntoView({ behavior: 'auto', block: 'start' })
-      }, 80)
+      window.scrollTo(0, 0)
     }
   }, [])
 
@@ -2922,6 +2918,11 @@ function App() {
   const vestiSelectionActive = isUploaded && !generatedImage
   const hideLegacyChrome = showAnalysisPanel || vestiSelectionActive
 
+  React.useEffect(() => {
+    document.body.classList.toggle('vesti-core-active', hideLegacyChrome)
+    return () => document.body.classList.remove('vesti-core-active')
+  }, [hideLegacyChrome])
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div dir={lang === 'he' ? 'rtl' : 'ltr'} className="relative min-h-screen overflow-x-hidden font-sans text-gray-100">
@@ -2952,7 +2953,7 @@ function App() {
         <header className="relative z-20 border-b border-white/10 bg-onyx">
           <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-8">
             <div className="min-w-0">
-              <p className="text-[11px] font-medium tracking-[0.28em] text-lacquer uppercase">Vesti Beauty</p>
+              <p className="text-[11px] font-medium tracking-[0.28em] text-ivory uppercase">Vesti Beauty</p>
               <p className="mt-1 text-[11px] text-silver">
                 {lang === 'he' ? 'סטודיו לאיפור וירטואלי' : 'Virtual makeup atelier'}
               </p>
@@ -2961,14 +2962,14 @@ function App() {
               <button
                 type="button"
                 onClick={() => setLang(l => (l === 'he' ? 'en' : 'he'))}
-                className="border border-white/15 px-3 py-2 text-xs font-medium text-silver hover:text-ivory"
+                className="vesti-focus min-h-11 min-w-11 border border-white/15 px-3 text-xs font-medium text-silver hover:text-ivory"
               >
                 {lang === 'he' ? 'EN' : 'עב'}
               </button>
               <button
                 type="button"
                 onClick={handleClear}
-                className="border border-white/15 px-3 py-2 text-xs font-medium text-silver hover:text-ivory"
+                className="vesti-focus min-h-11 min-w-11 border border-white/15 px-3 text-xs font-medium text-silver hover:text-ivory"
               >
                 {lang === 'he' ? 'התחלי מחדש' : 'Start over'}
               </button>
@@ -3445,15 +3446,18 @@ function App() {
                   <button
                     type="button"
                     onClick={() => setAppMode('looks')}
-                    className="flex-1 py-2.5 text-xs font-medium transition-colors focus:outline-none"
+                    className="vesti-focus flex-1 min-h-11 text-xs font-medium transition-colors"
                     style={appMode === 'looks' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
                   >
                     {lang === 'he' ? 'לוקים' : 'Looks'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setAppMode('product')}
-                    className="flex-1 py-2.5 text-xs font-medium transition-colors focus:outline-none"
+                    onClick={() => {
+                      setAppMode('product')
+                      window.scrollTo(0, 0)
+                    }}
+                    className="vesti-focus flex-1 min-h-11 text-xs font-medium transition-colors"
                     style={appMode === 'product' ? { background: '#B50E1C', color: '#F3F1EE' } : { color: '#C5C5C9' }}
                   >
                     {lang === 'he' ? 'מוצר' : 'Product'}
@@ -3461,13 +3465,13 @@ function App() {
                 </div>
                 )}
 
-                {appMode === 'looks' && vestiPreview !== 'request' && (
+                {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && (
                 <>
                 {faceAnalysis && !showAnalysisPanel && (
                   <button
                     type="button"
                     onClick={() => setShowAnalysisPanel(true)}
-                    className="mt-4 text-sm text-silver hover:text-ivory"
+                    className="vesti-focus mt-4 min-h-11 text-sm text-silver hover:text-ivory"
                   >
                     {lang === 'he' ? 'כיוון להתחיל ממנו' : 'A direction to begin with'}
                   </button>
@@ -3487,11 +3491,12 @@ function App() {
                 )}
                 {appMode === 'product' && <ProductTryOnMode />}
 
-                {appMode === 'looks' && vestiPreview !== 'looks' && (
+                {appMode === 'looks' && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
                   <CustomRequestTryOn
                     lang={lang}
                     value={customInstructions}
                     disabled={isGenerating}
+                    pageHeading={vestiPreview === 'request'}
                     onChange={setCustomInstructions}
                     onSubmit={handleCustomTryOn}
                   />

@@ -14,9 +14,9 @@ type LookGalleryProps = {
 
 const FILTERS: Array<{ id: LookEditorialFilter; he: string; en: string }> = [
   { id: 'all', he: 'הכל', en: 'All' },
-  { id: 'natural', he: 'Natural', en: 'Natural' },
-  { id: 'evening', he: 'Evening', en: 'Evening' },
-  { id: 'statement', he: 'Statement', en: 'Statement' },
+  { id: 'natural', he: 'טבעי', en: 'Natural' },
+  { id: 'evening', he: 'ערב', en: 'Evening' },
+  { id: 'statement', he: 'נועז', en: 'Statement' },
 ]
 
 export default function LookGallery({
@@ -35,12 +35,12 @@ export default function LookGallery({
   )
 
   return (
-    <section id="looks-carousel" className="mt-6 pb-[max(2rem,env(safe-area-inset-bottom))]" aria-label={lang === 'he' ? 'בחירת לוק' : 'Choose a look'}>
+    <section id="looks-carousel" className="relative mt-6" aria-label={lang === 'he' ? 'בחירת לוק' : 'Choose a look'}>
       <div className="mb-5">
-        <p className="text-[11px] font-medium tracking-[0.22em] text-lacquer uppercase">Maison</p>
-        <h2 className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
+        <p className="text-[11px] font-medium tracking-[0.22em] text-ivory uppercase">Maison</p>
+        <h1 className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
           {lang === 'he' ? 'בחרי לוק' : 'Choose a Look'}
-        </h2>
+        </h1>
       </div>
 
       <div className="mb-6 overflow-x-auto overscroll-x-contain">
@@ -52,7 +52,7 @@ export default function LookGallery({
                 key={item.id}
                 type="button"
                 onClick={() => setFilter(item.id)}
-                className={`h-10 shrink-0 px-4 text-[12px] font-medium tracking-wide transition-colors ${
+                className={`vesti-focus h-11 shrink-0 px-4 text-[12px] font-medium tracking-wide transition-colors ${
                   active
                     ? 'bg-lacquer text-ivory'
                     : 'border border-white/15 bg-transparent text-silver hover:text-ivory'
@@ -65,7 +65,7 @@ export default function LookGallery({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className={`grid grid-cols-1 gap-3 ${onApply ? 'pb-[5.5rem]' : 'pb-8'}`}>
         {visibleLooks.map((look) => {
           const selected = selectedLookName === look.name
           const recommended = recommendedLookName === look.name
@@ -75,14 +75,14 @@ export default function LookGallery({
               key={look.id}
               type="button"
               onClick={() => onSelect(look.name)}
-              className={`relative overflow-hidden border px-5 py-6 text-start ${
+              className={`vesti-focus relative overflow-hidden border px-5 py-6 text-start ${
                 selected ? 'border-lacquer' : 'border-white/10'
               }`}
               style={{ background: treatment.wash }}
             >
               <span className="absolute inset-y-0 start-0 w-[2px]" style={{ background: treatment.rule }} />
               {recommended && (
-                <span className="mb-3 block text-[11px] font-medium text-lacquer">
+                <span className="mb-3 block text-[11px] font-medium text-ivory">
                   {lang === 'he' ? 'כיוון להתחיל ממנו' : 'A place to begin'}
                 </span>
               )}
@@ -104,7 +104,7 @@ export default function LookGallery({
                   />
                 ))}
                 {selected && (
-                  <span className="ms-2 text-[11px] font-medium text-lacquer">
+                  <span className="ms-2 text-[11px] font-medium text-ivory">
                     {lang === 'he' ? 'נבחר' : 'Selected'}
                   </span>
                 )}
@@ -115,18 +115,20 @@ export default function LookGallery({
       </div>
 
       {onApply && (
-        <button
-          type="button"
-          onClick={onApply}
-          disabled={!selectedLookName || applying}
-          className={`mt-6 flex min-h-12 w-full items-center justify-center px-5 text-sm font-semibold ${
-            selectedLookName && !applying
-              ? 'bg-lacquer text-ivory hover:bg-deepRose'
-              : 'cursor-not-allowed border border-white/10 bg-shadow text-silver'
-          }`}
-        >
-          {lang === 'he' ? 'נסי את הלוק' : 'Try this look'}
-        </button>
+        <div className="fixed inset-x-0 bottom-0 z-[240] border-t border-white/10 bg-onyx/95 px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={onApply}
+            disabled={!selectedLookName || applying}
+            className={`vesti-focus mx-auto flex min-h-11 w-full max-w-3xl items-center justify-center px-5 text-sm font-semibold ${
+              selectedLookName && !applying
+                ? 'bg-lacquer text-ivory hover:bg-deepRose'
+                : 'cursor-not-allowed border border-white/10 bg-shadow text-silver'
+            }`}
+          >
+            {lang === 'he' ? 'נסי את הלוק' : 'Try this look'}
+          </button>
+        </div>
       )}
     </section>
   )

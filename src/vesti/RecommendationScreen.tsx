@@ -65,14 +65,23 @@ export default function RecommendationScreen({
   const treatment = recommended ? lookCardTreatment(recommended) : null
 
   return (
-    <div className="fixed inset-0 z-[400] flex flex-col overflow-hidden" style={{ background: '#050505' }}>
+    <div
+      className="fixed inset-0 z-[400] flex flex-col overflow-hidden"
+      style={{ background: '#050505' }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="vesti-recommendation-title"
+    >
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium tracking-[0.28em] text-lacquer uppercase">
+            <p className="text-[11px] font-medium tracking-[0.28em] text-ivory uppercase">
               {copy.kicker}
             </p>
-            <h1 className={`mt-3 text-[28px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
+            <h1
+              id="vesti-recommendation-title"
+              className={`mt-3 text-[28px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}
+            >
               {copy.title}
             </h1>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-silver">
@@ -82,7 +91,7 @@ export default function RecommendationScreen({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/15 text-silver hover:text-ivory"
+            className="vesti-focus flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-silver hover:text-ivory"
             aria-label={copy.close}
           >
             <span className="text-lg leading-none">×</span>
@@ -132,7 +141,7 @@ export default function RecommendationScreen({
                   key={`${kind}-${look.id}`}
                   type="button"
                   onClick={() => onSelectLook(look.name)}
-                  className="border border-white/10 bg-carbon px-3 py-3 text-start hover:border-white/25"
+                  className="vesti-focus border border-white/10 bg-carbon px-3 py-3 text-start hover:border-white/25"
                 >
                   <span className="block text-[10px] text-silver">{alternativeLabel(kind, lang)}</span>
                   <span className="mt-1 block text-[13px] font-medium leading-snug text-ivory">{look.name}</span>
@@ -149,7 +158,7 @@ export default function RecommendationScreen({
           <button
             type="button"
             onClick={() => onSelectLook(recommended.name)}
-            className="flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
+            className="vesti-focus flex min-h-11 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
           >
             {copy.tryLook}
           </button>
@@ -157,7 +166,7 @@ export default function RecommendationScreen({
         <button
           type="button"
           onClick={onClose}
-          className="mt-3 flex w-full items-center justify-center py-2 text-sm text-silver hover:text-ivory"
+          className="vesti-focus mt-3 flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
         >
           {copy.chooseMyself}
         </button>

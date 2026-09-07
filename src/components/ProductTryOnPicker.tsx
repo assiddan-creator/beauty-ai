@@ -6,6 +6,7 @@ import {
   type BeautyProductView,
 } from '../lib/productCatalogFacade'
 import { recordCommercialFunnelEvent } from '../lib/commercialAnalytics'
+import { shadeMetaLabel } from '../vesti/lookDirection'
 
 type UiLanguage = 'he' | 'en'
 type Step = 'brand' | 'product' | 'shade'
@@ -73,10 +74,10 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
   }
 
   return (
-    <section id="vesti-product" className="mt-6 overflow-x-hidden pb-8" aria-label={lang === 'he' ? 'בחירת מוצר לאיפור וירטואלי' : 'Virtual try-on product selection'}>
+    <section id="vesti-product" className="mt-6 overflow-x-hidden pb-8" aria-labelledby="vesti-product-title">
       <div className="mb-5">
-        <p className="text-[11px] font-medium tracking-[0.22em] text-lacquer uppercase">{copy.kicker}</p>
-        <h2 className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>{copy.title}</h2>
+        <p className="text-[11px] font-medium tracking-[0.22em] text-ivory uppercase">{copy.kicker}</p>
+        <h1 id="vesti-product-title" className={`mt-2 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>{copy.title}</h1>
       </div>
 
       <ol className="mb-6 grid grid-cols-3 text-center">
@@ -86,7 +87,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
           return (
             <li
               key={item}
-              className={`border-b-2 py-2.5 ${
+              className={`min-h-11 border-b-2 py-2.5 ${
                 active
                   ? 'border-lacquer text-ivory'
                   : reached
@@ -94,7 +95,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                     : 'border-white/10 text-silver'
               }`}
             >
-              <span className={`block text-[10px] font-medium tracking-[0.16em] ${active ? 'text-lacquer' : 'text-silver'}`}>
+              <span className="block text-[10px] font-medium tracking-[0.16em] text-silver">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <span className="mt-1 block text-[11px] font-medium">{copy[item]}</span>
@@ -107,7 +108,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
         <button
           type="button"
           onClick={goBack}
-          className="mb-4 text-sm text-silver hover:text-ivory"
+          className="vesti-focus mb-4 inline-flex min-h-11 min-w-11 items-center px-2 text-sm text-silver hover:text-ivory"
         >
           {copy.back}
         </button>
@@ -126,7 +127,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                   setBrand(item)
                   setStep('product')
                 }}
-                className="group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start transition-colors hover:bg-shadow"
+                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start transition-colors hover:bg-shadow"
               >
                 <span className="min-w-0">
                   <span className="block font-display text-[22px] leading-tight text-ivory group-hover:text-ivory">{item}</span>
@@ -165,7 +166,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                   setProductName(item)
                   setStep('shade')
                 }}
-                className="group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start hover:bg-shadow"
+                className="vesti-focus group flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-white/10 px-3 py-4 text-start hover:bg-shadow"
               >
                 <span className="min-w-0">
                   <span className="block text-base font-medium leading-snug text-ivory">{item}</span>
@@ -206,7 +207,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                 })
                 onTryOn(item)
               }}
-              className="flex items-center gap-4 border border-white/10 bg-carbon p-3 text-start hover:border-white/25 disabled:opacity-45"
+              className="vesti-focus flex min-h-11 items-center gap-4 border border-white/10 bg-carbon p-3 text-start hover:border-white/25 disabled:opacity-45"
             >
               <span
                 className="h-14 w-14 shrink-0 rounded-full border border-white/25"
@@ -217,11 +218,11 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                 <strong className="block text-base font-medium text-ivory">{item.shadeName}</strong>
                 {(item.shadeFamily || item.finish) && (
                   <small className="mt-1 block text-[12px] text-silver">
-                    {[item.shadeFamily, item.finish].filter(Boolean).join(' · ')}
+                    {shadeMetaLabel(item.shadeFamily, item.finish, lang)}
                   </small>
                 )}
               </span>
-              <span className="shrink-0 bg-lacquer px-3 py-2 text-[11px] font-semibold text-ivory">
+              <span className="flex min-h-11 shrink-0 items-center bg-lacquer px-3 text-[11px] font-semibold text-ivory">
                 {copy.tryOn}
               </span>
             </button>

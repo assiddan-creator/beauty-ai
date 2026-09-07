@@ -28,10 +28,10 @@ export function lookMatchesFilter(look: LookCardModel, filter: LookEditorialFilt
 }
 
 export function intensityLabel(presence: LookPresence | undefined, lang: VestiLang): string {
-  if (presence === 'low' || presence === 'low-medium') return lang === 'he' ? 'רכה' : 'Soft'
-  if (presence === 'high') return lang === 'he' ? 'נועזת' : 'Statement'
-  if (presence === 'medium-high') return lang === 'he' ? 'נוכחת' : 'Present'
-  return lang === 'he' ? 'מאוזנת' : 'Balanced'
+  if (presence === 'low' || presence === 'low-medium') return lang === 'he' ? 'עוצמה רכה' : 'Soft intensity'
+  if (presence === 'high') return lang === 'he' ? 'עוצמה נועזת' : 'Statement intensity'
+  if (presence === 'medium-high') return lang === 'he' ? 'עוצמה נוכחת' : 'Present intensity'
+  return lang === 'he' ? 'עוצמה מאוזנת' : 'Balanced intensity'
 }
 
 export function finishLabel(vibe: string | undefined, lang: VestiLang): string {
@@ -48,14 +48,55 @@ export function finishLabel(vibe: string | undefined, lang: VestiLang): string {
   return lang === 'he' ? 'גימור טבעי' : 'Natural finish'
 }
 
+const COLOR_TERMS_HE: Record<string, string> = {
+  warm: 'חם',
+  cool: 'קר',
+  neutral: 'ניטרלי',
+  light: 'בהיר',
+  medium: 'בינוני',
+  deep: 'עמוק',
+  'warm nude': 'ניוד חם',
+  'soft peach': 'אפרסק רך',
+  'cool pink': 'ורוד קר',
+  'warm coral': 'קורל חם',
+  'classic red': 'אדום קלאסי',
+  'dusty rose': 'ורד עמום',
+  'rosy nude': 'ניוד ורדרד',
+  terracotta: 'טרקוטה',
+  'peachy pink': 'ורוד אפרסק',
+  'peach coral': 'קורל אפרסק',
+}
+
+export function translateBeautyTerm(value: string | undefined, lang: VestiLang): string {
+  const text = value?.trim() ?? ''
+  if (!text || lang !== 'he') return text
+  return COLOR_TERMS_HE[text.toLowerCase()] ?? text
+}
+
 export function colorDirectionLabel(analysis: BeautyAnalysisView, lang: VestiLang): string {
   const parts = [analysis.undertone, analysis.lipColorFamily, analysis.blushColorFamily]
-    .map((part) => part?.trim())
+    .map((part) => translateBeautyTerm(part, lang))
     .filter(Boolean)
   if (parts.length === 0) {
     return lang === 'he' ? 'לפי הגוונים שנראים בתמונה' : 'From the tones visible in the photo'
   }
   return parts.join(' · ')
+}
+
+const FINISH_META_HE: Record<string, string> = {
+  matte: 'מט',
+  glossy: 'מבריק',
+  satin: 'סאטן',
+  'satin-matte': 'סאטן מט',
+  dewy: 'לח',
+}
+
+export function shadeMetaLabel(shadeFamily: string | undefined, finish: string | undefined, lang: VestiLang): string {
+  const family = translateBeautyTerm(shadeFamily, lang)
+  const finishText = finish
+    ? (lang === 'he' ? (FINISH_META_HE[finish.toLowerCase()] ?? finish) : finish)
+    : ''
+  return [family, finishText].filter(Boolean).join(' · ')
 }
 
 export function lookCardTreatment(look: LookCardModel): { wash: string; rule: string; swatches: string[] } {
