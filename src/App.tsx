@@ -38,7 +38,7 @@ import ResultReveal, { type RevealProduct } from './vesti/ResultReveal'
 import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE, VESTI_PREVIEW_PRODUCT, VESTI_PREVIEW_RESULT_IMAGE } from './vesti/preview'
 import type { CaptureStep, LookCardModel } from './vesti/types'
 import type { BeautyProductView } from './lib/productCatalogFacade'
-import { getLookProductViews } from './lib/productCatalogFacade'
+import { getBeautyProductView, getLookProductViews } from './lib/productCatalogFacade'
 import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
 
 const ENGINES = [
@@ -1523,6 +1523,12 @@ function App() {
   const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
   const [focusRequest, setFocusRequest] = useState(false)
   const [revealProduct, setRevealProduct] = useState<RevealProduct | null>(null)
+  const [lastTryOn, setLastTryOn] = useState<
+    | { type: 'look'; lookName: string }
+    | { type: 'product'; product: ProductItem }
+    | { type: 'request'; request: string }
+    | null
+  >(null)
   const cameraBackStepRef = useRef<CaptureStep>('entry')
 
   React.useEffect(() => {
@@ -1570,6 +1576,24 @@ function App() {
     if (preview === 'result-error') {
       setError(lang === 'he' ? 'לא ניתן לייצר את התוצאה.' : 'The result could not be created.')
       setSelectedPreset('Natural Everyday')
+      setLastTryOn({ type: 'look', lookName: 'Natural Everyday' })
+      setAppMode('looks')
+      return
+    }
+    if (preview === 'result-error-product') {
+      const product = getBeautyProductView(VESTI_PREVIEW_PRODUCT.id)
+      setError(lang === 'he' ? 'לא ניתן לייצר את התוצאה.' : 'The result could not be created.')
+      setRevealProduct(VESTI_PREVIEW_PRODUCT)
+      setSelectedPreset(`${VESTI_PREVIEW_PRODUCT.brand} ${VESTI_PREVIEW_PRODUCT.shadeName}`)
+      if (product) setLastTryOn({ type: 'product', product })
+      setAppMode('product')
+      return
+    }
+    if (preview === 'result-error-request') {
+      setError(lang === 'he' ? 'לא ניתן לייצר את התוצאה.' : 'The result could not be created.')
+      setCustomInstructions('שפתון ניוד רך')
+      setLastTryOn({ type: 'request', request: 'שפתון ניוד רך' })
+      setFocusRequest(true)
       setAppMode('looks')
       return
     }
@@ -1616,6 +1640,7 @@ function App() {
     setOriginalImage(blobUrl)
     setGeneratedImage(null)
     setActiveHistoryId(null)
+    setLastTryOn(null)
     setError(null)
     setFaceAnalysis(null)
     setAnalysisDismissed(false)
@@ -1701,6 +1726,7 @@ function App() {
     setAppMode('looks')
     setFocusRequest(false)
     setRevealProduct(null)
+    setLastTryOn(null)
     setResultDescription(null)
     setCaptureStep('entry')
   }
@@ -1726,8 +1752,15 @@ function App() {
   }
 
   // ── Generate Look ────────────────────────────────────────────────────────────
-  const handleApplyEdit = async () => {
+  const handleApplyEdit = async (lookName?: string) => {
     if (!originalImage) return
+
+    const targetName = typeof lookName === 'string' && lookName ? lookName : selectedPreset
+    const activePreset = BEAUTY_PRESETS.find((preset) => preset.name === targetName)
+    if (!activePreset) return
+
+    setLastTryOn({ type: 'look', lookName: activePreset.name })
+    setSelectedPreset(activePreset.name)
 
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
     if (!token || typeof token !== 'string' || token.trim() === '') {
@@ -1738,10 +1771,6 @@ function App() {
     setError(null)
     setResultDescription(null)
     setRevealProduct(null)
-
-    const activePreset = BEAUTY_PRESETS.find((preset) => preset.name === selectedPreset)
-    if (!activePreset) return
-
     setIsGenerating(true)
 
     try {
@@ -1838,14 +1867,19 @@ function App() {
     }
   }
 
-  const handleCustomTryOn = async () => {
+  const handleCustomTryOn = async (requestText?: string) => {
     if (!originalImage) return
 
-    const request = customInstructions.trim()
+    const request = (typeof requestText === 'string' ? requestText : customInstructions).trim()
     if (!request) {
       setError(lang === 'he' ? 'כתבי קודם מה תרצי לנסות.' : 'Describe the makeup you want to try first.')
       return
     }
+
+    setLastTryOn({ type: 'request', request })
+    setCustomInstructions(request)
+    setSelectedPreset(null)
+    setRevealProduct(null)
 
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
     if (!token || typeof token !== 'string' || token.trim() === '') {
@@ -1855,8 +1889,6 @@ function App() {
 
     setError(null)
     setResultDescription(null)
-    setSelectedPreset(null)
-    setRevealProduct(null)
     setIsGenerating(true)
 
     try {
@@ -1891,6 +1923,7 @@ function App() {
   const handleProductTryOn = async (product: ProductItem) => {
     console.log('[handleProductTryOn called]', product.brand, product.shadeName)
     if (!originalImage) return
+    setLastTryOn({ type: 'product', product })
     const token = import.meta.env.VITE_REPLICATE_API_TOKEN
     if (!token) { setError('Replicate API token not found.'); return }
     setError(null)
@@ -1948,6 +1981,7 @@ function App() {
     setGeneratedImage(entry.generatedUrl)
     setSelectedPreset(entry.lookName)
     setRevealProduct(null)
+    setLastTryOn(null)
     setIsUploaded(true)
     setSliderPosition(50)
     setActiveHistoryId(entry.id)
@@ -2852,7 +2886,27 @@ function App() {
   const revealFromRecommendation = Boolean(
     faceAnalysis && revealLook && faceAnalysis.recommendedPreset === revealLook.name,
   )
-  const hideSelectionAfterResult = vestiRevealActive || (vestiPreview === 'result-error' && Boolean(error))
+  const hideSelectionAfterResult = vestiRevealActive || (Boolean(vestiPreview?.startsWith('result-error')) && Boolean(error))
+  const canRetryGeneration = Boolean(lastTryOn)
+  const handleRetryGeneration = () => {
+    if (!lastTryOn) {
+      setError(null)
+      return
+    }
+    if (import.meta.env.DEV && vestiPreview) {
+      setError(null)
+      return
+    }
+    if (lastTryOn.type === 'look') {
+      void handleApplyEdit(lastTryOn.lookName)
+      return
+    }
+    if (lastTryOn.type === 'product') {
+      void handleProductTryOn(lastTryOn.product)
+      return
+    }
+    void handleCustomTryOn(lastTryOn.request)
+  }
 
   React.useEffect(() => {
     document.body.classList.toggle('vesti-core-active', hideLegacyChrome)
@@ -3128,7 +3182,7 @@ function App() {
             {isUploaded && (
               <div className={hideLegacyChrome ? '' : 'mt-8'}>
 
-                {(vestiRevealActive || (vestiPreview === 'result-error' && error)) && (
+                {(vestiRevealActive || (Boolean(vestiPreview?.startsWith('result-error')) && error)) && (
                   <ResultReveal
                     lang={lang}
                     originalImage={originalImage}
@@ -3148,6 +3202,7 @@ function App() {
                       setGeneratedImage(null)
                       setRevealProduct(null)
                       setSelectedPreset(null)
+                      setLastTryOn(null)
                       setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
@@ -3157,37 +3212,34 @@ function App() {
                       setGeneratedImage(null)
                       setRevealProduct(null)
                       setSelectedPreset(null)
+                      setLastTryOn(null)
                       setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
                       setAppMode('product')
                     }}
-                    onRetry={() => {
-                      setError(null)
-                      if (import.meta.env.DEV && vestiPreview === 'result-error') return
-                      if (revealProduct) return
-                      if (selectedPreset && revealLook) void handleApplyEdit()
-                    }}
+                    onRetry={canRetryGeneration ? handleRetryGeneration : undefined}
+                    retryKind={lastTryOn?.type ?? null}
                   />
                 )}
 
-                {vestiSelectionActive && error && !generatedImage && vestiPreview !== 'result-error' && (
+                {vestiSelectionActive && error && !generatedImage && !vestiPreview?.startsWith('result-error') && (
                   <div className="mb-6">
                     <p className="text-sm text-silver">{error}</p>
+                    {canRetryGeneration && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setError(null)
-                        if (selectedPreset && revealLook) void handleApplyEdit()
-                      }}
+                      data-retry-kind={lastTryOn?.type}
+                      onClick={handleRetryGeneration}
                       className="vesti-focus mt-3 min-h-11 text-sm text-ivory"
                     >
                       {lang === 'he' ? 'נסי שוב' : 'Try again'}
                     </button>
+                    )}
                   </div>
                 )}
 
-                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && vestiPreview !== 'result-error' && (
+                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && !vestiPreview?.startsWith('result-error') && (
                 <div className="mb-6 flex items-center gap-3">
                   {originalImage && (
                     <img src={originalImage} alt="" className="h-8 w-8 object-cover opacity-80" />
@@ -3568,7 +3620,7 @@ function App() {
                   recommendedLookName={faceAnalysis && !analysisDismissed ? faceAnalysis.recommendedPreset : null}
                   applying={isGenerating}
                   onSelect={setSelectedPreset}
-                  onApply={handleApplyEdit}
+                  onApply={() => { void handleApplyEdit() }}
                 />
 
                 </>
@@ -3582,7 +3634,7 @@ function App() {
                     disabled={isGenerating}
                     pageHeading={vestiPreview === 'request' || focusRequest}
                     onChange={setCustomInstructions}
-                    onSubmit={handleCustomTryOn}
+                    onSubmit={() => { void handleCustomTryOn() }}
                   />
                 )}
 
@@ -3665,7 +3717,7 @@ function App() {
               </button>
               <button
                 type="button"
-                onClick={handleApplyEdit}
+                onClick={() => { void handleApplyEdit() }}
                 disabled={isGenerating || !originalImage}
                 className="group flex min-h-[56px] min-w-[240px] items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#FF6B47] to-[#FF9D6E] px-10 py-4 text-base font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-95 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ boxShadow: '0 0 30px rgba(255,107,71,0.5), inset 0 1px 0 rgba(255,255,255,0.2)' }}

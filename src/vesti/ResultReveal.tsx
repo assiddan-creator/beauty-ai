@@ -28,6 +28,7 @@ type ResultRevealProps = {
   onTryShade: () => void
   onStartOver?: () => void
   onRetry?: () => void
+  retryKind?: 'look' | 'product' | 'request' | null
 }
 
 const COPY = {
@@ -93,6 +94,7 @@ export default function ResultReveal({
   onTryShade,
   onStartOver,
   onRetry,
+  retryKind = null,
 }: ResultRevealProps) {
   const copy = COPY[lang]
   const [productUrls, setProductUrls] = useState<Record<string, string>>({})
@@ -127,6 +129,7 @@ export default function ResultReveal({
         {onRetry && (
           <button
             type="button"
+            data-retry-kind={retryKind ?? undefined}
             onClick={onRetry}
             className="vesti-focus mt-8 flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
           >
@@ -282,6 +285,7 @@ export default function ResultReveal({
         {error && onRetry && (
           <button
             type="button"
+            data-retry-kind={retryKind ?? undefined}
             onClick={onRetry}
             className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
           >
