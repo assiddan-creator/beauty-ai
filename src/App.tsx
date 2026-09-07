@@ -32,6 +32,7 @@ import EntryScreen from './vesti/EntryScreen'
 import CaptureChoice from './vesti/CaptureChoice'
 import CameraCapture from './vesti/CameraCapture'
 import PhotoConfirm from './vesti/PhotoConfirm'
+import DirectionScreen from './vesti/DirectionScreen'
 import CaptureIssue from './vesti/CaptureIssue'
 import { VESTI_PREVIEW_ANALYSIS, VESTI_PREVIEW_IMAGE } from './vesti/preview'
 import type { CaptureStep, LookCardModel } from './vesti/types'
@@ -1518,6 +1519,7 @@ function App() {
   const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
   const [vestiPreview, setVestiPreview] = useState<string | null>(null)
   const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
+  const [focusRequest, setFocusRequest] = useState(false)
   const cameraBackStepRef = useRef<CaptureStep>('entry')
 
   React.useEffect(() => {
@@ -1532,6 +1534,7 @@ function App() {
       'capture-choice': 'choice',
       camera: 'camera',
       'photo-confirm': 'confirm',
+      direction: 'direction',
       preparing: 'preparing',
       'camera-error': 'camera-permission',
       'camera-unavailable': 'camera-unavailable',
@@ -1540,7 +1543,7 @@ function App() {
     if (preview in capturePreviews) {
       setIsUploaded(false)
       setCaptureStep(capturePreviews[preview])
-      if (preview === 'photo-confirm') setOriginalImage(VESTI_PREVIEW_IMAGE)
+      if (preview === 'photo-confirm' || preview === 'direction') setOriginalImage(VESTI_PREVIEW_IMAGE)
       return
     }
 
@@ -1590,10 +1593,20 @@ function App() {
     setCaptureStep('confirm')
   }
 
-  const handleConfirmPhoto = () => {
+  const enterSelection = (mode: 'looks' | 'product', request = false) => {
     if (!originalImage) return
+    setFocusRequest(request)
+    setAppMode(mode)
     setIsUploaded(true)
     setCaptureStep(null)
+    setShowPathScreen(false)
+    if (mode === 'product' || request) window.scrollTo(0, 0)
+  }
+
+  const handleConfirmPhoto = () => {
+    if (!originalImage) return
+    setFocusRequest(false)
+    setCaptureStep('direction')
     setShowPathScreen(false)
   }
 
@@ -1620,6 +1633,7 @@ function App() {
       const analysis = await analyzeFaceWithClaude(dataUrl, lang)
       setFaceAnalysis(analysis)
       setSelectedPreset(analysis.recommendedPreset)
+      setShowAnalysisPanel(true)
       console.log('[Claude Vision] Beauty analysis complete:', analysis)
     } catch (err) {
       console.error('[Claude Vision] Beauty analysis failed:', err)
@@ -1655,6 +1669,7 @@ function App() {
     setShowLookProducts(false)
     setShowPathScreen(false)
     setAppMode('looks')
+    setFocusRequest(false)
     setCaptureStep('entry')
   }
 
@@ -2830,6 +2845,20 @@ function App() {
           onReplace={handleReplacePhoto}
         />
       )}
+      {captureStep === 'direction' && (
+        <DirectionScreen
+          lang={lang}
+          onToggleLang={() => setLang((value) => (value === 'he' ? 'en' : 'he'))}
+          onRecommendation={() => {
+            enterSelection('looks')
+            void handleAnalyzeWithAI()
+          }}
+          onLooks={() => enterSelection('looks')}
+          onProduct={() => enterSelection('product')}
+          onRequest={() => enterSelection('looks', true)}
+          onBack={() => setCaptureStep('confirm')}
+        />
+      )}
       {(captureStep === 'preparing' || captureStep === 'camera-permission' || captureStep === 'camera-unavailable' || captureStep === 'upload-error') && (
         <CaptureIssue
           lang={lang}
@@ -3362,9 +3391,12 @@ function App() {
                 <nav className="mt-2 flex gap-8" aria-label={lang === 'he' ? 'מצב בחירה' : 'Selection mode'}>
                   <button
                     type="button"
-                    onClick={() => setAppMode('looks')}
+                    onClick={() => {
+                      setFocusRequest(false)
+                      setAppMode('looks')
+                    }}
                     className={`vesti-focus min-h-11 border-b text-[13px] tracking-wide transition-colors ${
-                      appMode === 'looks'
+                      appMode === 'looks' && !focusRequest
                         ? 'border-lacquer text-ivory'
                         : 'border-transparent text-silver hover:text-ivory'
                     }`}
@@ -3374,6 +3406,7 @@ function App() {
                   <button
                     type="button"
                     onClick={() => {
+                      setFocusRequest(false)
                       setAppMode('product')
                       window.scrollTo(0, 0)
                     }}
@@ -3388,7 +3421,7 @@ function App() {
                 </nav>
                 )}
 
-                {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && (
+                {appMode === 'looks' && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && !focusRequest && (
                 <>
                 {faceAnalysis && !showAnalysisPanel && (
                   <button
@@ -3419,7 +3452,7 @@ function App() {
                     lang={lang}
                     value={customInstructions}
                     disabled={isGenerating}
-                    pageHeading={vestiPreview === 'request'}
+                    pageHeading={vestiPreview === 'request' || focusRequest}
                     onChange={setCustomInstructions}
                     onSubmit={handleCustomTryOn}
                   />

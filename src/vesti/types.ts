@@ -42,6 +42,7 @@ export type CaptureStep =
   | 'choice'
   | 'camera'
   | 'confirm'
+  | 'direction'
   | 'preparing'
   | 'camera-permission'
   | 'camera-unavailable'
