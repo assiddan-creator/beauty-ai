@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { LookCardModel, LookEditorialFilter, VestiLang } from './types'
 import { finishLabel, intensityLabel, lookCardTreatment, lookMatchesFilter } from './lookDirection'
 
@@ -114,8 +115,8 @@ export default function LookGallery({
         })}
       </div>
 
-      {onApply && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[240]">
+      {onApply && createPortal(
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[360]">
           <div className="pointer-events-auto mx-auto w-full max-w-3xl border-t border-white/10 bg-onyx px-4 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] sm:px-8">
             <button
               type="button"
@@ -130,7 +131,8 @@ export default function LookGallery({
               {lang === 'he' ? 'נסי את הלוק' : 'Try this look'}
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   )
