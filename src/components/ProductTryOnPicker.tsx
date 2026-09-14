@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, CircleDot, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   getBeautyProductBrands,
   getBeautyProductCategories,
@@ -22,9 +22,7 @@ type ProductTryOnPickerProps = {
 
 const COPY = {
   he: {
-    kicker: 'COLLECTION',
-    title: 'בחרי מוצר וגוון',
-    subtitle: 'התחילי באזור שתרצי לנסות. אפשר להחליף גוון בכל שלב.',
+    title: 'מה לנסות',
     category: 'אזור',
     brand: 'מותג',
     product: 'מוצר',
@@ -33,14 +31,11 @@ const COPY = {
     lips: 'שפתיים',
     blush: 'סומק',
     lipsDescription: 'שפתונים, גלוסים ותוחמים',
-    blushDescription: 'גווני סומק במרקמים שונים',
+    blushDescription: 'סומק במרקמים שונים',
     tryOn: 'נסי עליי',
-    shades: 'גוונים',
   },
   en: {
-    kicker: 'COLLECTION',
-    title: 'Choose a product and shade',
-    subtitle: 'Start with the area you want to try. You can change shades at any time.',
+    title: 'What to try',
     category: 'Area',
     brand: 'Brand',
     product: 'Product',
@@ -49,9 +44,8 @@ const COPY = {
     lips: 'Lips',
     blush: 'Blush',
     lipsDescription: 'Lipsticks, glosses and liners',
-    blushDescription: 'Blush shades in different finishes',
+    blushDescription: 'Blush in different finishes',
     tryOn: 'Try on me',
-    shades: 'shades',
   },
 } as const
 
@@ -76,6 +70,15 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
     [category, brand, productName],
   )
 
+  const heading = step === 'category'
+    ? copy.title
+    : step === 'brand'
+      ? copy.brand
+      : step === 'product'
+        ? (brand ?? copy.product)
+        : (productName ?? copy.shade)
+  const headingIsDisplay = step === 'product' || (step === 'shade' && lang !== 'he')
+
   const goBack = () => {
     if (step === 'shade') {
       setProductName(null)
@@ -94,40 +97,39 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
   }
 
   return (
-    <section id="vesti-product" className="flex min-h-full flex-col" aria-labelledby="vesti-product-title">
-      <header className="border-b border-white/10 px-6 py-6 sm:px-8 lg:px-10 lg:py-8">
-        <p className="text-[10px] font-medium tracking-[0.28em] text-silver uppercase">{copy.kicker}</p>
-        <h1 id="vesti-product-title" className={`mt-2 text-[30px] leading-tight text-ivory lg:text-[40px] ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
-          {copy.title}
+    <section id="vesti-product" className="flex min-h-full flex-col bg-onyx" aria-labelledby="vesti-product-title">
+      <header className="px-6 pb-4 pt-6 sm:px-8 lg:px-10 lg:pt-8">
+        <ol className="flex gap-6 text-[11px] tracking-[0.16em] text-silver" aria-label={lang === 'he' ? 'שלבי בחירת מוצר' : 'Product selection steps'}>
+          {STEPS.map((item) => {
+            const active = step === item
+            return (
+              <li key={item} className={active ? 'text-ivory' : 'text-silver/55'}>
+                {copy[item]}
+                {active && <span className="mt-2 block h-px w-full bg-lacquer" aria-hidden="true" />}
+              </li>
+            )
+          })}
+        </ol>
+        <h1
+          id="vesti-product-title"
+          className={`mt-6 text-[32px] leading-tight text-ivory lg:text-[40px] ${headingIsDisplay ? 'font-display' : lang === 'he' ? 'font-hebrew' : 'font-display'}`}
+        >
+          {heading}
         </h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-silver">{copy.subtitle}</p>
       </header>
 
-      <ol className="grid grid-cols-4 border-b border-white/10 px-4 sm:px-8" aria-label={lang === 'he' ? 'שלבי בחירת מוצר' : 'Product selection steps'}>
-        {STEPS.map((item, index) => {
-          const active = step === item
-          const reached = STEPS.indexOf(step) >= index
-          return (
-            <li key={item} className={`border-b-2 px-1 py-3 text-center text-[11px] transition-colors ${active ? 'border-lacquer text-ivory' : reached ? 'border-white/20 text-silver' : 'border-transparent text-silver/60'}`}>
-              <span className="hidden sm:inline">{String(index + 1).padStart(2, '0')} · </span>{copy[item]}
-            </li>
-          )
-        })}
-      </ol>
-
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8 lg:px-10 lg:py-8">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8 sm:px-8 lg:px-10">
         {step !== 'category' && (
-          <button type="button" onClick={goBack} className="vesti-focus mb-5 inline-flex min-h-11 items-center gap-2 text-sm text-silver transition-colors hover:text-ivory">
+          <button type="button" onClick={goBack} className="vesti-focus mb-4 inline-flex min-h-11 items-center gap-2 text-sm text-silver transition-colors hover:text-ivory">
             <BackIcon className="h-4 w-4" aria-hidden="true" />
             {copy.back}
           </button>
         )}
 
         {step === 'category' && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {categories.map((item) => {
+          <div className="grid sm:grid-cols-2">
+            {categories.map((item, index) => {
               const isLips = item === 'lips'
-              const Icon = isLips ? CircleDot : Sparkles
               return (
                 <button
                   key={item}
@@ -136,12 +138,15 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                     setCategory(item)
                     setStep('brand')
                   }}
-                  className="vesti-focus group flex min-h-44 flex-col justify-between border border-white/10 bg-shadow p-5 text-start transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 sm:min-h-52 lg:p-7"
+                  className={`vesti-focus flex min-h-40 flex-col justify-center py-8 text-start sm:min-h-64 sm:px-6 ${
+                    index > 0 ? 'border-t border-white/10 sm:border-t-0 sm:border-s' : ''
+                  }`}
                 >
-                  <Icon className="h-7 w-7 text-lacquer" strokeWidth={1.25} aria-hidden="true" />
-                  <span>
-                    <strong className={`block text-[30px] font-normal text-ivory lg:text-4xl ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>{copy[item]}</strong>
-                    <span className="mt-2 block text-sm text-silver">{isLips ? copy.lipsDescription : copy.blushDescription}</span>
+                  <strong className={`block text-[40px] font-normal leading-none text-ivory lg:text-5xl ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
+                    {copy[item]}
+                  </strong>
+                  <span className="mt-4 block max-w-[16rem] text-sm leading-6 text-silver">
+                    {isLips ? copy.lipsDescription : copy.blushDescription}
                   </span>
                 </button>
               )
@@ -150,7 +155,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
         )}
 
         {step === 'brand' && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-x-8 lg:gap-x-10">
             {brands.map((item) => (
               <button
                 key={item}
@@ -160,16 +165,18 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                   setBrand(item)
                   setStep('product')
                 }}
-                className="vesti-focus flex min-h-28 items-end border border-white/10 bg-carbon p-4 text-start transition-all duration-300 hover:border-lacquer/70 hover:bg-shadow lg:min-h-36 lg:p-5"
+                className="vesti-focus flex min-h-[4.5rem] min-w-0 w-full items-center border-b border-white/10 py-5 text-start"
               >
-                <span className="font-display text-[22px] leading-tight text-ivory lg:text-[28px]">{item}</span>
+                <span className="block min-w-0 max-w-full text-pretty font-display text-[26px] leading-[1.08] text-ivory lg:text-[30px]">
+                  {item}
+                </span>
               </button>
             ))}
           </div>
         )}
 
         {step === 'product' && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div>
             {productNames.map((item) => {
               const itemShades = category && brand ? getBeautyProductShades(category, brand, item) : []
               return (
@@ -181,17 +188,18 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                     setProductName(item)
                     setStep('shade')
                   }}
-                  className="vesti-focus flex min-h-40 flex-col justify-between border border-white/10 bg-carbon p-5 text-start transition-all duration-300 hover:border-white/25 hover:bg-shadow"
+                  className="vesti-focus flex min-h-[5.5rem] w-full items-center gap-5 border-b border-white/10 py-5 text-start"
                 >
-                  <span className="flex gap-2" aria-hidden="true">
-                    {itemShades.slice(0, 5).map((shade) => (
-                      <span key={shade.id} className="h-8 w-8 rounded-full border border-white/20" style={{ backgroundColor: shade.swatchColor ?? '#2a2a2e' }} />
+                  <span className="flex shrink-0 gap-2" aria-hidden="true">
+                    {itemShades.slice(0, 4).map((shade) => (
+                      <span
+                        key={shade.id}
+                        className="h-10 w-10 rounded-full border border-white/15"
+                        style={{ backgroundColor: shade.swatchColor ?? '#2a2a2e' }}
+                      />
                     ))}
                   </span>
-                  <span>
-                    <strong className="block text-base font-medium leading-snug text-ivory">{item}</strong>
-                    <span className="mt-2 block text-xs text-silver">{itemShades.length} {copy.shades}</span>
-                  </span>
+                  <strong className="block text-[15px] font-medium leading-snug text-ivory">{item}</strong>
                 </button>
               )
             })}
@@ -199,7 +207,7 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
         )}
 
         {step === 'shade' && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div>
             {shades.map((item) => (
               <button
                 key={item.id}
@@ -215,14 +223,21 @@ export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: 
                   })
                   onTryOn(item)
                 }}
-                className="vesti-focus group flex min-h-36 items-center gap-5 border border-white/10 bg-carbon p-5 text-start transition-all duration-300 hover:border-white/25 disabled:opacity-45"
+                className="vesti-focus group flex min-h-[6.5rem] w-full flex-col items-start gap-4 border-b border-white/10 py-5 text-start sm:flex-row sm:items-center sm:gap-5 disabled:opacity-45"
               >
-                <span className="h-20 w-20 shrink-0 rounded-full border border-white/25 shadow-[0_12px_35px_rgba(0,0,0,0.35)]" style={{ backgroundColor: item.swatchColor ?? '#2a2a2e' }} aria-hidden="true" />
+                <span
+                  className="h-24 w-24 shrink-0 rounded-full border border-white/15"
+                  style={{ backgroundColor: item.swatchColor ?? '#2a2a2e' }}
+                  aria-hidden="true"
+                />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-medium tracking-[0.16em] text-silver uppercase">{item.brand}</span>
-                  <strong className="mt-2 block text-lg font-medium leading-tight text-ivory">{item.shadeName}</strong>
-                  {(item.shadeFamily || item.finish) && <small className="mt-2 block text-xs leading-5 text-silver">{shadeMetaLabel(item.shadeFamily, item.finish, lang)}</small>}
-                  <span className="mt-4 inline-flex min-h-11 items-center bg-lacquer px-5 text-xs font-semibold text-ivory transition-colors group-hover:bg-deepRose">{copy.tryOn}</span>
+                  <strong className="block text-xl font-medium leading-tight text-ivory">{item.shadeName}</strong>
+                  {(item.shadeFamily || item.finish) && (
+                    <small className="mt-1 block text-sm text-silver">{shadeMetaLabel(item.shadeFamily, item.finish, lang)}</small>
+                  )}
+                </span>
+                <span className="inline-flex min-h-12 shrink-0 items-center bg-lacquer px-5 text-sm font-semibold text-ivory transition-colors group-hover:bg-deepRose">
+                  {copy.tryOn}
                 </span>
               </button>
             ))}

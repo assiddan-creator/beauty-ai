@@ -3035,7 +3035,7 @@ function App() {
           if (file) handleFileSelect(file)
           e.target.value = ''
         }}
-        className="sr-only"
+        className="sr-only !left-0 !top-0 !m-0"
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -3049,7 +3049,7 @@ function App() {
           if (file) handleFileSelect(file)
           e.target.value = ''
         }}
-        className="sr-only"
+        className="sr-only !left-0 !top-0 !m-0"
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -3602,23 +3602,15 @@ function App() {
                 )}
 
                 {RETAIL_PRODUCT_ONLY && vestiSelectionActive && !hideSelectionAfterResult && (
-                  <div className="overflow-hidden border border-white/10 bg-carbon md:grid md:min-h-[calc(100dvh-8.5rem)] md:grid-cols-[minmax(19rem,0.82fr)_minmax(28rem,1.18fr)]" dir="ltr">
-                    <section className="relative min-h-[42dvh] overflow-hidden bg-onyx md:min-h-0">
+                  <div className="overflow-hidden bg-onyx md:grid md:min-h-[calc(100dvh-7.5rem)] md:grid-cols-[minmax(22rem,1.08fr)_minmax(24rem,0.92fr)]" dir="ltr">
+                    <section className="relative min-h-[38dvh] overflow-hidden bg-onyx md:min-h-0">
                       {originalImage && (
                         <img
                           src={originalImage}
                           alt={lang === 'he' ? 'התמונה שלך' : 'Your photo'}
-                          className="absolute inset-0 h-full w-full object-contain object-center"
+                          className="absolute inset-0 h-full w-full object-cover object-center"
                         />
                       )}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-5 pt-16 text-start" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-                        <p className="text-[10px] font-medium tracking-[0.18em] text-silver uppercase">
-                          {lang === 'he' ? 'התמונה שלך' : 'Your photo'}
-                        </p>
-                        <p className="mt-1 text-sm text-ivory">
-                          {lang === 'he' ? 'בחרי מוצר כדי לראות אותו עלייך' : 'Choose a product to see it on you'}
-                        </p>
-                      </div>
                     </section>
                     <div className="min-h-0 overflow-hidden" dir={lang === 'he' ? 'rtl' : 'ltr'}>
                       <ProductTryOnMode />

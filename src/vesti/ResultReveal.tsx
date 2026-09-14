@@ -151,8 +151,11 @@ export default function ResultReveal({
   const commercialUrl = previewUrl ?? (isRealUrl(lookUrl) ? lookUrl : null) ?? firstProductUrl
   const commercialLabel = isRealUrl(lookUrl) && !previewUrl ? copy.viewLook : copy.viewProduct
 
+  const featured = products[0]
+  const heading = retailMode && featured ? featured.shadeName : title
+
   return (
-    <section className="overflow-hidden border border-white/10 bg-carbon pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:grid lg:min-h-[calc(100dvh-8.5rem)] lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] lg:pb-0" dir="ltr">
+    <section className="overflow-hidden bg-onyx pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:grid lg:min-h-[calc(100dvh-7.5rem)] lg:grid-cols-[minmax(0,1.55fr)_minmax(17rem,0.55fr)] lg:pb-0" dir="ltr">
       <div className="relative overflow-hidden bg-onyx">
         <div className="relative aspect-[3/4] min-h-[20rem] w-full lg:h-full lg:min-h-0 lg:aspect-auto">
           {originalImage && (
@@ -200,26 +203,27 @@ export default function ResultReveal({
         </div>
       </div>
 
-      <div className="overflow-y-auto px-5 py-6 sm:px-8 lg:px-10 lg:py-10" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-      <p className="text-[11px] text-silver">{copy.trust}</p>
-      {fromRecommendation && (
+      <div className="overflow-y-auto px-5 py-6 sm:px-8 lg:px-8 lg:py-10" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+      {!retailMode && <p className="text-[11px] text-silver">{copy.trust}</p>}
+      {!retailMode && fromRecommendation && (
         <p className="mt-2 text-[11px] text-silver">{copy.direction}</p>
       )}
-      <h1 className={`mt-2 max-w-[22ch] break-words text-[28px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
-        {title}
+      <h1 className={`max-w-[18ch] break-words text-[28px] leading-tight text-ivory ${retailMode || lang !== 'he' ? 'font-display' : 'font-hebrew'}`}>
+        {heading}
       </h1>
 
       {products.length > 0 && (
-        <ul className="mt-6">
+        <ul className="mt-5">
           {products.map((product) => {
             const url = productUrls[product.id]
             return (
-              <li key={product.id} className="border-b border-white/10 py-3">
-                <p className="text-sm text-ivory">{product.brand}</p>
-                <p className="mt-1 break-words text-sm text-silver">{product.productName}</p>
-                <p className="mt-1 break-words text-sm text-silver">{product.shadeName}</p>
-                {product.finish && (
-                  <p className="mt-1 text-[12px] text-silver">{product.finish}</p>
+              <li key={product.id} className="py-2">
+                <p className="text-sm text-silver">{product.brand}</p>
+                {!(retailMode && featured) && (
+                  <p className="mt-1 break-words text-sm text-silver">{product.productName}</p>
+                )}
+                {!(retailMode && featured) && (
+                  <p className="mt-1 break-words text-sm text-ivory">{product.shadeName}</p>
                 )}
                 {isRealUrl(url) && (
                   <a
@@ -242,7 +246,7 @@ export default function ResultReveal({
           href={commercialUrl}
           target="_blank"
           rel="noreferrer"
-          className="vesti-focus mt-6 flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
+          className="vesti-focus mt-6 inline-flex min-h-12 items-center justify-center bg-lacquer px-8 text-sm font-semibold text-ivory transition-colors hover:bg-deepRose"
         >
           {commercialLabel}
         </a>
@@ -252,13 +256,13 @@ export default function ResultReveal({
         <p className="mt-5 text-sm text-silver">{error}</p>
       )}
 
-      <div className="mt-8 flex flex-col gap-3">
+      <div className="mt-10 flex flex-col items-start gap-2">
         <button
           type="button"
           onClick={onTryLook}
-          className={`vesti-focus flex min-h-12 w-full items-center justify-center px-5 text-sm font-semibold ${
+          className={`vesti-focus inline-flex min-h-12 items-center justify-center px-8 text-sm font-semibold transition-colors ${
             commercialUrl
-              ? 'border border-white/15 text-ivory hover:border-white/30'
+              ? 'text-ivory hover:text-silver'
               : 'bg-lacquer text-ivory hover:bg-deepRose'
           }`}
         >
@@ -267,7 +271,7 @@ export default function ResultReveal({
         <button
           type="button"
           onClick={onTryShade}
-          className="vesti-focus flex min-h-12 w-full items-center justify-center border border-white/15 px-5 text-sm text-ivory hover:border-white/30"
+          className="vesti-focus inline-flex min-h-12 items-center text-sm text-silver transition-colors hover:text-ivory"
         >
           {copy.tryShade}
         </button>
@@ -275,7 +279,7 @@ export default function ResultReveal({
           <button
             type="button"
             onClick={onDownload}
-            className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
+            className="vesti-focus inline-flex min-h-11 items-center text-sm text-silver transition-colors hover:text-ivory"
           >
             {copy.download}
           </button>
@@ -284,7 +288,7 @@ export default function ResultReveal({
           <button
             type="button"
             onClick={onStartOver}
-            className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
+            className="vesti-focus inline-flex min-h-11 items-center text-sm text-silver transition-colors hover:text-ivory"
           >
             {copy.startOver}
           </button>
@@ -294,7 +298,7 @@ export default function ResultReveal({
             type="button"
             data-retry-kind={retryKind ?? undefined}
             onClick={onRetry}
-            className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
+            className="vesti-focus inline-flex min-h-11 items-center text-sm text-silver transition-colors hover:text-ivory"
           >
             {copy.retry}
           </button>

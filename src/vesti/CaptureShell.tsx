@@ -10,7 +10,7 @@ type CaptureShellProps = {
 export default function CaptureShell({ lang, onToggleLang, children }: CaptureShellProps) {
   return (
     <div className="fixed inset-0 z-[120] flex min-h-0 flex-col overflow-hidden bg-onyx font-vesti text-ivory">
-      <header className="relative z-20 flex h-16 shrink-0 items-center justify-end border-b border-white/[0.07] px-5 sm:h-[4.5rem] sm:px-8 lg:px-10">
+      <header className="relative z-20 flex h-16 shrink-0 items-center justify-end px-5 pt-[env(safe-area-inset-top)] sm:h-[4.5rem] sm:px-8 lg:px-10">
         <p className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-[11px] font-medium tracking-[0.34em] text-ivory uppercase sm:text-xs">
           Vesti Beauty
         </p>
