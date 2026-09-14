@@ -29,6 +29,7 @@ type ResultRevealProps = {
   onStartOver?: () => void
   onRetry?: () => void
   retryKind?: 'look' | 'product' | 'request' | null
+  retailMode?: boolean
 }
 
 const COPY = {
@@ -41,6 +42,7 @@ const COPY = {
     viewProduct: 'לצפייה במוצר',
     viewLook: 'לצפייה בלוק',
     tryLook: 'נסי לוק אחר',
+    tryProduct: 'נסי מוצר אחר',
     tryShade: 'נסי גוון אחר',
     startOver: 'התחילי מחדש',
     download: 'הורדה',
@@ -57,6 +59,7 @@ const COPY = {
     viewProduct: 'View product',
     viewLook: 'View look',
     tryLook: 'Try another look',
+    tryProduct: 'Try another product',
     tryShade: 'Try another shade',
     startOver: 'Start over',
     download: 'Download',
@@ -95,6 +98,7 @@ export default function ResultReveal({
   onStartOver,
   onRetry,
   retryKind = null,
+  retailMode = false,
 }: ResultRevealProps) {
   const copy = COPY[lang]
   const [productUrls, setProductUrls] = useState<Record<string, string>>({})
@@ -148,9 +152,9 @@ export default function ResultReveal({
   const commercialLabel = isRealUrl(lookUrl) && !previewUrl ? copy.viewLook : copy.viewProduct
 
   return (
-    <section className="overflow-x-hidden pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <div className="relative -mx-4 overflow-hidden bg-carbon sm:-mx-8">
-        <div className="relative aspect-[3/4] max-h-[68vh] min-h-[20rem] w-full">
+    <section className="overflow-hidden border border-white/10 bg-carbon pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:grid lg:min-h-[calc(100dvh-8.5rem)] lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] lg:pb-0" dir="ltr">
+      <div className="relative overflow-hidden bg-onyx">
+        <div className="relative aspect-[3/4] min-h-[20rem] w-full lg:h-full lg:min-h-0 lg:aspect-auto">
           {originalImage && (
             <img src={originalImage} alt={copy.before} className="absolute inset-0 h-full w-full object-contain object-center" />
           )}
@@ -196,7 +200,8 @@ export default function ResultReveal({
         </div>
       </div>
 
-      <p className="mt-4 text-[11px] text-silver">{copy.trust}</p>
+      <div className="overflow-y-auto px-5 py-6 sm:px-8 lg:px-10 lg:py-10" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+      <p className="text-[11px] text-silver">{copy.trust}</p>
       {fromRecommendation && (
         <p className="mt-2 text-[11px] text-silver">{copy.direction}</p>
       )}
@@ -257,7 +262,7 @@ export default function ResultReveal({
               : 'bg-lacquer text-ivory hover:bg-deepRose'
           }`}
         >
-          {copy.tryLook}
+          {retailMode ? copy.tryProduct : copy.tryLook}
         </button>
         <button
           type="button"
@@ -266,13 +271,15 @@ export default function ResultReveal({
         >
           {copy.tryShade}
         </button>
-        <button
-          type="button"
-          onClick={onDownload}
-          className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
-        >
-          {copy.download}
-        </button>
+        {!retailMode && (
+          <button
+            type="button"
+            onClick={onDownload}
+            className="vesti-focus flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
+          >
+            {copy.download}
+          </button>
+        )}
         {onStartOver && (
           <button
             type="button"
@@ -292,6 +299,7 @@ export default function ResultReveal({
             {copy.retry}
           </button>
         )}
+      </div>
       </div>
     </section>
   )
