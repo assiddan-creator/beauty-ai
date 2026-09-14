@@ -1,0 +1,47 @@
+---
+description: Vesti Beauty luxury retail visual language
+globs: ["src/**/*.tsx", "src/**/*.css", "tailwind.config.*"]
+alwaysApply: false
+---
+# Vesti Beauty Visual Language
+North Star:
+Fashion house first.
+AI tool second.
+Vesti Beauty should feel like a premium cosmetics retail experience, not a generic AI application.
+Visual direction:
+- Editorial black canvas.
+- Black Onyx #050505.
+- Carbon Black #0B0B0D.
+- Soft Ivory #F3F1EE.
+- Muted Silver for secondary information.
+- Rose Lacquer #B50E1C only as a restrained accent.
+- Red is jewelry inside black, never the dominant surface.
+- Large face and product imagery.
+- Sparse hierarchy.
+- Thin dividers.
+- Generous negative space.
+- Minimal navigation.
+- Premium editorial typography.
+Typography:
+- Bodoni Moda for selective English editorial display moments.
+- Frank Ruhl Libre for selective large Hebrew editorial headings.
+- Heebo for interface text.
+- Do not use display fonts everywhere.
+Avoid:
+- Generic AI dashboard styling.
+- Neon.
+- Cyber aesthetics.
+- Pink beauty-app styling.
+- Excessive glow.
+- Emoji.
+- Decorative Sparkles or Heart branding.
+- Large collections of small cards.
+- Excessive borders.
+- Visual noise.
+- Legacy coral/orange styling.
+Retail priority:
+- The face is the hero.
+- Product imagery is more important than metadata.
+- Shade selection must feel visual and tactile.
+- Result / Before-After should dominate the reveal screen.
+- Controls should support the product, not compete with it.
