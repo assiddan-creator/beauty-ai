@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
-import ProductTryOnPicker from './components/ProductTryOnPicker'
+import ProductTryOnPicker, { type ProductTryOnInitialSelection } from './components/ProductTryOnPicker'
 import CustomRequestTryOn from './components/CustomRequestTryOn'
 import RecommendationScreen from './vesti/RecommendationScreen'
 import LookGallery from './vesti/LookGallery'
@@ -1527,6 +1527,7 @@ function App() {
   const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
   const [focusRequest, setFocusRequest] = useState(false)
   const [revealProduct, setRevealProduct] = useState<RevealProduct | null>(null)
+  const [productPickerResume, setProductPickerResume] = useState<ProductTryOnInitialSelection | null>(null)
   const [lastTryOn, setLastTryOn] = useState<
     | { type: 'look'; lookName: string }
     | { type: 'product'; product: ProductItem }
@@ -1734,6 +1735,7 @@ function App() {
     setAppMode(RETAIL_PRODUCT_ONLY ? 'product' : 'looks')
     setFocusRequest(false)
     setRevealProduct(null)
+    setProductPickerResume(null)
     setLastTryOn(null)
     setResultDescription(null)
     setCaptureStep('entry')
@@ -2112,6 +2114,7 @@ function App() {
       lang={lang}
       disabled={isGenerating}
       onTryOn={handleProductTryOn}
+      initialSelection={RETAIL_PRODUCT_ONLY ? productPickerResume : null}
     />
   )
 
@@ -3240,9 +3243,22 @@ function App() {
                       setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
-                      setAppMode('looks')
+                      setProductPickerResume(null)
+                      setAppMode(RETAIL_PRODUCT_ONLY ? 'product' : 'looks')
                     }}
                     onTryShade={() => {
+                      const resumeSource = lastTryOn?.type === 'product'
+                        ? lastTryOn.product
+                        : (revealProduct ? getBeautyProductView(revealProduct.id) : null)
+                      setProductPickerResume(
+                        RETAIL_PRODUCT_ONLY && resumeSource
+                          ? {
+                              category: resumeSource.category,
+                              brand: resumeSource.brand,
+                              productName: resumeSource.productName,
+                            }
+                          : null,
+                      )
                       setGeneratedImage(null)
                       setRevealProduct(null)
                       setSelectedPreset(null)
@@ -3613,7 +3629,15 @@ function App() {
                       )}
                     </section>
                     <div className="min-h-0 overflow-hidden" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-                      <ProductTryOnMode />
+                      <ProductTryOnPicker
+                        key={productPickerResume
+                          ? `shade:${productPickerResume.category}:${productPickerResume.brand}:${productPickerResume.productName}`
+                          : 'category'}
+                        lang={lang}
+                        disabled={isGenerating}
+                        onTryOn={handleProductTryOn}
+                        initialSelection={productPickerResume}
+                      />
                     </div>
                   </div>
                 )}

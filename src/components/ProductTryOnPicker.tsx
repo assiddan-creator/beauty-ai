@@ -14,10 +14,23 @@ type UiLanguage = 'he' | 'en'
 type Category = 'lips' | 'blush'
 type Step = 'category' | 'brand' | 'product' | 'shade'
 
+export type ProductTryOnInitialSelection = {
+  category: Category
+  brand: string
+  productName: string
+}
+
 type ProductTryOnPickerProps = {
   lang: UiLanguage
   disabled?: boolean
   onTryOn: (product: BeautyProductView) => void | Promise<void>
+  initialSelection?: ProductTryOnInitialSelection | null
+}
+
+function shadeResumeSelection(selection: ProductTryOnInitialSelection | null | undefined) {
+  if (!selection) return null
+  const shades = getBeautyProductShades(selection.category, selection.brand, selection.productName)
+  return shades.length > 0 ? selection : null
 }
 
 const COPY = {
@@ -51,12 +64,18 @@ const COPY = {
 
 const STEPS: Step[] = ['category', 'brand', 'product', 'shade']
 
-export default function ProductTryOnPicker({ lang, disabled = false, onTryOn }: ProductTryOnPickerProps) {
+export default function ProductTryOnPicker({
+  lang,
+  disabled = false,
+  onTryOn,
+  initialSelection = null,
+}: ProductTryOnPickerProps) {
   const copy = COPY[lang]
-  const [step, setStep] = useState<Step>('category')
-  const [category, setCategory] = useState<Category | null>(null)
-  const [brand, setBrand] = useState<string | null>(null)
-  const [productName, setProductName] = useState<string | null>(null)
+  const resume = shadeResumeSelection(initialSelection)
+  const [step, setStep] = useState<Step>(resume ? 'shade' : 'category')
+  const [category, setCategory] = useState<Category | null>(resume?.category ?? null)
+  const [brand, setBrand] = useState<string | null>(resume?.brand ?? null)
+  const [productName, setProductName] = useState<string | null>(resume?.productName ?? null)
   const BackIcon = lang === 'he' ? ChevronRight : ChevronLeft
 
   const categories = useMemo(() => getBeautyProductCategories(), [])
