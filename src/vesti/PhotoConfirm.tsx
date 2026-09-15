@@ -12,30 +12,38 @@ type PhotoConfirmProps = {
 export default function PhotoConfirm({ lang, imageSrc, onToggleLang, onContinue, onReplace }: PhotoConfirmProps) {
   return (
     <CaptureShell lang={lang} onToggleLang={onToggleLang}>
-      <div className="flex min-h-0 flex-1 flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-8">
-        <p className="mb-4 text-[11px] font-medium tracking-[0.28em] text-ivory uppercase">Vesti Beauty</p>
-        <h1 className={`mb-4 text-[26px] leading-tight text-ivory ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
-          {lang === 'he' ? 'התמונה מוכנה' : 'Photo ready'}
-        </h1>
-
-        <div className="min-h-0 flex-1 overflow-hidden bg-carbon">
-          <img src={imageSrc} alt={lang === 'he' ? 'התמונה שהעלית' : 'Uploaded photo'} className="h-full w-full object-cover object-center" />
+      <div className="grid min-h-0 flex-1 md:grid-cols-[minmax(0,1.72fr)_minmax(17rem,0.58fr)]" dir="ltr">
+        <div className="min-h-[52dvh] overflow-hidden bg-onyx md:min-h-0">
+          <img
+            src={imageSrc}
+            alt={lang === 'he' ? 'התמונה שהעלית' : 'Uploaded photo'}
+            className="h-full w-full object-cover object-center"
+          />
         </div>
-
-        <button
-          type="button"
-          onClick={onContinue}
-          className="vesti-focus mt-5 flex min-h-12 w-full items-center justify-center bg-lacquer px-5 text-sm font-semibold text-ivory hover:bg-deepRose"
+        <div
+          className="flex flex-col justify-between px-6 py-8 sm:px-10 md:px-12 md:py-16"
+          dir={lang === 'he' ? 'rtl' : 'ltr'}
         >
-          {lang === 'he' ? 'המשיכי' : 'Continue'}
-        </button>
-        <button
-          type="button"
-          onClick={onReplace}
-          className="vesti-focus mt-2 flex min-h-11 w-full items-center justify-center text-sm text-silver hover:text-ivory"
-        >
-          {lang === 'he' ? 'החליפי תמונה' : 'Replace photo'}
-        </button>
+          <h1 className={`mt-4 text-[34px] leading-[1.08] text-ivory sm:text-4xl ${lang === 'he' ? 'font-hebrew' : 'font-display'}`}>
+            {lang === 'he' ? 'התמונה מוכנה' : 'Your photo is ready'}
+          </h1>
+          <div className="mt-10">
+            <button
+              type="button"
+              onClick={onContinue}
+              className="vesti-focus inline-flex min-h-14 min-w-[12.5rem] items-center justify-center bg-lacquer px-8 text-sm font-semibold text-ivory transition-colors hover:bg-deepRose"
+            >
+              {lang === 'he' ? 'המשיכי' : 'Continue'}
+            </button>
+            <button
+              type="button"
+              onClick={onReplace}
+              className="vesti-focus mt-3 flex min-h-12 items-center text-sm text-silver transition-colors hover:text-ivory"
+            >
+              {lang === 'he' ? 'החליפי תמונה' : 'Replace photo'}
+            </button>
+          </div>
+        </div>
       </div>
     </CaptureShell>
   )

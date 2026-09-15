@@ -23,3 +23,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local visual QA browser profiles and discarded captures
+qa-browser-profile/
+qa/profile-*/
+qa/04-entry-phone.png
+qa/05-products-phone.png
+public/vesti-retail-hero-alt.jpg

@@ -1,0 +1,15 @@
+---
+description: Vesti Beauty UI implementation rules
+globs: ["src/**/*.tsx", "src/**/*.css", "tailwind.config.*"]
+alwaysApply: false
+---
+# Vesti Beauty UI Stack
+- Use the existing React + TypeScript + Tailwind stack first.
+- Reuse existing Vesti components, utilities, tokens, and patterns before introducing anything new.
+- Do not install shadcn/ui, Magic UI, Framer Motion, or any other UI dependency unless it is clearly necessary and explicitly approved.
+- Prefer Tailwind utility classes and existing scoped Vesti styles.
+- Avoid broad global CSS changes.
+- Do not change global Tailwind tokens or legacy tokens unless the task explicitly requires it.
+- Preserve accessibility, RTL, touch targets, safe areas, and responsive behavior.
+- Do not redesign working flows unless the task explicitly asks for UX changes.
+- For retail mode, optimize first for iPad landscape while preserving mobile support.

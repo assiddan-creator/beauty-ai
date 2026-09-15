@@ -1,0 +1,18 @@
+---
+description: Motion and media rules for premium Vesti Beauty interfaces
+globs: ["src/**/*.tsx", "src/**/*.css"]
+alwaysApply: false
+---
+# Vesti Motion and Media
+- Motion must clarify state or improve perceived quality.
+- Prefer existing CSS transitions and current project capabilities.
+- Do not add Framer Motion or another animation library unless explicitly approved.
+- Keep animation restrained, fast, and premium.
+- Respect prefers-reduced-motion.
+- Avoid continuous decorative animation.
+- Avoid excessive parallax, glow, bouncing, or floating effects.
+- Product and face imagery must remain visually stable.
+- Optimize media with appropriate sizing and lazy loading where relevant.
+- Do not lower image quality in the main try-on or result experience.
+- Before/After interactions must remain smooth and touch-friendly.
+- On iPad retail screens, prioritize stable layout and responsive interaction over animation spectacle.

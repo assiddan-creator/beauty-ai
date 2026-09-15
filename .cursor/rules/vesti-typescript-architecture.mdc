@@ -1,0 +1,17 @@
+---
+description: Clean TypeScript architecture for Vesti Beauty
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: false
+---
+# Vesti TypeScript Architecture
+- Use TypeScript throughout.
+- Prefer explicit typed props and predictable state flow.
+- Reuse existing functions and handlers before introducing duplicate logic.
+- Keep new components focused and feature-oriented.
+- Do not perform broad refactors during visual design tasks.
+- Avoid adding abstractions that do not solve a current problem.
+- Protect existing AI generation, product catalog, analytics, commerce, and Cloudflare logic.
+- Treat src/App.tsx as high-risk legacy code: make minimal targeted changes.
+- When adding state, check for stale-state and cross-flow contamination.
+- Before changing a working flow, trace the current state transitions first.
+- Remove dead code only when the task specifically includes cleanup and regression checks.

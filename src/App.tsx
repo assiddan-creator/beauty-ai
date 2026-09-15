@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { searchByIntent, type SearchResult, type LookMetadataRecord, type LookNavigationRecord } from './lib/beautyIntentSearch'
-import ProductTryOnPicker from './components/ProductTryOnPicker'
+import ProductTryOnPicker, { type ProductTryOnInitialSelection } from './components/ProductTryOnPicker'
 import CustomRequestTryOn from './components/CustomRequestTryOn'
 import RecommendationScreen from './vesti/RecommendationScreen'
 import LookGallery from './vesti/LookGallery'
@@ -40,6 +40,10 @@ import type { CaptureStep, LookCardModel } from './vesti/types'
 import type { BeautyProductView } from './lib/productCatalogFacade'
 import { getBeautyProductView, getLookProductViews } from './lib/productCatalogFacade'
 import { buildCustomTryOnPrompt } from './lib/customTryOnPrompt'
+
+// Retail mode keeps the expert/AI-assisted flows available in code while
+// presenting a focused product try-on journey to shoppers by default.
+const RETAIL_PRODUCT_ONLY = import.meta.env.VITE_VESTI_EXPERT_TOOLS !== 'true'
 
 const ENGINES = [
   {
@@ -1518,11 +1522,12 @@ function App() {
   const [activeEngine, setActiveEngine] = useState<Engine>(ENGINES[0])
   const [showAdminPanel, setShowAdminPanel] = useState(false)
 
-  const [appMode, setAppMode] = useState<'looks' | 'product'>('looks')
+  const [appMode, setAppMode] = useState<'looks' | 'product'>(RETAIL_PRODUCT_ONLY ? 'product' : 'looks')
   const [vestiPreview, setVestiPreview] = useState<string | null>(null)
   const [captureStep, setCaptureStep] = useState<CaptureStep | null>('entry')
   const [focusRequest, setFocusRequest] = useState(false)
   const [revealProduct, setRevealProduct] = useState<RevealProduct | null>(null)
+  const [productPickerResume, setProductPickerResume] = useState<ProductTryOnInitialSelection | null>(null)
   const [lastTryOn, setLastTryOn] = useState<
     | { type: 'look'; lookName: string }
     | { type: 'product'; product: ProductItem }
@@ -1661,8 +1666,12 @@ function App() {
   const handleConfirmPhoto = () => {
     if (!originalImage) return
     setFocusRequest(false)
-    setCaptureStep('direction')
-    setShowPathScreen(false)
+    if (RETAIL_PRODUCT_ONLY) {
+      enterSelection('product')
+    } else {
+      setCaptureStep('direction')
+      setShowPathScreen(false)
+    }
   }
 
   const handleReplacePhoto = () => {
@@ -1701,7 +1710,7 @@ function App() {
   }
 
   // ── Clear ────────────────────────────────────────────────────────────────────
-  const handleClear = () => {
+  const handleClear = React.useCallback(() => {
     if (originalImage) {
       URL.revokeObjectURL(originalImage)
       setOriginalImage(null)
@@ -1723,13 +1732,40 @@ function App() {
     setShowAnalyzingScreen(false)
     setShowLookProducts(false)
     setShowPathScreen(false)
-    setAppMode('looks')
+    setAppMode(RETAIL_PRODUCT_ONLY ? 'product' : 'looks')
     setFocusRequest(false)
     setRevealProduct(null)
+    setProductPickerResume(null)
     setLastTryOn(null)
     setResultDescription(null)
     setCaptureStep('entry')
-  }
+  }, [originalImage])
+
+  React.useEffect(() => {
+    if (!RETAIL_PRODUCT_ONLY) return
+
+    const sessionIsActive = Boolean(
+      originalImage
+      || isUploaded
+      || generatedImage
+      || (captureStep && captureStep !== 'entry'),
+    )
+    if (!sessionIsActive) return
+
+    let idleTimer = window.setTimeout(handleClear, 3 * 60 * 1000)
+    const restartIdleTimer = () => {
+      window.clearTimeout(idleTimer)
+      idleTimer = window.setTimeout(handleClear, 3 * 60 * 1000)
+    }
+
+    const activityEvents: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'touchstart']
+    activityEvents.forEach((eventName) => window.addEventListener(eventName, restartIdleTimer, { passive: true }))
+
+    return () => {
+      window.clearTimeout(idleTimer)
+      activityEvents.forEach((eventName) => window.removeEventListener(eventName, restartIdleTimer))
+    }
+  }, [captureStep, generatedImage, handleClear, isUploaded, originalImage])
 
   // ── Download ─────────────────────────────────────────────────────────────────
   const handleDownload = async () => {
@@ -2078,6 +2114,7 @@ function App() {
       lang={lang}
       disabled={isGenerating}
       onTryOn={handleProductTryOn}
+      initialSelection={RETAIL_PRODUCT_ONLY ? productPickerResume : null}
     />
   )
 
@@ -3001,7 +3038,7 @@ function App() {
           if (file) handleFileSelect(file)
           e.target.value = ''
         }}
-        className="sr-only"
+        className="sr-only !left-0 !top-0 !m-0"
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -3015,7 +3052,7 @@ function App() {
           if (file) handleFileSelect(file)
           e.target.value = ''
         }}
-        className="sr-only"
+        className="sr-only !left-0 !top-0 !m-0"
         tabIndex={-1}
         aria-hidden="true"
       />
@@ -3042,7 +3079,7 @@ function App() {
       {/* ── Header ── */}
       {!vestiEntryActive && (hideLegacyChrome ? (
         <header className="relative z-20 bg-onyx">
-          <div className="mx-auto flex max-w-3xl items-baseline justify-between gap-4 px-4 py-5 sm:px-8">
+          <div className={`mx-auto flex items-baseline justify-between gap-4 px-4 py-5 sm:px-8 ${RETAIL_PRODUCT_ONLY ? 'max-w-[1440px] lg:px-10' : 'max-w-3xl'}`}>
             <p className="text-[11px] font-medium tracking-[0.32em] text-ivory uppercase">Vesti Beauty</p>
             <div className="flex items-center gap-5">
               <button
@@ -3111,7 +3148,7 @@ function App() {
       ))}
 
       {!vestiEntryActive && (
-      <main className={`relative z-10 mx-auto max-w-3xl overflow-x-hidden px-4 sm:px-8 md:px-12 ${hideLegacyChrome ? 'pb-10 pt-4' : 'pb-36 pt-6 md:pt-10'}`}>
+      <main className={`relative z-10 mx-auto overflow-x-hidden px-4 sm:px-8 ${RETAIL_PRODUCT_ONLY ? 'max-w-[1440px] lg:px-10' : 'max-w-3xl md:px-12'} ${hideLegacyChrome ? 'pb-10 pt-4' : 'pb-36 pt-6 md:pt-10'}`}>
 
         {/* ── Glass Content Panel ── */}
         <div className={hideLegacyChrome ? '' : 'rounded-3xl border border-white/10 bg-black/5 shadow-2xl backdrop-blur-3xl'}>
@@ -3206,9 +3243,22 @@ function App() {
                       setResultDescription(null)
                       setError(null)
                       setFocusRequest(false)
-                      setAppMode('looks')
+                      setProductPickerResume(null)
+                      setAppMode(RETAIL_PRODUCT_ONLY ? 'product' : 'looks')
                     }}
                     onTryShade={() => {
+                      const resumeSource = lastTryOn?.type === 'product'
+                        ? lastTryOn.product
+                        : (revealProduct ? getBeautyProductView(revealProduct.id) : null)
+                      setProductPickerResume(
+                        RETAIL_PRODUCT_ONLY && resumeSource
+                          ? {
+                              category: resumeSource.category,
+                              brand: resumeSource.brand,
+                              productName: resumeSource.productName,
+                            }
+                          : null,
+                      )
                       setGeneratedImage(null)
                       setRevealProduct(null)
                       setSelectedPreset(null)
@@ -3220,6 +3270,7 @@ function App() {
                     }}
                     onRetry={canRetryGeneration ? handleRetryGeneration : undefined}
                     retryKind={lastTryOn?.type ?? null}
+                    retailMode={RETAIL_PRODUCT_ONLY}
                   />
                 )}
 
@@ -3239,7 +3290,7 @@ function App() {
                   </div>
                 )}
 
-                {vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && !vestiPreview?.startsWith('result-error') && (
+                {!RETAIL_PRODUCT_ONLY && vestiSelectionActive && !isGenerating && vestiPreview !== 'request' && !vestiPreview?.startsWith('result-error') && (
                 <div className="mb-6 flex items-center gap-3">
                   {originalImage && (
                     <img src={originalImage} alt="" className="h-8 w-8 object-cover opacity-80" />
@@ -3566,8 +3617,33 @@ function App() {
                   </div>
                 )}
 
-                {/* ── Mode: Looks | Product ── */}
-                {vestiPreview !== 'request' && !hideSelectionAfterResult && (
+                {RETAIL_PRODUCT_ONLY && vestiSelectionActive && !hideSelectionAfterResult && (
+                  <div className="overflow-hidden bg-onyx md:grid md:min-h-[calc(100dvh-7.5rem)] md:grid-cols-[minmax(22rem,1.08fr)_minmax(24rem,0.92fr)]" dir="ltr">
+                    <section className="relative min-h-[38dvh] overflow-hidden bg-onyx md:min-h-0">
+                      {originalImage && (
+                        <img
+                          src={originalImage}
+                          alt={lang === 'he' ? 'התמונה שלך' : 'Your photo'}
+                          className="absolute inset-0 h-full w-full object-cover object-center"
+                        />
+                      )}
+                    </section>
+                    <div className="min-h-0 overflow-hidden" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+                      <ProductTryOnPicker
+                        key={productPickerResume
+                          ? `shade:${productPickerResume.category}:${productPickerResume.brand}:${productPickerResume.productName}`
+                          : 'category'}
+                        lang={lang}
+                        disabled={isGenerating}
+                        onTryOn={handleProductTryOn}
+                        initialSelection={productPickerResume}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Expert mode: Looks | Product ── */}
+                {!RETAIL_PRODUCT_ONLY && vestiPreview !== 'request' && !hideSelectionAfterResult && (
                 <nav className="mt-2 flex gap-8" aria-label={lang === 'he' ? 'מצב בחירה' : 'Selection mode'}>
                   <button
                     type="button"
@@ -3601,7 +3677,7 @@ function App() {
                 </nav>
                 )}
 
-                {appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && !focusRequest && (
+                {!RETAIL_PRODUCT_ONLY && appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'request' && vestiPreview !== 'recommendation' && !focusRequest && (
                 <>
                 {faceAnalysis && !showAnalysisPanel && (
                   <button
@@ -3625,9 +3701,9 @@ function App() {
 
                 </>
                 )}
-                {appMode === 'product' && !hideSelectionAfterResult && <ProductTryOnMode />}
+                {!RETAIL_PRODUCT_ONLY && appMode === 'product' && !hideSelectionAfterResult && <ProductTryOnMode />}
 
-                {appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
+                {!RETAIL_PRODUCT_ONLY && appMode === 'looks' && !hideSelectionAfterResult && vestiPreview !== 'looks' && vestiPreview !== 'recommendation' && (
                   <CustomRequestTryOn
                     lang={lang}
                     value={customInstructions}
